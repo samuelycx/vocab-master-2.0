@@ -30,7 +30,10 @@ export const GameEngine = {
     async startSession(count = 10) {
         const category = GameState.user.targetCategory || 'GENERAL';
         const rawWords = await API.getSessionWords(count, category);
-        if (!rawWords || rawWords.length === 0) return;
+        if (!rawWords || rawWords.length === 0) {
+            alert('数据库中暂无单词，请确保已正确导入词书！');
+            return;
+        }
 
         const formattedWords = rawWords.map(w => ({
             ...w,
@@ -223,9 +226,6 @@ export const GameEngine = {
         if (this.session.isAnswered) return;
 
         this.session.selectedOption = selectedMeaning;
-        this.session.isAnswered = true;
-        this.session.isCorrect = (selectedMeaning === this.session.correctOption);
-
         this.session.isAnswered = true;
         this.session.isCorrect = (selectedMeaning === this.session.correctOption);
 

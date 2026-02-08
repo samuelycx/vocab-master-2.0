@@ -31,6 +31,7 @@ npm install
 echo "🗄️ Initializing Database..."
 npx prisma generate
 npx prisma migrate deploy
+npx prisma db seed
 
 # 清理旧的编译文件并重新编译
 rm -rf dist
