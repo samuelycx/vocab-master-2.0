@@ -45,8 +45,16 @@ if ! command -v pm2 &> /dev/null; then
   npm install -g pm2
 fi
 
-# 使用 pm2 启动/重启 (路径修正为 dist/src/main.js)
-pm2 start server/dist/src/main.js --name "vocab-master" || pm2 restart "vocab-master"
+# 确保我们在项目根目录启动 (Ensure we start from root)
+cd "$(dirname "$0")/.."
 
-echo "✅ Deployment Complete!"
+# 使用 pm2 启动/重启 (显式指定工作目录)
+pm2 stop "vocab-master" 2>/dev/null || true
+pm2 start server/dist/src/main.js --name "vocab-master" --cwd "$(pwd)"
+
+echo "--------------------------------------------------"
+echo "✅ Deployment Complete! (部署完成)"
+echo "🚀 Application is running in the background via PM2."
 echo "📍 Access your app at: http://your-server-ip:3000"
+echo "💡 Use 'pm2 logs vocab-master' to see logs if you face issues."
+echo "--------------------------------------------------"

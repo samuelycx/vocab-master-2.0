@@ -15,7 +15,19 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), '..', 'client', 'dist'),
+      // 寻找前端静态文件的路径 (Robust path resolution)
+      rootPath: (() => {
+        const paths = [
+          join(process.cwd(), 'client', 'dist'), // PM2 从根目录启动时
+          join(process.cwd(), '..', 'client', 'dist'), // 直接在 server 目录下启动时
+          join(__dirname, '..', '..', '..', 'client', 'dist'), // 嵌套在 dist/src 下时
+        ];
+        const { existsSync } = require('fs');
+        for (const p of paths) {
+          if (existsSync(join(p, 'index.html'))) return p;
+        }
+        return paths[0]; // 默认返回
+      })(),
     }),
     PrismaModule,
     AuthModule,
