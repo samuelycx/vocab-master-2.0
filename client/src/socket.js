@@ -12,9 +12,10 @@ class SocketManagerClass {
 
         // Connect to the PK namespace using relative path
         // This works for both development (if proxy is set) and production (single server)
-        const url = window.location.hostname === 'localhost' && window.location.port === '5173'
+        // Connect to the PK namespace using dynamic URL for production
+        const url = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' && window.location.port === '5173'
             ? 'http://localhost:3000/pk'
-            : '/pk';
+            : '/pk');
 
         this.socket = io(url, {
             transports: ['websocket'],
