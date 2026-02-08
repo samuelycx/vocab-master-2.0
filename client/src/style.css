@@ -8,6 +8,17 @@
   --radius-button: 9999px;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Default Theme (Academic) */
+  --primary: #25f46a;
+  --primary-dark: #1bc452;
+  --secondary: #e7f4eb;
+  --background: #f5f8f6;
+  --surface: #ffffff;
+  --text-main: #0d1c12;
+  --text-muted: #499c65;
+  --border-style: 1px solid rgba(0, 0, 0, 0.05);
+  --shadow-main: 0 4px 6px -1px rgba(37, 244, 106, 0.1);
 }
 
 body {

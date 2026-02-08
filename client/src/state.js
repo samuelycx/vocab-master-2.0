@@ -41,7 +41,7 @@ const initialState = {
     },
     settings: {
         soundEnabled: localStorage.getItem('vocab_sound') !== 'false', // Default true
-        theme: localStorage.getItem('vocab_theme_v2') || 'default', // default, playful, dark
+        theme: localStorage.getItem('vocab_theme_v2') || 'academic', // default is academic
         darkMode: false // Deprecated but kept for compatibility logic if needed
     },
     overlay: { current: null, queue: [] } // { type: 'levelUp' | 'achievement', data: ... }
