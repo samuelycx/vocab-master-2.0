@@ -20,6 +20,10 @@ cd ..
 echo "⚙️ Building Backend..."
 cd server
 npm install
+# 初始化数据库 (Prisma)
+echo "🗄️ Initializing Database..."
+npx prisma generate
+npx prisma migrate deploy
 npm run build
 cd ..
 
