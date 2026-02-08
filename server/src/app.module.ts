@@ -15,7 +15,7 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'client', 'dist'),
+      rootPath: join(process.cwd(), '..', 'client', 'dist'),
     }),
     PrismaModule,
     AuthModule,
