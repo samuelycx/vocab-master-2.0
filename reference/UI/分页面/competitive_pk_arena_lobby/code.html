@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>竞技 PK 竞技场 - 词汇大师 2.0</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#25f46a",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                        "accent-blue": "#4f46e5",
+                        "accent-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["'Noto Sans SC'", "Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .skew-divider {
+            clip-path: polygon(0 0, 100% 0, 80% 100%, -20% 100%);
+        }
+        .vs-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 244, 106, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(37, 244, 106, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 244, 106, 0); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1c12] dark:text-white font-display min-h-screen flex flex-col overflow-hidden transition-colors duration-200">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7f4eb] dark:border-white/10 px-10 py-4 bg-white/80 dark:bg-[#102216]/80 backdrop-blur-md sticky top-0 z-50">
+<div class="flex items-center gap-4 text-[#0d1c12] dark:text-white">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-4xl">school</span>
+</div>
+<h2 class="text-xl font-black leading-tight tracking-[-0.015em]">词汇大师 2.0</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8 items-center">
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-sm font-bold hover:text-primary transition-colors" href="#">仪表盘</a>
+<a class="text-sm font-bold text-primary" href="#">竞技场</a>
+<a class="text-sm font-bold hover:text-primary transition-colors" href="#">排行榜</a>
+<a class="text-sm font-bold hover:text-primary transition-colors" href="#">商店</a>
+</nav>
+<div class="flex items-center gap-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-1 pr-4 rounded-full shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8" data-alt="User profile avatar small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBZLLUu6beN5Q_VlhqxgD_m4QnvNEsAo2fspcXLJU1PHsAgKWpbEnVrnat1yQ4fRW0zeoTRMkR6EIrT03FgQCPdPYAgm4_HX1fbDe62-QgSgfaZW1fyd0Dht-dYVNfe-y29nKKBQZt6ubX8qNwTzGjXu_4qUCOqL-J-lRovd9VvhLlslxxwvptcI_ufUcNMTaZR0-xT0sA703Odq6vSTc2dnHugYO2j3quZ1_AFI0OBkoKDNtOuEw4I87MVoqUOrWawDlExMfYp8kpn");'></div>
+<div class="flex flex-col">
+<span class="text-xs font-bold leading-none">WordWizard99</span>
+<span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Lvl 12 学者</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 relative flex flex-col items-center justify-center p-6 lg:p-10 w-full max-w-[1600px] mx-auto">
+<div class="absolute inset-0 pointer-events-none overflow-hidden opacity-30 dark:opacity-10 z-0">
+<div class="absolute top-0 left-0 w-full h-full bg-grid-pattern bg-[length:40px_40px]"></div>
+<div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-overlay"></div>
+<div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] bg-blue-400/20 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-overlay"></div>
+</div>
+<div class="relative w-full max-w-6xl bg-white dark:bg-[#1a3524] rounded-xl shadow-2xl border border-gray-100 dark:border-white/5 overflow-hidden flex flex-col z-10 min-h-[700px]">
+<div class="pt-8 px-8 pb-4 flex flex-col items-center gap-6 relative z-20">
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-yellow-200 dark:border-yellow-700/50">
+<span class="material-symbols-outlined text-sm">emoji_events</span> 第 3 赛季
+                    </div>
+<h1 class="text-4xl md:text-5xl font-black italic tracking-tighter text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-600">PK 竞技场</h1>
+</div>
+<div class="w-full max-w-2xl flex flex-col gap-2">
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-400">
+<span>你</span>
+<span>战场平衡</span>
+<span>对手</span>
+</div>
+<div class="h-6 w-full bg-gray-100 dark:bg-black/30 rounded-full overflow-hidden relative shadow-inner border border-gray-200 dark:border-white/5">
+<div class="absolute left-1/2 top-0 bottom-0 w-1 bg-white/50 z-10 -translate-x-1/2"></div>
+<div class="h-full bg-gradient-to-r from-primary via-green-400 to-emerald-500 w-[50%] rounded-r-lg relative transition-all duration-1000 ease-out">
+<div class="absolute right-2 top-1/2 -translate-y-1/2 size-2 bg-white rounded-full animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col md:flex-row relative">
+<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center">
+<div class="vs-pulse bg-white dark:bg-[#1a3524] rounded-full p-2 shadow-xl border-4 border-gray-100 dark:border-[#2a4534]">
+<div class="size-20 bg-gradient-to-br from-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-inner text-white font-black text-3xl italic transform -skew-x-6 border-4 border-red-400">
+                            VS
+                        </div>
+</div>
+</div>
+<div class="flex-1 p-8 flex flex-col items-center justify-center relative bg-gradient-to-b from-primary/5 to-transparent border-b md:border-b-0 md:border-r border-dashed border-gray-200 dark:border-white/10">
+<div class="relative group">
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/40 transition-all duration-500"></div>
+<div class="relative size-40 md:size-48 rounded-full border-8 border-white dark:border-[#2a4534] shadow-xl overflow-hidden bg-gray-200">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 hover:scale-110" data-alt="User Avatar High Quality" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAq7cVRpMH-hQWBVF-hMuKXwyXfqm9naKZamsFQY7k7eI2n-wWAOpJ1JiQzIz63R81MZta0iw4E6U8N7cnzCkTBUC-Clgh86qvbhI3E5bcUxVp8ks-6e5g1Xud07F_1kATTaVz5PCROPdSWm43nQimUeTaVVp7HhPRbmLvT0D338I-wquYO2gAaQznJX0cV51RZMfqW0Pnp6k9OU5ez_k09eD1VVYi-n9lRmNqKBGolp1ugV_tQ6b5joJdgAwYqPttstYpkRz3QP0E7");'></div>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-[#0d1c12] border-4 border-white dark:border-[#1a3524] size-12 rounded-full flex items-center justify-center font-black text-lg shadow-lg rotate-3 group-hover:rotate-12 transition-transform">
+                            12
+                        </div>
+</div>
+<div class="mt-8 text-center space-y-2">
+<h3 class="text-3xl font-black text-[#0d1c12] dark:text-white">WordWizard99</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-emerald-700 dark:text-emerald-300 text-sm font-bold border border-primary/20">胜率: 68%</span>
+<span class="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-bold border border-blue-200 dark:border-blue-800/50">大师联赛</span>
+</div>
+</div>
+</div>
+<div class="flex-1 p-8 flex flex-col items-center justify-center relative">
+<div class="relative">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-gray-300 dark:border-white/20 animate-[spin_10s_linear_infinite]"></div>
+<div class="absolute -inset-4 rounded-full border border-gray-200 dark:border-white/10 animate-[ping_3s_linear_infinite] opacity-50"></div>
+<div class="relative size-40 md:size-48 rounded-full border-8 border-gray-100 dark:border-[#2a4534] shadow-inner bg-gray-50 dark:bg-white/5 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 animate-pulse">question_mark</span>
+</div>
+</div>
+<div class="mt-8 text-center space-y-2">
+<h3 class="text-3xl font-black text-gray-300 dark:text-gray-600">等待中...</h3>
+<div class="flex items-center justify-center gap-2 opacity-50">
+<span class="px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 text-sm font-bold border border-gray-200 dark:border-white/10">胜率: --%</span>
+<span class="px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 text-sm font-bold border border-gray-200 dark:border-white/10">未定级</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-gray-50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-center gap-6 relative z-20">
+<button class="group relative flex items-center gap-4 bg-primary hover:bg-emerald-400 text-[#0d1c12] py-4 px-10 rounded-full shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:-translate-y-1 w-full md:w-auto min-w-[320px] justify-center overflow-hidden">
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 skew-y-12"></div>
+<span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">swords</span>
+<div class="flex flex-col items-start relative z-10 text-left">
+<span class="text-xs uppercase tracking-widest font-bold opacity-80">竞技模式</span>
+<span class="text-xl font-black leading-none">开始排位赛</span>
+</div>
+</button>
+<div class="flex items-center gap-4">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">或</span>
+</div>
+<button class="group flex items-center gap-3 bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border-2 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 py-3 px-8 rounded-full transition-all duration-300 w-full md:w-auto justify-center">
+<span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">smart_toy</span>
+<div class="flex flex-col items-start text-left">
+<span class="text-[10px] uppercase tracking-widest font-bold opacity-60">训练模式</span>
+<span class="text-base font-bold leading-none">人机对战</span>
+</div>
+</button>
+</div>
+</div>
+<div class="mt-8 w-full max-w-4xl opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex items-center gap-3 justify-center text-sm font-medium text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-primary">campaign</span>
+<span>近期战报:</span>
+<span class="font-bold text-gray-700 dark:text-gray-200">LexiChamp</span> 击败了 <span class="font-bold text-gray-700 dark:text-gray-200">VocabKing</span> (比分: 15-12)
+                <span class="mx-2 text-gray-300">•</span>
+<span class="font-bold text-gray-700 dark:text-gray-200">Speller101</span> 刚刚达到了 15 级！
+            </div>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-emerald-50 to-transparent dark:from-emerald-900/10 pointer-events-none z-0"></div>
+
+</body></html>

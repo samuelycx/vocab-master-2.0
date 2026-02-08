@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vocab Master - 设置</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#25f46a",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3324",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1c12] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f4eb] dark:border-b-[#1f422b] bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm px-10 py-3">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-4xl">school</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Vocab Master</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">仪表盘</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">游戏</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">排行榜</a>
+<a class="text-primary text-sm font-bold leading-normal" href="#">设置</a>
+</nav>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20 cursor-pointer" data-alt="User profile avatar showing a smiling student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB_Q29xznZTIo2XS9fIusuHSNJOE7PSYtD4Fuv85WMxvJUscRVujLxEygJMi1_u378fX5kwsvctxLgElNSUyuQOgYXNq-xSUvIMDLrfnZPjpa6Ir9dO9b_ElMVwwZhT6GvdoA6iL-YOgsvAu-k7lr19FbtZBC3mMilLorQqV2XRvoZMs57VLdHNbpQETWFecTjB7rBbJHbQtaFNpGZd5sI4mL3mMlgF_gVc0EWsEAftRO2ls7PqGeRRhAQalLAzhgUWMgk-7OExVwnr");'></div>
+</div>
+</header>
+<main class="flex-1 flex justify-center py-8 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-[960px] flex flex-col gap-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">设置与主题定制</h1>
+<p class="text-[#499c65] dark:text-[#6ec98d] text-base md:text-lg font-normal">打造属于你自己的 Vocab Master！</p>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-surface-dark border border-[#e7f4eb] dark:border-[#1f422b] rounded-full hover:bg-gray-50 dark:hover:bg-[#234530] transition-colors shadow-sm group">
+<span class="material-symbols-outlined text-primary group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-sm font-bold">返回仪表盘</span>
+</button>
+</div>
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 md:p-8 shadow-sm border border-[#e7f4eb] dark:border-[#1f422b]">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-2xl">palette</span>
+<h2 class="text-xl font-bold">主题切换</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="group relative flex flex-col gap-3 cursor-pointer">
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border-4 border-primary shadow-lg ring-4 ring-primary/20 transition-all">
+<div class="absolute top-3 right-3 z-10 bg-primary text-[#0d1c12] text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                                已使用
+                            </div>
+<div class="w-full h-full bg-[#f8fcf9] p-3 flex flex-col gap-2">
+<div class="h-2 w-1/3 bg-[#e7f4eb] rounded-full"></div>
+<div class="flex-1 bg-white rounded-lg border border-[#e7f4eb] p-2 flex gap-2">
+<div class="w-8 h-8 rounded-full bg-primary/20"></div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="h-2 w-3/4 bg-gray-100 rounded-full"></div>
+<div class="h-2 w-1/2 bg-gray-100 rounded-full"></div>
+</div>
+</div>
+<div class="h-8 w-full bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="font-bold text-lg">经典绿</span>
+<div class="size-6 rounded-full border-2 border-primary flex items-center justify-center bg-primary">
+<div class="size-2.5 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col gap-3 cursor-pointer opacity-80 hover:opacity-100 hover:-translate-y-1 transition-all">
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border-2 border-transparent hover:border-indigo-400 bg-gray-900 shadow-md">
+<div class="w-full h-full bg-[#0f172a] p-3 flex flex-col gap-2">
+<div class="h-2 w-1/3 bg-indigo-900 rounded-full"></div>
+<div class="flex-1 bg-[#1e293b] rounded-lg border border-indigo-900/50 p-2 flex gap-2">
+<div class="w-8 h-8 rounded-full bg-indigo-500/20"></div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="h-2 w-3/4 bg-slate-700 rounded-full"></div>
+<div class="h-2 w-1/2 bg-slate-700 rounded-full"></div>
+</div>
+</div>
+<div class="h-8 w-full bg-indigo-500 rounded-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="font-bold text-lg">午夜星空</span>
+<div class="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-transparent"></div>
+</div>
+</div>
+<div class="group relative flex flex-col gap-3 cursor-pointer opacity-80 hover:opacity-100 hover:-translate-y-1 transition-all">
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border-2 border-transparent hover:border-orange-400 bg-orange-50 shadow-md">
+<div class="w-full h-full bg-[#fff7ed] p-3 flex flex-col gap-2">
+<div class="h-2 w-1/3 bg-orange-200 rounded-full"></div>
+<div class="flex-1 bg-white rounded-lg border border-orange-100 p-2 flex gap-2">
+<div class="w-8 h-8 rounded-full bg-orange-500/20"></div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="h-2 w-3/4 bg-orange-100 rounded-full"></div>
+<div class="h-2 w-1/2 bg-orange-100 rounded-full"></div>
+</div>
+</div>
+<div class="h-8 w-full bg-orange-500 rounded-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="font-bold text-lg">落日橙</span>
+<div class="size-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="flex flex-col gap-4">
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-1">偏好设置</h2>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-[#e7f4eb] dark:border-[#1f422b] overflow-hidden divide-y divide-[#e7f4eb] dark:divide-[#1f422b]">
+<div class="flex items-center gap-4 px-6 py-5 justify-between hover:bg-gray-50 dark:hover:bg-[#234530] transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-[#0d1c12] dark:text-white flex items-center justify-center rounded-lg bg-[#e7f4eb] dark:bg-[#1f422b] shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">volume_up</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold leading-tight">音效</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">答对时播放音效</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[32px] w-[56px] cursor-pointer items-center rounded-full border-none bg-primary p-1 justify-end transition-colors">
+<div class="h-full w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-4 px-6 py-5 justify-between hover:bg-gray-50 dark:hover:bg-[#234530] transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-[#0d1c12] dark:text-white flex items-center justify-center rounded-lg bg-[#e7f4eb] dark:bg-[#1f422b] shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">vibration</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold leading-tight">触感</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">互动时震动反馈</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[32px] w-[56px] cursor-pointer items-center rounded-full border-none bg-[#e7f4eb] dark:bg-[#2a4d36] p-1 justify-start transition-colors">
+<div class="h-full w-[24px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-4 px-6 py-5 justify-between hover:bg-gray-50 dark:hover:bg-[#234530] transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-[#0d1c12] dark:text-white flex items-center justify-center rounded-lg bg-[#e7f4eb] dark:bg-[#1f422b] shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">motion_photos_on</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold leading-tight">减弱动态效果</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">减少动画以提高专注度</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[32px] w-[56px] cursor-pointer items-center rounded-full border-none bg-[#e7f4eb] dark:bg-[#2a4d36] p-1 justify-start transition-colors">
+<div class="h-full w-[24px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-1">账号设置</h2>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-[#e7f4eb] dark:border-[#1f422b] p-6 flex flex-col gap-4 h-full">
+<div class="flex items-center gap-4 mb-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16 ring-4 ring-primary/20" data-alt="User profile avatar close up" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCUaNy3aVvE_BCMqNHItYNvJwSWcYaKXOUfsE9QiQdKeYTRGmYQhJyXv1DQoXuglnXbI749ysMbGa5U8iQkuCJi1t-0STrHn5i9rUGE1VBkbg5qESAgy8IMCnW3vsM0u5pF-fspGPTT90mtwrTZxqnF9Gn5D_mgrV1nc4CjP39Qm0ZlaaMBNp0Fjs0VxPvTGXmjBz-WuCxxEJAaQPcZrNwSv84JNSpxLhY-SUCL6h1oBgefHZSY_GAPiOp8EtJHB11TrGXrI7c3UF6Y");'></div>
+<div>
+<p class="text-lg font-bold">Alex 同学</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">等级 12 • 4,502 积分</p>
+</div>
+</div>
+<button class="flex items-center justify-between w-full px-4 py-3 rounded-lg border border-[#e7f4eb] dark:border-[#1f422b] hover:bg-[#f8fcf9] dark:hover:bg-[#1f3a29] transition-colors group">
+<span class="font-medium">编辑个人资料</span>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary">chevron_right</span>
+</button>
+<button class="flex items-center justify-between w-full px-4 py-3 rounded-lg border border-[#e7f4eb] dark:border-[#1f422b] hover:bg-[#f8fcf9] dark:hover:bg-[#1f3a29] transition-colors group">
+<span class="font-medium">修改密码</span>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary">chevron_right</span>
+</button>
+<div class="mt-auto pt-4 flex flex-col gap-3">
+<button class="w-full py-3 rounded-full border-2 border-red-100 text-red-600 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-xl">logout</span>
+                                退出登录
+                            </button>
+<button class="text-xs text-gray-400 hover:text-red-500 underline decoration-gray-300 hover:decoration-red-300 underline-offset-4 transition-colors">
+                                删除我的账号数据
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div class="h-20"></div>
+
+</body></html>

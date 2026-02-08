@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vocab Master 2.0 - Learning Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#25f46a",
+                        "primary-dark": "#1ec655",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1a3322",
+                        "text-main": "#0d1c12",
+                        "text-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "Noto Sans SC", "sans-serif"],
+                        "body": ["Lexend", "Noto Sans SC", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "2xl": "4rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(37, 244, 106, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', 'Noto Sans SC', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(16, 34, 22, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display text-text-main dark:text-text-light transition-colors duration-300">
+<!-- Top HUD Area -->
+<header class="w-full px-6 py-4 md:px-12 md:py-6 flex items-center justify-between sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<!-- Left: Context -->
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<div class="hidden md:flex flex-col">
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Lesson</span>
+<span class="text-sm font-bold">Unit 3: Personality</span>
+</div>
+</div>
+<!-- Center: Progress Bar -->
+<div class="flex-1 max-w-lg mx-8 flex flex-col gap-2">
+<div class="flex justify-between text-xs font-bold px-1 text-gray-500 dark:text-gray-400">
+<span>Progress</span>
+<span>3/10</span>
+</div>
+<div class="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary shadow-[0_0_10px_rgba(37,244,106,0.5)] transition-all duration-500 ease-out rounded-full" style="width: 30%;"></div>
+</div>
+</div>
+<!-- Right: Stats & Controls -->
+<div class="flex items-center gap-3 md:gap-4">
+<!-- Streak Badge -->
+<div class="flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800/50">
+<span class="text-lg">🔥</span>
+<span class="text-sm font-bold text-orange-600 dark:text-orange-400">12</span>
+</div>
+<!-- Pause/Settings -->
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-card-dark shadow-sm border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[20px]">pause</span>
+</button>
+</div>
+</header>
+<!-- Main Game Area -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-6 md:px-8 w-full max-w-6xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full h-full items-stretch min-h-[600px]">
+<!-- Left Column: The Word Card (Hero) -->
+<div class="lg:col-span-5 flex flex-col h-full">
+<div class="relative flex flex-col justify-center items-center h-full bg-card-light dark:bg-card-dark rounded-3xl shadow-soft dark:shadow-none border border-gray-100 dark:border-gray-800 p-8 md:p-12 overflow-hidden group">
+<!-- Decorative Background Blobs -->
+<div class="absolute top-[-20%] right-[-20%] w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-48 h-48 bg-blue-400/10 rounded-full blur-3xl"></div>
+<!-- Card Content -->
+<div class="relative z-10 flex flex-col items-center text-center w-full">
+<!-- Word & Audio -->
+<div class="flex flex-col items-center gap-4 mb-8">
+<button class="w-14 h-14 flex items-center justify-center rounded-full bg-primary text-black shadow-glow hover:scale-110 active:scale-95 transition-all duration-200 mb-2">
+<span class="material-symbols-outlined text-3xl font-variation-settings-FILL">volume_up</span>
+</button>
+<h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">Persistent</h1>
+<p class="text-xl md:text-2xl text-primary font-medium font-mono">/pərˈsɪstənt/</p>
+</div>
+<!-- Divider -->
+<div class="w-16 h-1 bg-gray-100 dark:bg-gray-700 rounded-full mb-8"></div>
+<!-- Context Sentence -->
+<div class="bg-background-light dark:bg-background-dark/50 p-6 rounded-2xl w-full border border-transparent hover:border-primary/30 transition-colors">
+<p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
+                                "She has been <span class="text-primary font-bold bg-primary/10 px-1 rounded">persistent</span> in pursuing the job."
+                            </p>
+</div>
+<!-- Image Hint (Optional Toggle) -->
+<div class="mt-6 w-full max-w-[200px] aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 relative group/image cursor-pointer">
+<img alt="A person climbing a steep mountain representing persistence" class="w-full h-full object-cover opacity-80 group-hover/image:opacity-100 transition-opacity" data-alt="Person climbing mountain persistence concept" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm3svxGJvxSkAq6xsOBXHhKlhr9bCYkShTwaj_7B464IQN_ZjBCbMV7we2jyPCx4RmEr3kiiFxNl96UkWKci8p5RRf6WPPf8o6qBsGTK6j4nLlo-UJD7XMDjNkPyIXilSEWabZiVxtA-dUa7CVWfNAXMxKPbn9hzsM-to2WSrPJkKFqMUr-VS8ZMIVsSfS46SN7e6xl4gA8Z07VCnFsJYlXJhh8Wp_PGgal_XIiVgaOKqN772YSKgtf9SwJVdHl1ICJss4yMANdkkg"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover/image:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white drop-shadow-lg">zoom_in</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Interactive Zone -->
+<div class="lg:col-span-7 flex flex-col justify-center h-full gap-6 py-4 lg:pl-8">
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Select the correct meaning</h2>
+<span class="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">Multiple Choice</span>
+</div>
+<!-- Answer Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+<!-- Option A -->
+<button class="group relative flex items-center p-1 rounded-xl bg-white dark:bg-card-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+<div class="absolute left-4 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold group-hover:bg-primary group-hover:text-black transition-colors">A</div>
+<div class="w-full py-6 pl-16 pr-6 text-left">
+<span class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">坚持不懈的</span>
+</div>
+<div class="absolute right-4 opacity-0 group-hover:opacity-100 text-primary transition-opacity">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+</button>
+<!-- Option B -->
+<button class="group relative flex items-center p-1 rounded-xl bg-white dark:bg-card-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+<div class="absolute left-4 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold group-hover:bg-primary group-hover:text-black transition-colors">B</div>
+<div class="w-full py-6 pl-16 pr-6 text-left">
+<span class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">犹豫不决的</span>
+</div>
+</button>
+<!-- Option C -->
+<button class="group relative flex items-center p-1 rounded-xl bg-white dark:bg-card-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+<div class="absolute left-4 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold group-hover:bg-primary group-hover:text-black transition-colors">C</div>
+<div class="w-full py-6 pl-16 pr-6 text-left">
+<span class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">临时的</span>
+</div>
+</button>
+<!-- Option D -->
+<button class="group relative flex items-center p-1 rounded-xl bg-white dark:bg-card-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+<div class="absolute left-4 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center font-bold group-hover:bg-primary group-hover:text-black transition-colors">D</div>
+<div class="w-full py-6 pl-16 pr-6 text-left">
+<span class="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">复杂的</span>
+</div>
+</button>
+</div>
+<!-- Footer Actions -->
+<div class="mt-4 flex flex-col items-center gap-4">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-medium text-sm flex items-center gap-2 transition-colors px-6 py-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                        I don't know this word
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Mobile Nav (Only visible on very small screens, usually hidden for tablet focus mode) -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-card-dark border-t border-gray-100 dark:border-gray-800 p-4 flex justify-between items-center z-40">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined font-variation-settings-FILL">school</span>
+<span class="text-[10px] font-bold">Learn</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-[10px] font-medium">Review</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-[10px] font-medium">Rank</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</body></html>

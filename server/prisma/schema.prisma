@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  role        String   @default("USER") // USER, ADMIN
+  avatar      String   @default("🎓")
+  level       Int      @default(1)
+  xp          Int      @default(0)
+  coins       Int      @default(0)
+  
+  // Stats for Achievements
+  streak      Int      @default(0)
+  lastActive  DateTime?
+  maxCombo    Int      @default(0)
+  totalCorrect Int     @default(0)
+  
+  createdAt   DateTime @default(now())
+  
+  targetCategory String @default("GENERAL") // NEW: TOEFL, GRE, BUSINESS, etc.
+  
+  progress     StudyRecord[]
+  achievements UserAchievement[]
+  matches      MatchParticipant[]
+  
+  // Social
+  following    Follow[] @relation("following")
+  followers    Follow[] @relation("followers")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  following   User     @relation("followers", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
+
+model Match {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  endedAt    DateTime?
+  
+  // Game config
+  mode         String   @default("pk_standard") // pk_standard, pk_blitz
+  wordCount    Int      @default(0)
+  inviteCode   String?  @unique // For private matches
+  
+  participants MatchParticipant[]
+}
+
+model MatchParticipant {
+  id        Int      @id @default(autoincrement())
+  matchId   String
+  userId    String?  // Nullable for Bots if we want, or use special bot ID
+  isBot     Boolean  @default(false)
+  
+  score     Int      @default(0)
+  result    String   // WIN, LOSS, DRAW
+  
+  match     Match    @relation(fields: [matchId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  @@unique([matchId, userId])
+}
+
+model Achievement {
+  id          String   @id
+  key         String   @unique // e.g. "STREAK_3", "MASTER_100"
+  name        String
+  description String
+  category    String   // CONSISTENCY, PRECISION, VOLUME, WEALTH, SPECIAL
+  icon        String
+  
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  
+  @@unique([userId, achievementId])
+}
+
+model Word {
+  id        String   @id @default(uuid())
+  text      String   @unique
+  partOfSpeech String? // NEW: Dedicated POS column
+  phonetic  String?
+  meanings  String   // Stored as JSON string
+  examples  String   // Stored as JSON string
+  mnemonic  String?
+  category  String?
+  
+  studyRecords StudyRecord[]
+}
+
+model StudyRecord {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  wordId    String
+  status    String   // NEW, LEARNING, MASTERED
+  nextReview DateTime @default(now())
+  
+  // SRS Fields
+  interval    Int      @default(0)    // Days
+  repetition  Int      @default(0)    // Consecutive correct
+  easeFactor  Float    @default(2.5)  // SM-2 Ease Factor
+  mistakeCount Int     @default(0)    // For Mistake Book
+  
+  user      User     @relation(fields: [userId], references: [id])
+  word      Word     @relation(fields: [wordId], references: [id])
+  
+  @@unique([userId, wordId])
+}
+
+model SystemConfig {
+  key   String @id
+  value String
+}
