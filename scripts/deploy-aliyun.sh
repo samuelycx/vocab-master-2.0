@@ -31,6 +31,9 @@ npm install
 echo "🗄️ Initializing Database..."
 npx prisma generate
 npx prisma migrate deploy
+
+# 清理旧的编译文件并重新编译
+rm -rf dist
 npm run build
 cd ..
 
@@ -42,8 +45,8 @@ if ! command -v pm2 &> /dev/null; then
   npm install -g pm2
 fi
 
-# 使用 pm2 启动/重启
-pm2 start server/dist/main.js --name "vocab-master" || pm2 restart "vocab-master"
+# 使用 pm2 启动/重启 (路径修正为 dist/src/main.js)
+pm2 start server/dist/src/main.js --name "vocab-master" || pm2 restart "vocab-master"
 
 echo "✅ Deployment Complete!"
 echo "📍 Access your app at: http://your-server-ip:3000"
