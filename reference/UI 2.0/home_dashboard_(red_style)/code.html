@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vocab Master 2.0 - Home Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2badee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(43, 173, 238, 0.1)',
+                        'card': '0 2px 12px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden shadow-2xl">
+<!-- Status Bar Area (Visual Shim) -->
+<div class="h-12 w-full bg-transparent flex items-end justify-between px-6 pb-2 text-xs font-medium text-slate-500 z-50">
+<span>9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-icons-round text-sm">signal_cellular_alt</span>
+<span class="material-icons-round text-sm">wifi</span>
+<span class="material-icons-round text-sm">battery_full</span>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 px-5 pt-4 pb-24 overflow-y-auto no-scrollbar flex flex-col gap-6">
+<!-- Top Header & Profile -->
+<header class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md bg-white">
+<img alt="Smiling user avatar profile picture" class="w-full h-full object-cover" data-alt="User profile avatar smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7xRs0Xoiz4MFLHSUQd6IEVmw0MFyCpn9Yt-jSOe7ffAHGMNdqgObBgtwtVChZZnv8qd8_GyrJigBaBqt0e5HRwFbThua-lnFB8DXbHLtSGd1-tukbQCTGE-BEZ7hEPYkdW_AbZaQFHXK5tDvHsphOFWhSbrMow-fw47a8Q8_2Nynncorj0N9T6udOOVhsiVg2EwigzyvpEMkFJvPzwZU7JizG2SOXvNpxZ9eAaa774kJJy3i7OOO4UrhaaandzdE9xVL2C5NY418"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white">
+                        5
+                    </div>
+</div>
+<div>
+<h1 class="font-display font-bold text-lg leading-tight">Hi, Sarah</h1>
+<p class="font-display text-xs text-slate-400 font-medium">Ready to learn?</p>
+</div>
+</div>
+<!-- Streak Badge -->
+<div class="bg-white dark:bg-slate-800 rounded-full px-3 py-1.5 shadow-card flex items-center gap-1.5">
+<span class="material-icons-round text-orange-500 text-lg">local_fire_department</span>
+<span class="font-display font-bold text-sm text-slate-700 dark:text-slate-200">7 Days</span>
+</div>
+</header>
+<!-- Progress Card -->
+<section class="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-soft border border-slate-100 dark:border-slate-700">
+<div class="flex justify-between items-end mb-2">
+<div>
+<span class="text-xs font-semibold text-primary uppercase tracking-wider">Daily Goal</span>
+<h2 class="text-2xl font-display font-bold mt-1">15/20 <span class="text-base font-medium text-slate-400">words</span></h2>
+</div>
+<div class="text-right">
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">75%</span>
+</div>
+</div>
+<div class="h-3 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-3/4 shadow-[0_0_10px_rgba(43,173,238,0.5)]"></div>
+</div>
+<p class="mt-3 text-xs text-slate-400 text-center font-medium">Keep it up! You're almost there.</p>
+</section>
+<!-- Main Action: Start Learning -->
+<section class="flex flex-col items-center">
+<button class="group relative w-full aspect-[2/1] bg-gradient-to-br from-primary to-[#5bcbf5] rounded-2xl shadow-lg shadow-primary/30 active:scale-95 transition-all duration-200 overflow-hidden flex flex-col items-center justify-center text-white">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+<div class="absolute top-0 right-0 p-20 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+<span class="material-icons-round text-5xl mb-2 group-hover:scale-110 transition-transform duration-300">play_circle_filled</span>
+<span class="font-display font-bold text-xl tracking-wide">Start Learning</span>
+<span class="text-sm font-medium text-white/80 mt-1">Unit 4: Travel &amp; Lifestyle</span>
+</button>
+</section>
+<!-- Feature Grid -->
+<section class="grid grid-cols-2 gap-4">
+<!-- PK Arena -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-card border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-icons-round text-primary text-2xl">swords</span>
+</div>
+<span class="font-display font-semibold text-sm">PK Arena</span>
+</div>
+<!-- Stats -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-card border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+<span class="material-icons-round text-purple-500 text-2xl">bar_chart</span>
+</div>
+<span class="font-display font-semibold text-sm">Stats</span>
+</div>
+<!-- Review -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-card border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors">
+<span class="material-icons-round text-amber-500 text-2xl">history</span>
+</div>
+<span class="font-display font-semibold text-sm">Review</span>
+</div>
+<!-- Achievements -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-card border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center group-hover:bg-pink-200 dark:group-hover:bg-pink-900/50 transition-colors">
+<span class="material-icons-round text-pink-500 text-2xl">emoji_events</span>
+</div>
+<span class="font-display font-semibold text-sm">Awards</span>
+</div>
+</section>
+<!-- Quick Word Card -->
+<section class="mt-2">
+<h3 class="font-display font-bold text-base mb-3 px-1">Word of the Day</h3>
+<div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-soft border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+<div class="absolute -right-8 -top-8 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-2xl font-bold font-display text-primary">Serendipity</h4>
+<p class="text-slate-400 text-sm italic mb-2">/ˌser.ənˈdɪp.ə.t̬i/</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+<span class="material-icons-round text-lg">volume_up</span>
+</button>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    The occurrence and development of events by chance in a happy or beneficial way.
+                </p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 w-full bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-3 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-50">
+<ul class="flex justify-between items-center">
+<li>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-icons-round text-2xl">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" href="#">
+<span class="material-icons-round text-2xl">explore</span>
+<span class="text-[10px] font-medium">Explore</span>
+</a>
+</li>
+<li>
+<div class="w-12 h-12 -mt-8 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center border-4 border-white dark:border-slate-900 cursor-pointer hover:scale-105 transition-transform">
+<span class="material-icons-round text-white text-2xl">add</span>
+</div>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" href="#">
+<span class="material-icons-round text-2xl">leaderboard</span>
+<span class="text-[10px] font-medium">Rank</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" href="#">
+<span class="material-icons-round text-2xl">person</span>
+<span class="text-[10px] font-medium">Me</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>

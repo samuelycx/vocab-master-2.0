@@ -1,0 +1,57 @@
+:root {
+  --ui-bg: #f7f7f2;
+  --ui-surface: #ffffff;
+  --ui-border: #ebe4da;
+  --ui-text: #111827;
+  --ui-text-muted: #64748b;
+  --ui-primary: #6f58d9;
+  --ui-shadow-soft: 0 8rpx 16rpx rgba(20, 18, 34, 0.06);
+  --ui-shadow-medium: 0 12rpx 20rpx rgba(20, 18, 34, 0.08);
+  --ui-radius-card: 22rpx;
+}
+
+.app-page {
+  background: var(--ui-bg);
+}
+
+.app-topbar {
+  background: rgba(247, 247, 242, 0.95);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.app-icon-btn {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  color: #334155;
+  box-shadow: var(--ui-shadow-soft);
+}
+
+.app-card {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-card);
+  box-shadow: var(--ui-shadow-soft);
+}
+
+.app-card-strong {
+  background: var(--ui-surface);
+  border: 2rpx solid var(--ui-border);
+  border-radius: 24rpx;
+  box-shadow: var(--ui-shadow-medium);
+}
+
+.app-input {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+}
+
+.app-pill {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: 999rpx;
+}
+
+.app-candy-mint { background: #95f0c2; }
+.app-candy-sky { background: #9adcf8; }
+.app-candy-lemon { background: #d4f04a; }
+.app-candy-pink { background: #ffb8dc; }

@@ -1,0 +1,251 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { GameState, Actions } from '../state.js';
+import { GameEngine } from '../engine.js';
+import { API } from '../api.js';
+import AchievementWall from './AchievementWall.vue';
+import VocabularyList from './VocabularyList.vue';
+import Settings from './Settings.vue';
+import ProfileSetup from './ProfileSetup.vue';
+
+const user = GameState.user;
+const state = GameState;
+const showAchievements = ref(false);
+const showVocabList = ref(false);
+const showSettings = ref(false);
+const reviewCount = ref(0);
+const loading = ref(true);
+const settings = GameState.settings;
+
+const startGame = () => {
+    GameEngine.startSession(10);
+};
+
+const startReview = async () => {
+    if (reviewCount.value > 0) {
+        await GameEngine.startReview(user.id);
+    } else {
+        uni.showModal({
+            title: '复习提示',
+            content: '目前没有待复习单词。系统会根据记忆曲线为您安排复习时间，请继续学习新词！',
+            showCancel: false
+        });
+    }
+};
+
+const startMistake = async () => {
+    const success = await GameEngine.startMistake(GameState.user.id);
+    if (!success) {
+        uni.showToast({ title: '没有错题啦！', icon: 'success' });
+    }
+};
+
+const startPK = () => {
+    Actions.setView('pk');
+};
+
+onMounted(async () => {
+    if (user.id) {
+        try {
+            const stats = await API.getStats(user.id);
+            if (stats && stats.user) {
+                Actions.setUser(stats.user);
+            }
+            
+            const reviews = await API.getReviews(user.id);
+            reviewCount.value = reviews ? reviews.length : 0;
+        } catch (e) {
+            console.error('Failed to load dashboard data', e);
+        }
+    }
+    
+    try {
+        const achs = await API.getAchievements();
+        if (achs) {
+             if (!state.system) state.system = {};
+             state.system.achievements = achs;
+        }
+    } catch (e) {}
+    
+    loading.value = false;
+});
+</script>
+
+<template>
+    <view class="flex-1 flex flex-col w-full h-full relative">
+        <!-- Settings View -->
+        <!-- Custom transition if needed, or just v-if -->
+        <Settings 
+            v-if="showSettings" 
+            :onBack="() => showSettings = false" 
+            class="absolute inset-0 z-30"
+        />
+
+        <!-- Vocabulary List View -->
+        <VocabularyList 
+            v-if="showVocabList" 
+            :onBack="() => showVocabList = false" 
+            class="absolute inset-0 z-20 bg-slate-50"
+        />
+
+        <!-- Main Dashboard Content -->
+        <view v-show="!showVocabList && !showSettings" class="flex-1 flex flex-col p-4 w-full max-w-full md_max-w-5xl mx-auto overflow-y-auto pb-24 md_pb-6 bg-background transition-colors">
+            
+            <!-- Loading Skeleton -->
+            <view v-if="loading" class="animate-pulse flex flex-col gap-8">
+                <view class="flex justify-between items-center px-4">
+                    <view class="flex items-center gap-4">
+                        <view class="w-14 h-14 bg-slate-200 dark_bg-slate-700 rounded-2xl"></view>
+                        <view class="flex flex-col gap-2">
+                            <view class="h-3 w-20 bg-slate-200 dark_bg-slate-700 rounded"></view>
+                            <view class="h-5 w-32 bg-slate-200 dark_bg-slate-700 rounded"></view>
+                        </view>
+                    </view>
+                </view>
+                <view class="grid grid-cols-2 md_grid-cols-4 gap-4">
+                    <view class="h-48 bg-slate-200 dark_bg-slate-700 rounded-2-5rem col-span-2 md_col-span-4"></view>
+                    <view class="h-40 bg-slate-200 dark_bg-slate-700 rounded-2-5rem col-span-2"></view>
+                    <view class="h-40 bg-slate-200 dark_bg-slate-700 rounded-2-5rem"></view>
+                    <view class="h-40 bg-slate-200 dark_bg-slate-700 rounded-2-5rem"></view>
+                </view>
+            </view>
+
+            <view v-else class="flex flex-col w-full mx-auto md_max-w-4xl" :style="{ paddingTop: 'calc(10px + var(--status-bar-height, 0px))' }">
+                
+                <!-- 1. Header with User Profile -->
+                <view class="flex items-center justify-between px-4 mb-8">
+                    <view class="flex items-center gap-4">
+                        <view class="relative group cursor-pointer" @click="showVocabList = true">
+                            <view class="w-14 h-14 rounded-2xl p-0-5 bg-gradient-to-tr from-primary to-secondary shadow-lg shadow-primary-opacity-20 animate-pop">
+                                <view class="w-full h-full rounded-2xl bg-surface p-0-5">
+                                    <image class="w-full h-full rounded-2xl object-cover" :src="user.avatar || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'" />
+                                </view>
+                            </view>
+                            <view class="absolute -bottom-1 -right-1 bg-primary text-text-main text-3xs font-black px-1-5 py-0-5 rounded-full border-2 border-surface">LV.{{ user.level || 1 }}</view>
+                        </view>
+                        <view class="flex flex-col">
+                            <text class="text-text-muted text-xxs font-bold uppercase tracking-widest">Welcome back,</text>
+                            <text class="text-xl font-black text-text-main leading-tight">{{ user.nickname || 'Scholar' }}</text>
+                        </view>
+                    </view>
+                    <view @click="showSettings = true" class="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center shadow-soft border border-slate-100 dark_border-white-opacity-5 cursor-pointer active_scale-90 transition-transform">
+                        <text class="text-xl">⚙️</text>
+                    </view>
+                </view>
+
+                <!-- 2. Daily Goal Progress Card -->
+                <view class="px-4 mb-8">
+                    <view @click="startGame" class="bg-surface rounded-3xl p-6 shadow-soft border border-slate-50 dark_border-white-opacity-5 relative overflow-hidden group transition-all cursor-pointer">
+                        <view class="absolute -top-10 -right-10 w-32 h-32 bg-primary-opacity-10 rounded-full blur-2xl"></view>
+                        <view class="relative z-10">
+                            <view class="flex justify-between items-start mb-6">
+                                <view class="flex flex-col gap-1">
+                                    <text class="text-text-muted text-xxs font-bold uppercase tracking-widest">Daily Progress</text>
+                                    <text class="text-primary text-xs font-bold leading-none">You're doing great today! 🔥</text>
+                                </view>
+                                <view class="w-12 h-12 bg-primary-opacity-10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
+                                    <text class="text-xl">📊</text>
+                                </view>
+                            </view>
+                            <view class="grid grid-cols-2 gap-4 mb-4">
+                                <view>
+                                    <text class="text-2xl font-black text-text-main block">{{ user.totalLearned || 0 }}</text>
+                                    <text class="text-3xs text-text-muted font-bold uppercase tracking-wide">Learned</text>
+                                </view>
+                                <view class="border-l border-slate-100 dark_border-white-opacity-5 pl-4">
+                                    <text class="text-2xl font-black text-primary block">{{ state.game.todayLearned }} / 10</text>
+                                    <text class="text-3xs text-text-muted font-bold uppercase tracking-wide">Daily Goal</text>
+                                </view>
+                            </view>
+                            <view class="h-2 bg-slate-50 dark_bg-slate-opacity-50 rounded-full overflow-hidden">
+                                <view class="h-full bg-primary rounded-full transition-all duration-1000" :style="{ width: Math.min(state.game.todayLearned / 10 * 100, 100) + '%' }"></view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+
+                <!-- 3. Feature Grid (Stitch Layout) -->
+                <view class="px-4 pb-12 flex flex-col gap-4">
+                    <!-- Giant Learning Card -->
+                    <view @click="startGame" class="bg-slate-900 h-28 rounded-3xl flex items-center justify-between px-8 shadow-lg active_scale-98 transition-all relative overflow-hidden group cursor-pointer shadow-primary-opacity-20 translate-y-0 hover_-translate-y-1">
+                        <view class="absolute inset-0 bg-gradient-to-r from-primary-opacity-20 to-transparent"></view>
+                        <view class="relative z-10 flex flex-col items-start gap-1">
+                            <text class="text-3xs font-bold uppercase tracking-widest text-primary-opacity-60">Mastery Session</text>
+                            <text class="text-2xl font-black text-white">Start Learning</text>
+                        </view>
+                        <view class="relative z-10 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-text-main shadow-lg">
+                            <text class="text-2xl">▶️</text>
+                        </view>
+                    </view>
+
+                    <view class="grid grid-cols-2 gap-4">
+                        <view @click="startReview" class="bg-surface h-44 rounded-4xl p-6 flex flex-col justify-between items-start shadow-card border border-slate-50 dark_border-white-opacity-5 hover_shadow-soft transition-all group cursor-pointer relative overflow-hidden">
+                            <view class="absolute -top-4 -right-4 w-20 h-20 bg-indigo-50 dark_bg-indigo-opacity-10 rounded-full blur-2xl opacity-50"></view>
+                            <view class="w-14 h-14 bg-indigo-50 dark_bg-indigo-opacity-10 rounded-2xl flex items-center justify-center relative z-10">
+                                <image src="/static/stitch-icons/smart_review.png" class="w-10 h-10 object-contain" />
+                            </view>
+                            <view class="flex flex-col items-start gap-1 relative z-10">
+                                <text class="font-black text-lg text-text-main leading-none font-display">Smart Review</text>
+                                <text v-if="reviewCount > 0" class="text-3xs font-bold text-rose-500 uppercase tracking-widest">{{ reviewCount }} Words Due</text>
+                                <text v-else class="text-3xs font-bold text-text-muted uppercase tracking-widest">On Schedule</text>
+                            </view>
+                        </view>
+
+                        <view @click="startPK" class="bg-surface h-44 rounded-4xl p-6 flex flex-col justify-between items-start shadow-card border border-slate-50 dark_border-white-opacity-5 hover_shadow-soft transition-all group cursor-pointer relative overflow-hidden">
+                            <view class="absolute -top-4 -right-4 w-20 h-20 bg-rose-50 dark_bg-rose-opacity-10 rounded-full blur-2xl opacity-50"></view>
+                            <view class="w-14 h-14 bg-rose-50 dark_bg-rose-opacity-10 rounded-2xl flex items-center justify-center relative z-10">
+                                <image src="/static/stitch-icons/battle_arena.png" class="w-10 h-10 object-contain" />
+                            </view>
+                            <view class="flex flex-col items-start gap-1 relative z-10">
+                                <text class="font-black text-lg text-text-main leading-none font-display">Battle Arena</text>
+                                <text class="text-3xs font-bold text-text-muted uppercase tracking-widest">Real-time PK</text>
+                            </view>
+                        </view>
+
+                        <view @click="showVocabList = true" class="bg-surface h-44 rounded-4xl p-6 flex flex-col justify-between items-start shadow-card border border-slate-50 dark_border-white-opacity-5 hover_shadow-soft transition-all group cursor-pointer relative overflow-hidden">
+                            <view class="absolute -top-4 -right-4 w-20 h-20 bg-emerald-50 dark_bg-emerald-opacity-10 rounded-full blur-2xl opacity-50"></view>
+                            <view class="w-14 h-14 bg-emerald-50 dark_bg-emerald-opacity-10 rounded-2xl flex items-center justify-center relative z-10">
+                                <image src="/static/stitch-icons/library.png" class="w-10 h-10 object-contain" />
+                            </view>
+                            <view class="flex flex-col items-start gap-1 relative z-10">
+                                <text class="font-black text-lg text-text-main leading-none font-display">Library</text>
+                                <text class="text-3xs font-bold text-text-muted uppercase tracking-widest">Your Vocabulary</text>
+                            </view>
+                        </view>
+
+                        <view @click="showAchievements = true" class="bg-surface h-44 rounded-4xl p-6 flex flex-col justify-between items-start shadow-card border border-slate-50 dark_border-white-opacity-5 hover_shadow-soft transition-all group cursor-pointer relative overflow-hidden">
+                            <view class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-50 dark_bg-yellow-opacity-10 rounded-full blur-2xl opacity-50"></view>
+                            <view class="w-14 h-14 bg-yellow-50 dark_bg-yellow-opacity-10 rounded-2xl flex items-center justify-center relative z-10">
+                                <image src="/static/stitch-icons/honors.png" class="w-10 h-10 object-contain" />
+                            </view>
+                            <view class="flex flex-col items-start gap-1 relative z-10">
+                                <text class="font-black text-lg text-text-main leading-none font-display">Honors</text>
+                                <text class="text-3xs font-bold text-text-muted uppercase tracking-widest">{{ user.achievements?.length || 0 }} Earned</text>
+                            </view>
+                        </view>
+                    </view>
+
+                    <!-- Streak Card -->
+                    <view class="bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl p-6 shadow-lg shadow-rose-opacity-10 flex items-center justify-between">
+                        <view class="flex flex-col gap-1">
+                            <text class="text-white-opacity-80 text-3xs font-bold uppercase tracking-widest">Memory Streak</text>
+                            <text class="text-white text-xl font-black">{{ user.streak || 0 }} Days Streaking!</text>
+                        </view>
+                        <view class="w-14 h-14 bg-white-opacity-20 rounded-2xl flex items-center justify-center text-3xl">🔥</view>
+                    </view>
+                </view>
+
+            </view> <!-- End of v-else (Main Content) -->
+
+            
+            <AchievementWall 
+                v-if="showAchievements" 
+                :achievements="state.system.achievements"
+                :userUnlocked="user.achievements ? user.achievements.map(ua => ua.achievementId) : []"
+            />
+
+            <!-- Force Profile Setup if not set -->
+            <ProfileSetup v-if="!user.isProfileSet" />
+        </view>
+    </view>
+</template>

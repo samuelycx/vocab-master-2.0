@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-03-04T09:45:07.138Z",
+  "count": 1,
+  "candidates": [
+    {
+      "text": "evolutionary",
+      "pos": "adj.",
+      "meaning": "进化的",
+      "line": 372,
+      "category": "GENERAL",
+      "reason": "adj with meaning 进化的 (likely correct, keep for human confirm only)"
+    }
+  ]
+}

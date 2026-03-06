@@ -1,0 +1,28 @@
+/* src/style.css */
+@import "tailwindcss";
+
+@theme {
+  /* 品牌色 */
+  --color-brand-purple: #5A459D;
+  --color-brand-light: #7B66C5;
+  --color-bg-app: #F7F7F9;
+
+  /* 卡片糖果色 */
+  --color-mint-green: #A8F0C6;
+  --color-sky-blue: #A0D8F1;
+  --color-lemon-yellow: #F9E975;
+  --color-candy-pink: #FFB5D0;
+
+  /* 超大圆角 (提取自视频的柔和几何感) */
+  --radius-4xl: 2rem; /* 32px - 用于大卡片 */
+  --radius-5xl: 2.5rem; /* 40px - 用于底部弹窗或极大模块 */
+
+  /* 定义圆润字体 */
+  --font-rounded: "SF Pro Rounded", "Nunito", "Quicksand", ui-rounded, sans-serif;
+}
+
+/* 全局应用背景色和字体 */
+body {
+  @apply bg-bg-app font-rounded text-gray-900;
+  -webkit-font-smoothing: antialiased;
+}

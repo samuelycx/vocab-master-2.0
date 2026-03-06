@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detailed Word Card - Vocab Master 2.0</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2badee",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Soft shadow typical of Red-style posts */
+        .red-shadow {
+            box-shadow: 0 4px 20px -2px rgba(43, 173, 238, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-gray-800 dark:text-gray-100 min-h-screen flex justify-center items-center p-0 sm:p-4">
+<!-- Mobile Container -->
+<div class="w-full max-w-md h-[100dvh] sm:h-[850px] bg-white dark:bg-[#1a2c35] sm:rounded-[2.5rem] relative flex flex-col overflow-hidden shadow-2xl border-0 sm:border border-gray-100 dark:border-gray-800">
+<!-- Decorative Background Element -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+<!-- 1. Top Navigation Bar -->
+<header class="flex justify-between items-center p-6 z-10">
+<button class="p-2 -ml-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-icons-round text-3xl">chevron_left</span>
+</button>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-icons-round">bookmark_border</span>
+</button>
+<button class="p-2 -mr-2 rounded-full hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-icons-round">ios_share</span>
+</button>
+</div>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 z-10">
+<!-- 2. Header Section: Word & Phonetics -->
+<div class="mt-4 mb-8 relative">
+<div class="flex items-start justify-between">
+<div>
+<h1 class="text-5xl font-medium tracking-tight text-gray-900 dark:text-white mb-3">
+                            Perspective
+                        </h1>
+<div class="flex items-center gap-3">
+<div class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+<span class="text-primary text-sm font-medium">/pərˈspektɪv/</span>
+</div>
+<button class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+<span class="material-icons-round text-lg">volume_up</span>
+</button>
+</div>
+</div>
+<!-- Decorative Icon/Badge -->
+<div class="hidden sm:block">
+<span class="text-4xl filter grayscale opacity-50">🖼️</span>
+</div>
+</div>
+<!-- Tags Row -->
+<div class="flex flex-wrap gap-2 mt-6">
+<span class="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-300 rounded text-sm font-medium border border-orange-100 dark:border-orange-800/30">
+                        Noun
+                    </span>
+<span class="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded text-sm font-medium border border-blue-100 dark:border-blue-800/30">
+                        Academic
+                    </span>
+<span class="px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300 rounded text-sm font-medium border border-purple-100 dark:border-purple-800/30">
+                        HSK 6
+                    </span>
+</div>
+</div>
+<!-- Divider -->
+<hr class="border-gray-100 dark:border-gray-800 mb-8"/>
+<!-- 3. Meaning & Context Section (The "Post" Body) -->
+<div class="space-y-8">
+<!-- Definition Block 1 -->
+<div class="group">
+<div class="flex gap-3 mb-2">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs mt-1">1</span>
+<p class="text-xl text-gray-800 dark:text-gray-100 leading-relaxed font-medium">
+                            A particular attitude toward or way of regarding something; a point of view.
+                        </p>
+</div>
+<!-- Example Card -->
+<div class="ml-9 mt-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-700/50 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
+<p class="text-lg italic text-gray-600 dark:text-gray-300 leading-relaxed font-light">
+                            "Most literature is written from a male <span class="text-primary font-medium not-italic bg-primary/10 px-1 rounded">perspective</span>."
+                        </p>
+<div class="mt-3 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-sans">
+<span class="material-icons-round text-sm">translate</span> Translation
+                        </div>
+</div>
+</div>
+<!-- Definition Block 2 -->
+<div class="group">
+<div class="flex gap-3 mb-2">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs mt-1">2</span>
+<p class="text-xl text-gray-800 dark:text-gray-100 leading-relaxed font-medium">
+                            True understanding of the relative importance of things.
+                        </p>
+</div>
+<!-- Example Card -->
+<div class="ml-9 mt-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-700/50 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
+<p class="text-lg italic text-gray-600 dark:text-gray-300 leading-relaxed font-light">
+                            "We must keep a sense of <span class="text-primary font-medium not-italic bg-primary/10 px-1 rounded">perspective</span> about these minor problems."
+                        </p>
+<div class="mt-3 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-sans">
+<span class="material-icons-round text-sm">translate</span> Translation
+                       </div>
+</div>
+</div>
+<!-- Image Context (Red-style aesthetic visual) -->
+<div class="ml-9 mt-6 rounded-xl overflow-hidden relative aspect-video shadow-sm">
+<img alt="Person looking through camera lens representing perspective" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" data-alt="Person looking through camera lens representing perspective" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC02lSgoba5tkJG4wL0ovXVqImrVHxBmoew7b_M08b-uq_QbASc__y1yqxLKH-Cuu4D3gmHDXqNjXvwu3_pzfIuT_RZogd0vWY7QNBkxJooJJoSLTRh0rIywkDbrLv8AJsDyq6zdD6vv3IOEszIqb83EM_VAKoaT4xw-aZNN6M93Mf7lrcrhZdEUJ73UyqQh1fFL4r5_fVrU_chYC4ehv9PMPAwYaUGDcil5wTGY6h0rcwrNEsWweg270wyL_f8xbBZL5Futaa8Asw"/>
+<div class="absolute bottom-2 right-2 bg-black/40 backdrop-blur-md text-white text-xs px-2 py-1 rounded font-sans">
+                        Visual Memory
+                    </div>
+</div>
+<!-- Synonyms / Related -->
+<div class="ml-9 pt-4">
+<h3 class="text-sm uppercase tracking-widest text-gray-400 mb-3 font-sans font-semibold">Synonyms ✨</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm hover:border-primary/50 transition-colors shadow-sm">
+                            Viewpoint
+                        </button>
+<button class="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm hover:border-primary/50 transition-colors shadow-sm">
+                            Outlook
+                        </button>
+<button class="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm hover:border-primary/50 transition-colors shadow-sm">
+                            Stance
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<!-- 4. Bottom Action Bar (Sticky Footer) -->
+<div class="absolute bottom-0 left-0 w-full bg-white/80 dark:bg-[#1a2c35]/90 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800 p-4 pb-8 sm:pb-4 z-20">
+<div class="flex items-center gap-4">
+<!-- Secondary Action: Favorite -->
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center group-active:scale-90 transition-transform border border-gray-100 dark:border-gray-700">
+<span class="material-icons-round text-gray-400 group-hover:text-red-500 transition-colors text-2xl">favorite_border</span>
+</div>
+</button>
+<!-- Primary Action: Mastered -->
+<button class="flex-1 h-14 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group active:scale-[0.98] transition-all">
+<span class="text-lg font-medium tracking-wide">Mark as Mastered</span>
+<span class="material-icons-round group-hover:translate-x-1 transition-transform">check_circle</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

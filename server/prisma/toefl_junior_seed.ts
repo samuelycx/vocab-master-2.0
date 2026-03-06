@@ -41,6 +41,7 @@ const toeflJuniorWords = [
     },
     {
         text: 'history',
+        phonetic: '/ˈhɪst(ə)ɹi/',
         meanings: JSON.stringify(['历史', '往事']),
         examples: JSON.stringify(['I enjoy learning about history.', 'This building has a long history.']),
         category: 'TOEFL_JUNIOR'
@@ -83,12 +84,14 @@ const toeflJuniorWords = [
     },
     {
         text: 'voyage',
+        phonetic: '/ˈvɔɪ.ɪdʒ/',
         meanings: JSON.stringify(['航海', '旅程']),
         examples: JSON.stringify(['The Titanic sank on its maiden voyage.', 'Space voyage.']),
         category: 'TOEFL_JUNIOR'
     },
     {
         text: 'wildlife',
+        phonetic: '/ˈwaɪldlaɪf/',
         meanings: JSON.stringify(['野生动植物']),
         examples: JSON.stringify(['The park is home to a lot of wildlife.', 'Wildlife conservation.']),
         category: 'TOEFL_JUNIOR'

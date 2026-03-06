@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vocab Master 2.0 - Settings &amp; Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2badee",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101c22",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+            boxShadow: {
+                'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom Toggle Switch Style */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2badee;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #2badee;
+        }
+        /* Hide scrollbar for clean look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-100 min-h-screen antialiased flex flex-col items-center">
+<!-- Mobile Container -->
+<main class="w-full max-w-md mx-auto min-h-screen bg-background-light dark:bg-background-dark pb-24 relative shadow-2xl overflow-hidden">
+<!-- Header / Nav Area (Simulating iOS + WeChat Capsule spacing) -->
+<header class="pt-14 pb-4 px-6 sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md flex justify-between items-center">
+<h1 class="text-xl font-bold tracking-tight">Me</h1>
+<!-- Simulated WeChat Capsule Space -->
+<div class="w-20"></div>
+</header>
+<!-- Content Scroll Area -->
+<div class="px-5 space-y-6">
+<!-- 1. Profile Card -->
+<section class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-soft flex items-center justify-between relative overflow-hidden group">
+<!-- Decorative background blob -->
+<div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
+<div class="flex items-center gap-4 z-10">
+<div class="relative">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-3xl shadow-sm border-2 border-white dark:border-gray-700">
+                            😎
+                        </div>
+<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm border border-white dark:border-gray-800">
+                            LVL 12
+                        </div>
+</div>
+<div>
+<h2 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">Learning Legend</h2>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">450 Words Mastered</p>
+</div>
+</div>
+<button class="z-10 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-200 text-xs font-semibold py-2 px-4 rounded-full transition-colors duration-200">
+                    Edit Profile
+                </button>
+</section>
+<!-- 2. Learning Preferences -->
+<section class="bg-white dark:bg-gray-800 rounded-2xl shadow-soft overflow-hidden">
+<div class="px-6 py-4 border-b border-gray-50 dark:border-gray-700/50">
+<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Preferences</h3>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+<span class="material-icons-round text-lg">volume_up</span>
+</div>
+<span class="text-sm font-medium">Sound Effects</span>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-200 dark:border-gray-600 checked:right-0 checked:border-primary transition-all duration-300 left-0 top-0.5 z-10" id="toggle-sound" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-colors duration-300" for="toggle-sound"></label>
+</div>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+<span class="material-icons-round text-lg">notifications_active</span>
+</div>
+<span class="text-sm font-medium">Push Reminders</span>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-200 dark:border-gray-600 transition-all duration-300 left-0 top-0.5 z-10" id="toggle-push" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-colors duration-300" for="toggle-push"></label>
+</div>
+</div>
+<!-- Navigation Item -->
+<button class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500">
+<span class="material-icons-round text-lg">flag</span>
+</div>
+<span class="text-sm font-medium">Daily Goal</span>
+</div>
+<div class="flex items-center gap-2 text-gray-400">
+<span class="text-xs font-semibold text-primary">20 Words</span>
+<span class="material-icons-round text-lg">chevron_right</span>
+</div>
+</button>
+</section>
+<!-- 3. Appearance (Theme) -->
+<section class="bg-white dark:bg-gray-800 rounded-2xl shadow-soft p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Theme</h3>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<!-- Option 1: Academic -->
+<button class="relative flex flex-col items-center gap-2 group">
+<div class="w-full aspect-[4/3] rounded-xl border-2 border-transparent group-hover:border-primary/30 bg-gray-50 dark:bg-gray-700 overflow-hidden relative shadow-sm transition-all">
+<div class="absolute inset-0 bg-white/50 dark:bg-gray-600/50 m-2 rounded-lg"></div>
+<div class="absolute bottom-2 left-2 w-8 h-2 bg-gray-200 dark:bg-gray-500 rounded-full"></div>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Academic</span>
+</button>
+<!-- Option 2: Vibrant (Active) -->
+<button class="relative flex flex-col items-center gap-2">
+<div class="w-full aspect-[4/3] rounded-xl border-2 border-primary bg-primary/5 dark:bg-primary/20 overflow-hidden relative shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/40 to-primary/10 m-2 rounded-lg"></div>
+<div class="absolute bottom-2 left-2 w-8 h-2 bg-primary/40 rounded-full"></div>
+<!-- Checkmark Badge -->
+<div class="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-white shadow-sm">
+<span class="material-icons-round text-[12px]">check</span>
+</div>
+</div>
+<span class="text-xs font-bold text-primary">Vibrant</span>
+</button>
+<!-- Option 3: Dark -->
+<button class="relative flex flex-col items-center gap-2 group">
+<div class="w-full aspect-[4/3] rounded-xl border-2 border-transparent group-hover:border-primary/30 bg-gray-900 overflow-hidden relative shadow-sm transition-all">
+<div class="absolute inset-0 bg-gray-800 m-2 rounded-lg"></div>
+<div class="absolute bottom-2 left-2 w-8 h-2 bg-gray-700 rounded-full"></div>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Dark</span>
+</button>
+</div>
+</section>
+<!-- 4. Support & Actions -->
+<section class="bg-white dark:bg-gray-800 rounded-2xl shadow-soft overflow-hidden">
+<button class="w-full flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<span class="text-sm font-medium">About Vocab Master</span>
+<span class="material-icons-round text-lg text-gray-400">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<span class="text-sm font-medium">Help &amp; Feedback</span>
+<span class="material-icons-round text-lg text-gray-400">chevron_right</span>
+</button>
+</section>
+<!-- Log Out Button -->
+<div class="pt-2 pb-6 flex justify-center">
+<button class="text-sm font-medium text-gray-400 hover:text-red-500 transition-colors py-2 px-6">
+                    Log Out
+                </button>
+</div>
+<!-- Version Number -->
+<div class="text-center pb-8">
+<p class="text-[10px] text-gray-300 dark:text-gray-600 font-mono">v2.0.4 (Build 892)</p>
+</div>
+</div>
+<!-- 5. Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pb-safe pt-2 px-6 z-30">
+<div class="flex justify-between items-center h-16">
+<button class="flex flex-col items-center gap-1 w-12 group">
+<span class="material-icons-round text-2xl text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors">school</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">Learn</span>
+</button>
+<button class="flex flex-col items-center gap-1 w-12 group">
+<span class="material-icons-round text-2xl text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors">leaderboard</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">Rank</span>
+</button>
+<!-- Floating FAB Action (Optional gamification element) -->
+<div class="-mt-8">
+<button class="w-14 h-14 rounded-full bg-primary shadow-lg shadow-primary/40 flex items-center justify-center text-white hover:scale-105 transition-transform">
+<span class="material-icons-round text-3xl">play_arrow</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 w-12 group">
+<span class="material-icons-round text-2xl text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors">chat_bubble</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200">Social</span>
+</button>
+<button class="flex flex-col items-center gap-1 w-12">
+<span class="material-icons-round text-2xl text-primary animate-pulse">person</span>
+<span class="text-[10px] font-bold text-primary">Me</span>
+</button>
+</div>
+<!-- Safe area spacing for iOS home indicator -->
+<div class="h-5 w-full"></div>
+</nav>
+</main>
+<script>
+        // Simple dark mode toggle for demonstration purpose
+        // In a real app this would likely be handled by state management
+        const toggleTheme = (theme) => {
+            const html = document.documentElement;
+            if (theme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        };
+
+        // You could attach event listeners here to the theme buttons if needed for interactivity demo
+    </script>
+</body></html>
