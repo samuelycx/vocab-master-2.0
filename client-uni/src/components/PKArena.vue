@@ -170,94 +170,56 @@ onUnmounted(() => {
         </view>
 
         <!-- Game Interface -->
-        <view v-else-if="pk.isActive" class="game-interface">
-            <!-- Score Board -->
-            <view class="score-board">
-                <!-- User -->
-                <view class="player user">
-                    <view class="player-avatar">
-                        <image :src="getAvatarUrl(user.avatar)" class="avatar-img" />
-                    </view>
-                    
-                    <view class="player-info">
-                        <text class="player-name">{{ user.nickname || user.username }}</text>
-                        
-                        <view class="score-bar">
-                            <view 
-                                class="score-fill user"
-                                :style="{ width: Math.min((pk.userScore / WIN_SCORE) * 100, 100) + '%' }"
-                            ></view>
-                        </view>
-                    </view>
-                    
-                    <text class="score-text">{{ pk.userScore }}</text>
+        <view v-else-if="pk.isActive" class="pk-battle">
+            <view class="pkb-top">
+                <view class="pkb-me">
+                    <view class="pkb-avatar me">我</view>
+                    <text class="pkb-score">{{ pk.userScore }}</text>
                 </view>
-
-                <!-- VS -->
-                <view class="vs-badge">
-                    <text>VS</text>
+                <view class="pkb-vs">VS</view>
+                <view class="pkb-op">
+                    <text class="pkb-score">{{ pk.opponent?.score || 0 }}</text>
+                    <view class="pkb-avatar op">AI</view>
                 </view>
+            </view>
 
-                <!-- Opponent -->
-                <view class="player opponent">
-                    <text class="score-text">{{ pk.opponent?.score || 0 }}</text>
-                    
-                    <view class="player-info">
-                        <text class="player-name">{{ pk.opponent?.name || t('pk_waiting') }}</text>
-                        
-                        <view class="score-bar">
-                            <view 
-                                class="score-fill opponent"
-                                :style="{ width: Math.min(((pk.opponent?.score || 0) / WIN_SCORE) * 100, 100) + '%' }"
-                            ></view>
-                        </view>
+            <view class="pkb-bars">
+                <view class="pkb-bar">
+                    <view class="pkb-bar-fill left" :style="{ width: Math.min((pk.userScore / WIN_SCORE) * 100, 100) + '%' }"></view>
+                </view>
+                <view class="pkb-bar">
+                    <view class="pkb-bar-fill right" :style="{ width: Math.min(((pk.opponent?.score || 0) / WIN_SCORE) * 100, 100) + '%' }"></view>
+                </view>
+            </view>
+
+            <view class="pkb-question">
+                <text class="pkb-word">{{ session.currentWord?.word }}</text>
+                <text class="pkb-phonetic">{{ getPhoneticText(session.currentWord) || t('arena_no_phonetic') }}</text>
+                <text class="pkb-hint">选择最准确的中文释义</text>
+            </view>
+
+            <view class="pkb-ops">
+                <view class="pkb-row">
+                    <view class="pkb-op-btn" v-for="(option, idx) in session.options.slice(0,2)" :key="idx" @click="handleAnswer(option)">
+                        <text class="pkb-op-text">{{ String.fromCharCode(65 + idx) }} {{ option }}</text>
                     </view>
-                    
-                    <view class="player-avatar">
-                        <image :src="getAvatarUrl(pk.opponent?.avatar)" class="avatar-img" />
+                </view>
+                <view class="pkb-row">
+                    <view class="pkb-op-btn" v-for="(option, idx) in session.options.slice(2,4)" :key="idx + 2" @click="handleAnswer(option)">
+                        <text class="pkb-op-text">{{ String.fromCharCode(65 + idx + 2) }} {{ option }}</text>
                     </view>
                 </view>
             </view>
 
-            <!-- Word Card -->
-            <view class="word-section">
-                <view class="word-card">
-                    <text class="word-label">{{ session.currentWord?.partOfSpeech || t('pk_word_default') }}</text>
-                    
-                    <text class="word-text">{{ session.currentWord?.word }}</text>
-                    
-                    <text class="word-phonetic">{{ getPhoneticText(session.currentWord) || t('arena_no_phonetic') }}</text>
-                    
-                    <view class="word-sound" @click="GameEngine.playAudio(session.currentWord?.word)">
-                        <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
-                    </view>
-                </view>
+            <view class="pkb-foot">
+                <text class="pkb-foot-left">剩余 00:18</text>
+                <text class="pkb-foot-right">本题 +10 XP</text>
             </view>
 
-            <!-- Options -->
-            <view class="options-grid">
-                <view 
-                    v-for="(option, idx) in session.options"
-                    :key="idx"
-                    class="option-btn"
-                    :class="getOptionClass(option)"
-                    @click="handleAnswer(option)"
-                >
-                    <view class="option-letter">{{ String.fromCharCode(65 + idx) }}</view>
-                    
-                    <text class="option-text">{{ option }}</text>
-                    
-                    <view v-if="session.isAnswered && option === session.correctOption" class="option-mark correct">✓</view>
-                    
-                    <view v-if="session.isAnswered && option === session.selectedOption && option !== session.correctOption" class="option-mark wrong">✗</view>
-                </view>
-            </view>
-
-            <!-- Feedback -->
             <view v-if="session.isAnswered" class="feedback-overlay">
                 <view class="feedback-box" :class="{ correct: session.isCorrect, wrong: !session.isCorrect }">
                     <image class="feedback-icon-image" :src="session.isCorrect ? uiIcons.ok : uiIcons.pk" mode="aspectFit" />
-                    
+
                     <text class="feedback-text">{{ session.isCorrect ? t('pk_great') : t('pk_keep_going') }}</text>
                     
                     <view v-if="session.isCorrect" class="feedback-rewards">
