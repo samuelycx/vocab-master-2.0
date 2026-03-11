@@ -137,23 +137,7 @@ const goToProfile = async () => {
 };
 
 onMounted(async () => {
-    if (!isDefaultProfile()) return;
-    if (typeof wx === 'undefined' || typeof wx.getUserInfo !== 'function') return;
-    try {
-        const info = await new Promise((resolve, reject) => {
-            wx.getUserInfo({
-                success: resolve,
-                fail: reject
-            });
-        });
-        const userInfo = info?.userInfo || {};
-        await syncProfileToServer({
-            username: userInfo.nickName,
-            avatar: userInfo.avatarUrl
-        });
-    } catch (e) {
-        // silent fallback
-    }
+    // Silent getUserInfo is restricted by WeChat; keep profile sync on user gesture only.
 });
 </script>
 

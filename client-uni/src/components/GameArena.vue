@@ -7,9 +7,9 @@ import { UI_ICONS } from '../utils/ui-icons.js';
 
 const session = GameEngine.session;
 const uiIcons = UI_ICONS;
-const combo = computed(() => GameState.game.combo);
 const isFlipped = ref(false);
 const { t } = useI18n();
+const lifeCount = ref(3);
 
 // Auto-play audio when word changes
 watch(() => session.currentWord, (newWord) => {
@@ -33,9 +33,7 @@ watch(() => session.currentWord, (newWord) => {
   }
 }, { immediate: true });
 
-const progressPercent = computed(() => {
-  return ((session.currentIndex) / session.queue.length) * 100;
-});
+const progressLabel = computed(() => `第 ${session.currentIndex + 1} / ${session.queue.length} 题`);
 
 const pickPhonetic = (word) => {
   if (!word) return '';
@@ -100,20 +98,11 @@ onUnmounted(() => {
   <view class="game-arena">
     <!-- 顶部导航 -->
     <view class="arena-header">
-      <view class="back-btn animate-btn-press" @click="GameEngine.quitSession()">
+      <view class="back-btn" @click="GameEngine.quitSession()">
         <text class="back-icon">←</text>
       </view>
-      
-      <view class="progress-wrapper">
-        <view class="progress-bar">
-          <view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
-        </view>
-        <view class="progress-text">{{ session.currentIndex + 1 }} / {{ session.queue.length }}</view>
-      </view>
-      
-      <view class="combo-display animate-pulse" v-if="combo > 1">
-        <text class="combo-text">COMBO {{ combo }}</text>
-      </view>
+      <text class="progress-text">{{ progressLabel }}</text>
+      <text class="life-text">❤️ {{ lifeCount }}</text>
     </view>
     
     <!-- 单词卡片 -->
@@ -124,19 +113,9 @@ onUnmounted(() => {
       >
         <!-- 正面：单词 -->
         <view class="card-front">
-          <view class="card-label">{{ t('arena_label_english') }}</view>
           <text class="word-text">{{ session.currentWord?.word }}</text>
           <text class="word-phonetic">{{ phoneticText }}</text>
-          
-          <!-- 例句在正面 -->
-          <view class="example-section" v-if="session.currentExample">
-            <text class="example-text">{{ session.currentExample.original }}</text>
-          </view>
-          
-          <view class="sound-btn" @click.stop="playAudio">
-            <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
-          </view>
-          
+          <text class="example-text">答题后卡片翻转展示结果与奖励</text>
         </view>
         
         <!-- 背面：答题反馈 -->
@@ -157,17 +136,39 @@ onUnmounted(() => {
     
     <!-- 选项按钮 - 答题后自动隐藏 -->
     <view class="options-container" v-if="!isFlipped && !session.isAnswered">
-      <view 
-        v-for="(option, index) in session.options"
-        :key="index"
-        class="option-btn"
-        :class="[getOptionClass(option), 'delay-' + (index + 1) + '00']"
-        :style="{ animationDelay: (index * 0.1) + 's' }"
-        @click="handleAnswer(option)"
-      >
-        <view class="option-badge">{{ String.fromCharCode(65 + index) }}</view>
-        <text class="option-text">{{ option }}</text>
+      <view class="options-row">
+        <view 
+          v-for="(option, index) in session.options.slice(0, 2)"
+          :key="index"
+          class="option-btn"
+          :class="getOptionClass(option)"
+          @click="handleAnswer(option)"
+        >
+          <text class="option-text">{{ option }}</text>
+        </view>
       </view>
+      <view class="options-row">
+        <view 
+          v-for="(option, index) in session.options.slice(2, 4)"
+          :key="index + 2"
+          class="option-btn"
+          :class="getOptionClass(option)"
+          @click="handleAnswer(option)"
+        >
+          <text class="option-text">{{ option }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="arena-footer">
+      <text class="footer-score">Correct +10XP  +1 Coin</text>
+      <view class="footer-submit" @click="handleAnswer(session.correctOption)">
+        <text class="footer-submit-text">提交</text>
+      </view>
+    </view>
+
+    <view class="flip-hint">
+      <text class="flip-hint-text">Card flips to show answer / reward</text>
     </view>
     
   </view>

@@ -147,8 +147,10 @@ onMounted(loadDashboard);
   <view :class="['dashboard', 'app-page', dashboardClass]">
     <view class="focus-card animate-slide-in-down">
       <view class="focus-orb"></view>
+      <view class="focus-glow"></view>
       <view class="focus-avatar" @click="gotoSettings" hover-class="avatar-press">
         <image class="avatar-image" :src="getAvatarUrl(user.avatar)" />
+        <view class="avatar-core"></view>
       </view>
 
       <text class="focus-kicker">{{ t('dashboard_focus_kicker') }}</text>
@@ -165,7 +167,7 @@ onMounted(loadDashboard);
                 <text class="primary-cta-sub">{{ ctaSubLabel }}</text>
               </view>
               <view class="primary-cta-icon">
-                <text class="primary-cta-icon-text">></text>
+                <text class="primary-cta-icon-text">▶</text>
               </view>
             </view>
           </view>
@@ -174,7 +176,7 @@ onMounted(loadDashboard);
         <view class="focus-summary">
           <text class="focus-summary-kicker">{{ t('dashboard_focus_progress') }}</text>
           <text class="focus-summary-value">{{ stats.todayLearned }} / {{ DAILY_GOAL }}</text>
-          <text class="focus-summary-sub">{{ focusSummarySubtitle }}</text>
+          <text class="focus-summary-sub">学完本轮后&#10;解锁奖励</text>
           <view class="focus-summary-track">
             <view class="focus-summary-fill" :style="{ width: progressPercent + '%' }"></view>
           </view>
@@ -187,14 +189,12 @@ onMounted(loadDashboard);
         <text class="info-kicker review-kicker">{{ t('dashboard_review_kicker') }}</text>
         <text class="info-value">{{ reviewCount }}</text>
         <text class="info-title">{{ t('dashboard_review_title') }}</text>
-        <text class="info-sub">{{ reviewCardSubtitle }}</text>
       </view>
 
       <view class="info-card wordbook-card animate-slide-in-up delay-200" @click="gotoVocabulary">
         <text class="info-kicker wordbook-kicker">{{ t('dashboard_vocab_kicker') }}</text>
         <text class="info-value">{{ stats.totalLearned }}</text>
         <text class="info-title">{{ t('dashboard_vocab_title_card') }}</text>
-        <text class="info-sub">{{ t('dashboard_vocab_sub_card') }}</text>
       </view>
     </view>
 
@@ -245,17 +245,17 @@ onMounted(loadDashboard);
 .dashboard {
   min-height: 100%;
   box-sizing: border-box;
-  padding: calc(var(--header-height, 88px) + 16rpx) 28rpx calc(env(safe-area-inset-bottom, 0px) + 10rpx);
-  background: #f7f3ec;
+  padding: calc(var(--header-height, 88px) + 62rpx) 24rpx calc(env(safe-area-inset-bottom, 0px) + 16rpx);
+  background: #f6f1e8;
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
-  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  gap: 14rpx;
+  font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .dashboard.lang-en {
-  gap: 16rpx;
-  font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  gap: 14rpx;
+  font-family: "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .focus-card,
@@ -269,34 +269,48 @@ onMounted(loadDashboard);
 .focus-card {
   position: relative;
   overflow: hidden;
-  border-radius: 28rpx;
-  background: #fff8f0;
-  padding: 22rpx;
-  min-height: 446rpx;
+  border-radius: 30rpx;
+  background: #fff9f1;
+  padding: 20rpx;
+  height: 292rpx;
 }
 
 .focus-orb {
   position: absolute;
-  top: 18rpx;
-  right: 32rpx;
-  width: 176rpx;
-  height: 176rpx;
+  top: -44rpx;
+  right: 6rpx;
+  width: 170rpx;
+  height: 170rpx;
   border-radius: 50%;
-  background: #f58652;
+  background: #ff8a5b;
+  pointer-events: none;
+}
+
+.focus-glow {
+  position: absolute;
+  top: 120rpx;
+  right: 24rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #ffd8c3;
   pointer-events: none;
 }
 
 .focus-avatar {
   position: absolute;
-  top: 52rpx;
+  top: 18rpx;
   right: 66rpx;
   z-index: 5;
-  width: 96rpx;
-  height: 96rpx;
+  width: 64rpx;
+  height: 64rpx;
   border-radius: 50%;
-  padding: 10rpx;
-  background: rgba(255, 248, 238, 0.9);
-  border: 2rpx solid rgba(224, 212, 199, 0.9);
+  padding: 0;
+  background: #efe7dd;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar-press,
@@ -310,27 +324,35 @@ onMounted(loadDashboard);
   border-radius: 50%;
 }
 
+.avatar-core {
+  position: absolute;
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 50%;
+  background: #d2c7b8;
+}
+
 .focus-kicker {
   position: relative;
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  height: 44rpx;
-  padding: 0 20rpx;
-  border-radius: 999rpx;
-  background: #efe1d4;
-  color: #7f5b46;
-  font-size: 22rpx;
-  font-weight: 700;
+  height: 30rpx;
+  padding: 0 12rpx;
+  border-radius: 15rpx;
+  background: #ffe5d6;
+  color: #9a4f2e;
+  font-size: 12rpx;
+  font-weight: 800;
 }
 
 .focus-grid {
   position: relative;
   z-index: 2;
-  margin-top: 22rpx;
+  margin-top: 14rpx;
   display: flex;
   align-items: flex-end;
-  gap: 18rpx;
+  gap: 10rpx;
 }
 
 .focus-main {
@@ -341,8 +363,8 @@ onMounted(loadDashboard);
 .focus-title {
   display: block;
   color: #1a1a1a;
-  font-size: 62rpx;
-  line-height: 1.08;
+  font-size: 34rpx;
+  line-height: 1.1;
   font-weight: 800;
 }
 
@@ -354,10 +376,10 @@ onMounted(loadDashboard);
 
 .focus-subtitle {
   display: block;
-  margin-top: 18rpx;
-  color: #5a534c;
-  font-size: 24rpx;
-  line-height: 1.45;
+  margin-top: 12rpx;
+  color: #3d3d3d;
+  font-size: 14rpx;
+  line-height: 1.4;
 }
 
 .dashboard.lang-en .focus-subtitle {
@@ -368,7 +390,7 @@ onMounted(loadDashboard);
   display: flex;
   align-items: center;
   gap: 10rpx;
-  margin-top: 28rpx;
+  margin-top: 18rpx;
 }
 
 .primary-cta,
@@ -380,9 +402,9 @@ onMounted(loadDashboard);
 }
 
 .primary-cta {
-  width: 254rpx;
-  height: 86rpx;
-  padding: 10rpx 16rpx;
+  width: 183rpx;
+  height: 63rpx;
+  padding: 10rpx 14rpx;
   border-radius: 24rpx;
   background: #6f58d9;
   justify-content: space-between;
@@ -397,21 +419,21 @@ onMounted(loadDashboard);
 
 .primary-cta-text {
   color: #ffffff;
-  font-size: 30rpx;
+  font-size: 18rpx;
   font-weight: 800;
 }
 
 .primary-cta-sub {
   color: #e9deff;
-  font-size: 18rpx;
+  font-size: 10rpx;
   line-height: 1.2;
   font-weight: 700;
 }
 
 .primary-cta-icon {
-  width: 34rpx;
-  height: 34rpx;
-  border-radius: 17rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 14rpx;
   background: rgba(255, 255, 255, 0.2);
   display: inline-flex;
   align-items: center;
@@ -421,31 +443,31 @@ onMounted(loadDashboard);
 
 .primary-cta-icon-text {
   color: #fff9f1;
-  font-size: 16rpx;
+  font-size: 12rpx;
   font-weight: 800;
 }
 
 .focus-summary {
-  width: 250rpx;
-  min-height: 224rpx;
-  padding: 22rpx;
+  width: 136rpx;
+  height: 142rpx;
+  padding: 12rpx;
   border-radius: 24rpx;
-  background: #191816;
+  background: #1a1a1a;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
-  box-shadow: 0 14rpx 26rpx rgba(18, 14, 10, 0.2);
+  gap: 6rpx;
+  box-shadow: none;
 }
 
 .focus-summary-kicker {
   color: #c9f66c;
-  font-size: 20rpx;
-  font-weight: 700;
+  font-size: 10rpx;
+  font-weight: 800;
 }
 
 .focus-summary-value {
   color: #fff9f1;
-  font-size: 48rpx;
+  font-size: 28rpx;
   line-height: 1;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -453,15 +475,15 @@ onMounted(loadDashboard);
 
 .focus-summary-sub {
   color: #d8d2c8;
-  font-size: 20rpx;
-  line-height: 1.35;
+  font-size: 10rpx;
+  line-height: 1.2;
 }
 
 .focus-summary-track {
   width: 100%;
-  height: 16rpx;
+  height: 10rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.15);
   overflow: hidden;
 }
 
@@ -481,9 +503,9 @@ onMounted(loadDashboard);
 .info-card {
   flex: 1;
   min-width: 0;
-  min-height: 312rpx;
+  height: 172rpx;
   border-radius: 24rpx;
-  padding: 26rpx 24rpx;
+  padding: 18rpx;
   display: flex;
   flex-direction: column;
   gap: 10rpx;
@@ -500,8 +522,8 @@ onMounted(loadDashboard);
 }
 
 .info-kicker {
-  font-size: 20rpx;
-  font-weight: 700;
+  font-size: 11rpx;
+  font-weight: 800;
 }
 
 .review-kicker {
@@ -514,7 +536,7 @@ onMounted(loadDashboard);
 
 .info-value {
   color: #1a1a1a;
-  font-size: 68rpx;
+  font-size: 50rpx;
   line-height: 1;
   font-weight: 800;
   margin-top: 4rpx;
@@ -523,7 +545,7 @@ onMounted(loadDashboard);
 
 .info-title {
   color: #1a1a1a;
-  font-size: 34rpx;
+  font-size: 30rpx;
   font-weight: 800;
   line-height: 1.12;
 }
@@ -531,7 +553,7 @@ onMounted(loadDashboard);
 .info-sub {
   margin-top: auto;
   color: #5a534c;
-  font-size: 22rpx;
+  font-size: 14rpx;
   line-height: 1.35;
 }
 
@@ -541,7 +563,7 @@ onMounted(loadDashboard);
   padding: 14rpx 16rpx;
   display: flex;
   flex-direction: column;
-  min-height: 94rpx;
+  height: 94rpx;
 }
 
 .social-pill {
@@ -549,18 +571,18 @@ onMounted(loadDashboard);
   min-width: 0;
   height: 74rpx;
   border-radius: 18rpx;
-  padding: 0 24rpx;
+  padding: 0 14rpx;
   border: 2rpx solid transparent;
 }
 
 .rank-pill {
-  background: #f7eee1;
-  border-color: #e6d8c4;
+  background: #fff3e6;
+  border-color: transparent;
 }
 
 .arena-pill {
-  background: #f5f0e7;
-  border-color: #e4ddd2;
+  background: #f4f0ea;
+  border-color: transparent;
 }
 
 .arena-pill.disabled {
@@ -569,8 +591,8 @@ onMounted(loadDashboard);
 
 .social-pill-text {
   color: #1a1a1a;
-  font-size: 24rpx;
-  font-weight: 700;
+  font-size: 26rpx;
+  font-weight: 800;
 }
 
 .achievement-rail {
@@ -581,12 +603,12 @@ onMounted(loadDashboard);
   align-items: center;
   justify-content: space-between;
   gap: 12rpx;
-  min-height: 142rpx;
+  height: 142rpx;
 }
 
 .achievement-copy {
-  width: 82rpx;
-  min-width: 82rpx;
+  width: 50rpx;
+  min-width: 50rpx;
   display: flex;
   flex-direction: column;
   gap: 4rpx;
@@ -609,7 +631,7 @@ onMounted(loadDashboard);
   min-width: 220rpx;
   height: 88rpx;
   border-radius: 18rpx;
-  background: #f4ece4;
+  background: #f3ebe2;
   padding: 10rpx;
   display: flex;
   flex-direction: column;
@@ -651,8 +673,8 @@ onMounted(loadDashboard);
 .achievement-arrow-button {
   width: 42rpx;
   height: 42rpx;
-  border-radius: 999rpx;
-  background: #151515;
+  border-radius: 21rpx;
+  background: #1a1a1a;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;

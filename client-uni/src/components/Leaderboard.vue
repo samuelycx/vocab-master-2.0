@@ -11,15 +11,22 @@ const leaderboard = ref([]);
 const loading = ref(true);
 const { t } = useI18n();
 
-const loadLeaderboard = async () => {
-    loading.value = true;
-    try {
-        const data = await API.getLeaderboard(20);
-        leaderboard.value = data;
-    } finally {
-        loading.value = false;
-    }
-};
+    const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+
+    const getAvatarUrl = (avatar) => {
+        if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
+        return avatar.startsWith('http') || avatar.startsWith('cloud://') ? avatar : DEFAULT_AVATAR;
+    };
+
+    const loadLeaderboard = async () => {
+        loading.value = true;
+        try {
+            const data = await API.getLeaderboard(20);
+            leaderboard.value = data;
+        } finally {
+            loading.value = false;
+        }
+    };
 
 onMounted(() => {
     loadLeaderboard();
@@ -84,8 +91,8 @@ onMounted(() => {
                     </view>
 
                     <!-- Avatar -->
-                    <view class="w-12 h-12 rounded-full bg-white dark_bg-slate-600 flex items-center justify-center text-xl shadow-sm border border-slate-100 dark_border-slate-500 relative">
-                        <text>{{ user.avatar }}</text>
+                    <view class="w-12 h-12 rounded-full bg-white dark_bg-slate-600 flex items-center justify-center text-xl shadow-sm border border-slate-100 dark_border-slate-500 relative overflow-hidden">
+                        <image class="w-full h-full object-cover" :src="getAvatarUrl(user.avatar)" />
                         <view v-if="index < 3" class="absolute -top-1 -right-1 text-sm bg-white dark_bg-slate-800 rounded-full shadow-sm w-5 h-5 flex items-center justify-center">
                             <text>{{ index === 0 ? '1' : (index === 1 ? '2' : '3') }}</text>
                         </view>

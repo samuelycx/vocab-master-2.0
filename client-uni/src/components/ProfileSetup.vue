@@ -39,13 +39,7 @@ const uploadAvatarIfNeeded = async (url) => {
         cloudPath,
         filePath: url
     });
-    const fileID = res?.fileID;
-    if (!fileID || typeof wx.cloud.getTempFileURL !== 'function') {
-        return fileID || url;
-    }
-    const tempRes = await wx.cloud.getTempFileURL({ fileList: [fileID] });
-    const tempUrl = tempRes?.fileList?.[0]?.tempFileURL;
-    return tempUrl || fileID;
+    return res?.fileID || url;
 };
 
 const saveProfile = async () => {
