@@ -7,7 +7,7 @@ const user = GameState.user;
 const nickname = ref(user.username || '');
 const avatarUrl = ref(user.avatar || '');
 
-const DEFAULT_AVATAR = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0';
+const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const isEmoji = (str) => {
     if (!str || typeof str !== 'string') return false;
@@ -26,6 +26,28 @@ const onChooseAvatar = (e) => {
     avatarUrl.value = newAvatar;
 };
 
+const uploadAvatarIfNeeded = async (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (typeof wx === 'undefined' || !wx.cloud || typeof wx.cloud.uploadFile !== 'function') {
+        return url;
+    }
+
+    const ext = url.includes('.') ? url.slice(url.lastIndexOf('.')) : '.png';
+    const cloudPath = `avatars/${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
+    const res = await wx.cloud.uploadFile({
+        cloudPath,
+        filePath: url
+    });
+    const fileID = res?.fileID;
+    if (!fileID || typeof wx.cloud.getTempFileURL !== 'function') {
+        return fileID || url;
+    }
+    const tempRes = await wx.cloud.getTempFileURL({ fileList: [fileID] });
+    const tempUrl = tempRes?.fileList?.[0]?.tempFileURL;
+    return tempUrl || fileID;
+};
+
 const saveProfile = async () => {
     if (!nickname.value || nickname.value === '准备出发的小萌新') {
         uni.showToast({ title: '请输入昵称', icon: 'none' });
@@ -34,12 +56,16 @@ const saveProfile = async () => {
 
     uni.showLoading({ title: '保存中...' });
     
-    // In WeChat Cloud, you might need to upload the file first if avatarUrl is a temporary path
-    // But for simplicity, we'll try to save it directly or handle upload later
-    
+    let finalAvatar = avatarUrl.value;
+    try {
+        finalAvatar = await uploadAvatarIfNeeded(avatarUrl.value);
+    } catch (e) {
+        console.warn('avatar upload failed', e);
+    }
+
     const res = await API.updateProfile({
         username: nickname.value,
-        avatar: avatarUrl.value
+        avatar: finalAvatar
     });
 
     uni.hideLoading();
@@ -47,7 +73,7 @@ const saveProfile = async () => {
     if (res && res.success) {
         Actions.setUser({
             username: nickname.value,
-            avatar: avatarUrl.value,
+            avatar: finalAvatar,
             isProfileSet: true
         });
         uni.showToast({ title: '设置成功', icon: 'success' });
@@ -63,7 +89,7 @@ const saveProfile = async () => {
         <view class="bg-surface w-full max-w-sm rounded-[40px] p-10 shadow-2xl animate-pop border border-slate-50 dark_border-white-opacity-5">
             <view class="flex flex-col items-center mb-10">
                 <text class="w-16 h-16 bg-primary-opacity-10 rounded-3xl flex items-center justify-center text-3xl mb-4">
-                    👤
+                    U
                 </text>
                 <text class="text-3xl font-black text-text-main mb-1 block text-center">Hello there!</text>
                 <text class="text-text-muted text-sm block text-center font-bold">First, let's set up your profile.</text>

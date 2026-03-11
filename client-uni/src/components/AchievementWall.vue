@@ -1,10 +1,13 @@
 <script setup>
 import { computed } from 'vue';
 import { GameState, Actions } from '../state.js';
+import { CATEGORY_ICON_MAP, getAchievementIconById } from '../utils/achievement-icons.js';
+import { useI18n } from '../i18n.js';
 
 const props = defineProps({
   onClose: Function
 });
+const { t } = useI18n();
 
 const handleBack = () => {
   if (props.onClose) {
@@ -15,12 +18,12 @@ const handleBack = () => {
 };
 
 const categories = {
-  GROWTH: { label: '成长', icon: '🌱' },
-  CONSISTENCY: { label: '毅力', icon: '🛡️' },
-  PRECISION: { label: '技巧', icon: '🎯' },
-  VOLUME: { label: '博学', icon: '📚' },
-  WEALTH: { label: '财富', icon: '💰' },
-  SPECIAL: { label: '特殊', icon: '🌟' }
+  GROWTH: { key: 'achievement_category_growth', icon: CATEGORY_ICON_MAP.GROWTH },
+  CONSISTENCY: { key: 'achievement_category_consistency', icon: CATEGORY_ICON_MAP.CONSISTENCY },
+  PRECISION: { key: 'achievement_category_precision', icon: CATEGORY_ICON_MAP.PRECISION },
+  VOLUME: { key: 'achievement_category_volume', icon: CATEGORY_ICON_MAP.VOLUME },
+  WEALTH: { key: 'achievement_category_wealth', icon: CATEGORY_ICON_MAP.WEALTH },
+  SPECIAL: { key: 'achievement_category_special', icon: CATEGORY_ICON_MAP.SPECIAL }
 };
 
 const achievements = computed(() => {
@@ -36,6 +39,7 @@ const unlockedIds = computed(() => {
 
 const isUnlocked = (achievementId) => unlockedIds.value.includes(achievementId);
 const unlockedCount = computed(() => unlockedIds.value.length);
+const getIcon = (achievementId) => getAchievementIconById(achievementId);
 </script>
 
 <template>
@@ -45,25 +49,25 @@ const unlockedCount = computed(() => unlockedIds.value.length);
         <text class="back-icon">←</text>
       </view>
       <view class="header-content">
-        <text class="header-title">成就墙</text>
-        <text class="header-sub">已解锁 {{ unlockedCount }} / {{ achievements.length }}</text>
+        <text class="header-title">{{ t('achievement_wall_title') }}</text>
+        <text class="header-sub">{{ t('achievement_wall_unlocked', { count: unlockedCount, total: achievements.length }) }}</text>
       </view>
       <view class="header-placeholder"></view>
     </view>
 
     <view class="summary-card">
       <view class="summary-left">
-        <text class="summary-kicker">荣誉进度</text>
-        <text class="summary-main">{{ unlockedCount }} / {{ achievements.length }} Badges</text>
+        <text class="summary-kicker">{{ t('achievement_wall_progress') }}</text>
+        <text class="summary-main">{{ t('achievement_wall_badges', { count: unlockedCount, total: achievements.length }) }}</text>
       </view>
-      <text class="summary-icon">🏅</text>
+      <image class="summary-icon-image" :src="getIcon('default')" mode="aspectFit" />
     </view>
 
     <scroll-view scroll-y class="achievement-list">
       <view v-for="(meta, categoryKey) in categories" :key="categoryKey" class="category-section">
         <view class="category-head">
-          <text class="category-icon">{{ meta.icon }}</text>
-          <text class="category-title">{{ meta.label }}</text>
+          <image class="category-icon-image" :src="meta.icon" mode="aspectFit" />
+          <text class="category-title">{{ t(meta.key) }}</text>
         </view>
 
         <view class="grid">
@@ -74,17 +78,17 @@ const unlockedCount = computed(() => unlockedIds.value.length);
             :class="{ locked: !isUnlocked(ach.id) }"
           >
             <view class="icon-wrap">
-              <text class="icon">{{ ach.icon || '🏆' }}</text>
+              <image class="icon-image" :src="getIcon(ach.id)" mode="aspectFit" />
             </view>
             <text class="name">{{ ach.name }}</text>
             <text class="desc">{{ ach.description }}</text>
-            <text class="state" :class="{ on: isUnlocked(ach.id) }">{{ isUnlocked(ach.id) ? '已解锁' : '未解锁' }}</text>
+            <text class="state" :class="{ on: isUnlocked(ach.id) }">{{ isUnlocked(ach.id) ? t('achievement_wall_state_on') : t('achievement_wall_state_off') }}</text>
           </view>
         </view>
       </view>
 
       <view v-if="achievements.length === 0" class="empty">
-        <text class="empty-text">暂无成就数据</text>
+        <text class="empty-text">{{ t('achievement_wall_empty') }}</text>
       </view>
     </scroll-view>
   </view>
@@ -175,6 +179,11 @@ const unlockedCount = computed(() => unlockedIds.value.length);
   font-size: 52rpx;
 }
 
+.summary-icon-image {
+  width: 72rpx;
+  height: 72rpx;
+}
+
 .achievement-list {
   flex: 1;
 }
@@ -190,8 +199,9 @@ const unlockedCount = computed(() => unlockedIds.value.length);
   margin-bottom: 12rpx;
 }
 
-.category-icon {
-  font-size: 30rpx;
+.category-icon-image {
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .category-title {
@@ -236,6 +246,11 @@ const unlockedCount = computed(() => unlockedIds.value.length);
 
 .icon {
   font-size: 46rpx;
+}
+
+.icon-image {
+  width: 64rpx;
+  height: 64rpx;
 }
 
 .name {

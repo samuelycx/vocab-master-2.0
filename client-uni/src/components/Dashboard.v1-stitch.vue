@@ -129,7 +129,7 @@ onMounted(async () => {
                         </view>
                     </view>
                     <view @click="showSettings = true" class="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center shadow-soft border border-slate-100 dark_border-white-opacity-5 cursor-pointer active_scale-90 transition-transform">
-                        <text class="text-xl">⚙️</text>
+                        <text class="text-xl">CFG</text>
                     </view>
                 </view>
 
@@ -141,10 +141,10 @@ onMounted(async () => {
                             <view class="flex justify-between items-start mb-6">
                                 <view class="flex flex-col gap-1">
                                     <text class="text-text-muted text-xxs font-bold uppercase tracking-widest">Daily Progress</text>
-                                    <text class="text-primary text-xs font-bold leading-none">You're doing great today! 🔥</text>
+                                    <text class="text-primary text-xs font-bold leading-none">You're doing great today! HOT</text>
                                 </view>
                                 <view class="w-12 h-12 bg-primary-opacity-10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
-                                    <text class="text-xl">📊</text>
+                                    <text class="text-xl">STAT</text>
                                 </view>
                             </view>
                             <view class="grid grid-cols-2 gap-4 mb-4">
@@ -174,7 +174,7 @@ onMounted(async () => {
                             <text class="text-2xl font-black text-white">Start Learning</text>
                         </view>
                         <view class="relative z-10 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-text-main shadow-lg">
-                            <text class="text-2xl">▶️</text>
+                            <text class="text-2xl">></text>
                         </view>
                     </view>
 
@@ -231,7 +231,7 @@ onMounted(async () => {
                             <text class="text-white-opacity-80 text-3xs font-bold uppercase tracking-widest">Memory Streak</text>
                             <text class="text-white text-xl font-black">{{ user.streak || 0 }} Days Streaking!</text>
                         </view>
-                        <view class="w-14 h-14 bg-white-opacity-20 rounded-2xl flex items-center justify-center text-3xl">🔥</view>
+                        <view class="w-14 h-14 bg-white-opacity-20 rounded-2xl flex items-center justify-center text-3xl">HOT</view>
                     </view>
                 </view>
 

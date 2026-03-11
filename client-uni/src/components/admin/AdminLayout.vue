@@ -7,10 +7,10 @@ const props = defineProps({
 });
 
 const menuItems = [
-    { id: 'overview', label: '概览', icon: '📊' },
+    { id: 'overview', label: '概览', icon: 'D' },
     { id: 'words', label: '单词', icon: 'W' },
-    { id: 'users', label: '用户', icon: '👥' },
-    { id: 'modules', label: '设置', icon: '⚙️' }
+    { id: 'users', label: '用户', icon: 'US' },
+    { id: 'modules', label: '设置', icon: 'CFG' }
 ];
 </script>
 
@@ -20,7 +20,7 @@ const menuItems = [
         <view class="w-64 bg-surface border-r border-slate-200 dark_border-slate-800 flex flex-col hidden md_flex z-20">
             <view class="p-6 border-b border-slate-100 dark_border-slate-800 flex items-center gap-3">
                 <view class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-200 dark_shadow-none">
-                    <text>🛡️</text>
+                    <text>SAFE</text>
                 </view>
                 <view>
                     <text class="font-black text-slate-800 dark_text-white leading-tight block">Admin</text>
@@ -54,7 +54,7 @@ const menuItems = [
                     </view>
                 </view>
                 <button @click="Actions.setView('settings')" class="w-full mt-3 flex items-center justify-center gap-2 text-slate-400 active_text-rose-500 transition-colors text-sm font-bold py-2">
-                    <text>🚪</text>
+                    <text>OUT</text>
                     <text>退出管理后台</text>
                 </button>
             </view>
@@ -66,12 +66,12 @@ const menuItems = [
             <view class="md_hidden h-16 bg-surface border-b border-slate-200 dark_border-slate-800 flex items-center justify-between px-4 z-20">
                 <view class="flex items-center gap-3">
                     <view class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white text-sm shadow">
-                        <text>🛡️</text>
+                        <text>SAFE</text>
                     </view>
                     <text class="font-black text-slate-800 dark_text-white block">Admin Dashboard</text>
                 </view>
                 <button @click="Actions.setView('settings')" class="text-slate-400">
-                    <text class="text-xl">❌</text>
+                    <text class="text-xl">X</text>
                 </button>
             </view>
             

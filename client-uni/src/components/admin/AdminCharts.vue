@@ -110,7 +110,7 @@ const barOptions = {
             <view class="flex justify-between items-center mb-6">
                 <view class="font-black text-xl text-slate-800 dark_text-white flex items-center gap-3">
                     <view class="p-2 bg-indigo-50 dark_bg-indigo-opacity-30 rounded-lg">
-                        <text>📈</text>
+                        <text>UP</text>
                     </view>
                     <text>用户增长趋势</text>
                 </view>
@@ -126,7 +126,7 @@ const barOptions = {
             <view class="flex justify-between items-center mb-6">
                 <view class="font-black text-xl text-slate-800 dark_text-white flex items-center gap-3">
                     <view class="p-2 bg-pink-50 dark_bg-pink-opacity-30 rounded-lg">
-                        <text>📊</text>
+                        <text>D</text>
                     </view>
                     <text>学习类别分布</text>
                 </view>

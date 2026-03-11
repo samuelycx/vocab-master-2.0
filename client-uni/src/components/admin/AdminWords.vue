@@ -66,15 +66,15 @@ const handleNormalize = async () => {
             </view>
             <view class="flex gap-2">
                 <button @click="handleImport" :disabled="loading" class="bg-surface border border-slate-200 dark_border-slate-800 text-slate-600 dark_text-slate-300 px-4 py-2 rounded-xl font-bold text-sm active_scale-95 flex items-center gap-2">
-                    <text>📥</text>
+                    <text>IN</text>
                     <text>导入 CSV</text>
                 </button>
                 <button @click="handleExport" class="bg-surface border border-slate-200 dark_border-slate-800 text-slate-600 dark_text-slate-300 px-4 py-2 rounded-xl font-bold text-sm active_scale-95 flex items-center gap-2">
-                    <text>📤</text>
+                    <text>EX</text>
                     <text>导出 CSV</text>
                 </button>
                 <button @click="handleNormalize" :disabled="loading" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl font-bold text-sm active_scale-95 flex items-center gap-2">
-                    <text>🧹</text>
+                    <text>CLR</text>
                     <text>清洗词库</text>
                 </button>
             </view>
@@ -106,7 +106,7 @@ const handleNormalize = async () => {
         
         <!-- CSV Info -->
         <view class="bg-indigo-50 dark_bg-indigo-opacity-10 p-4 rounded-xl text-xs text-indigo-600 dark_text-indigo-300 flex gap-3 items-start">
-            <text class="text-lg mt-0-5">💡</text>
+            <text class="text-lg mt-0-5">TIP</text>
             <view>
                 <text class="font-bold mb-1 block">CSV Format Guide</text>
                 <text class="block">Ensure your CSV follows this order: word, part_of_speech, meaning, example_sentence, category.</text>

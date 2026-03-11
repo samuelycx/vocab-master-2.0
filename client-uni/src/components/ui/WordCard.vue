@@ -8,7 +8,7 @@
         <view class="phonetic-row">
           <text class="phonetic">/{{ word.phonetic }}/</text>
           <button class="audio-btn" @click="playAudio">
-            <text class="audio-icon">♪</text>
+            <text class="audio-icon">SND</text>
           </button>
         </view>
       </view>
@@ -23,7 +23,7 @@
     
     <view v-if="showActions" class="word-footer">
       <button class="action-btn bookmark" @click="bookmark">
-        <text class="btn-icon">🔖</text>
+        <text class="btn-icon">BK</text>
         <text class="btn-text">收藏</text>
       </button>
       <button class="action-btn detail" @click="viewDetail">

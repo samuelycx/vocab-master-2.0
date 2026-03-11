@@ -4,61 +4,61 @@ const db = cloud.database()
 const _ = db.command
 
 const RANKS = [
-    { level: 1, title: '流浪者 (Wanderer)', vocabRequired: 0, icon: '🍂' },
-    { level: 2, title: '新手 (Novice)', vocabRequired: 30, icon: '🌱' },
-    { level: 3, title: '学徒 (Apprentice)', vocabRequired: 80, icon: '🪵' },
-    { level: 4, title: '巡林客 (Ranger)', vocabRequired: 150, icon: '🏹' },
-    { level: 5, title: '探索者 (Explorer)', vocabRequired: 250, icon: '🧭' },
-    { level: 6, title: '冒险家 (Adventurer)', vocabRequired: 350, icon: '🎒' },
-    { level: 7, title: '佣兵 (Mercenary)', vocabRequired: 480, icon: '⚔️' },
-    { level: 8, title: '老兵 (Veteran)', vocabRequired: 600, icon: '🛡️' },
-    { level: 9, title: '骑士 (Knight)', vocabRequired: 750, icon: '🐴' },
-    { level: 10, title: '学者 (Scholar)', vocabRequired: 900, icon: '📜' },
-    { level: 11, title: '魔导师 (Mage)', vocabRequired: 1050, icon: '🔮' },
-    { level: 12, title: '大师 (Master)', vocabRequired: 1150, icon: '🏆' },
-    { level: 13, title: '宗师 (Grandmaster)', vocabRequired: 1250, icon: '👑' },
-    { level: 14, title: '传说 (Legend)', vocabRequired: 1300, icon: '🐲' },
-    { level: 15, title: '半神 (Demigod)', vocabRequired: 1301, icon: '🌟' }
+    { level: 1, title: '流浪者 (Wanderer)', vocabRequired: 0, icon: '' },
+    { level: 2, title: '新手 (Novice)', vocabRequired: 30, icon: '' },
+    { level: 3, title: '学徒 (Apprentice)', vocabRequired: 80, icon: '' },
+    { level: 4, title: '巡林客 (Ranger)', vocabRequired: 150, icon: '' },
+    { level: 5, title: '探索者 (Explorer)', vocabRequired: 250, icon: '' },
+    { level: 6, title: '冒险家 (Adventurer)', vocabRequired: 350, icon: '' },
+    { level: 7, title: '佣兵 (Mercenary)', vocabRequired: 480, icon: '' },
+    { level: 8, title: '老兵 (Veteran)', vocabRequired: 600, icon: '' },
+    { level: 9, title: '骑士 (Knight)', vocabRequired: 750, icon: '' },
+    { level: 10, title: '学者 (Scholar)', vocabRequired: 900, icon: '' },
+    { level: 11, title: '魔导师 (Mage)', vocabRequired: 1050, icon: '' },
+    { level: 12, title: '大师 (Master)', vocabRequired: 1150, icon: '' },
+    { level: 13, title: '宗师 (Grandmaster)', vocabRequired: 1250, icon: '' },
+    { level: 14, title: '传说 (Legend)', vocabRequired: 1300, icon: '' },
+    { level: 15, title: '半神 (Demigod)', vocabRequired: 1301, icon: '' }
 ]
 
 const DEFAULT_ACHIEVEMENTS = [
-    { id: 'growth_first_use', key: 'FIRST_USE', name: '初来乍到', description: '第一次使用程序', category: 'GROWTH', icon: '🎉' },
-    { id: 'growth_1', key: 'FIRST_BLOOD', name: '第一滴血', description: '完成第一次答对', category: 'GROWTH', icon: '🩸' },
-    { id: 'growth_xp_100', key: 'XP_100', name: '初露锋芒', description: '累计获得 100 经验值', category: 'GROWTH', icon: '✨' },
-    { id: 'growth_xp_1000', key: 'XP_1000', name: '经验丰富', description: '累计获得 1000 经验值', category: 'GROWTH', icon: '🌟' },
+    { id: 'growth_first_use', key: 'FIRST_USE', name: '初来乍到', description: '第一次使用程序', category: 'GROWTH', icon: '' },
+    { id: 'growth_1', key: 'FIRST_BLOOD', name: '第一滴血', description: '完成第一次答对', category: 'GROWTH', icon: '' },
+    { id: 'growth_xp_100', key: 'XP_100', name: '初露锋芒', description: '累计获得 100 经验值', category: 'GROWTH', icon: '' },
+    { id: 'growth_xp_1000', key: 'XP_1000', name: '经验丰富', description: '累计获得 1000 经验值', category: 'GROWTH', icon: '' },
 
-    { id: 'cons_3', key: 'STREAK_3', name: '初出茅庐', description: '连续打卡 3 天', category: 'CONSISTENCY', icon: '🌱' },
-    { id: 'cons_5', key: 'STREAK_5', name: '坚持不懈', description: '连续打卡 5 天', category: 'CONSISTENCY', icon: '🌿' },
-    { id: 'cons_7', key: 'STREAK_7', name: '习惯成自然', description: '连续打卡 7 天', category: 'CONSISTENCY', icon: '📅' },
-    { id: 'cons_10', key: 'STREAK_10', name: '十全十美', description: '连续打卡 10 天', category: 'CONSISTENCY', icon: '🍂' },
-    { id: 'cons_14', key: 'STREAK_14', name: '风雨无阻', description: '连续打卡 14 天', category: 'CONSISTENCY', icon: '🛡️' },
-    { id: 'cons_21', key: 'STREAK_21', name: '自律大师', description: '连续打卡 21 天', category: 'CONSISTENCY', icon: '🧘' },
-    { id: 'cons_30', key: 'STREAK_30', name: '月度模范', description: '连续打卡 30 天', category: 'CONSISTENCY', icon: '🏆' },
+    { id: 'cons_3', key: 'STREAK_3', name: '初出茅庐', description: '连续打卡 3 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_5', key: 'STREAK_5', name: '坚持不懈', description: '连续打卡 5 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_7', key: 'STREAK_7', name: '习惯成自然', description: '连续打卡 7 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_10', key: 'STREAK_10', name: '十全十美', description: '连续打卡 10 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_14', key: 'STREAK_14', name: '风雨无阻', description: '连续打卡 14 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_21', key: 'STREAK_21', name: '自律大师', description: '连续打卡 21 天', category: 'CONSISTENCY', icon: '' },
+    { id: 'cons_30', key: 'STREAK_30', name: '月度模范', description: '连续打卡 30 天', category: 'CONSISTENCY', icon: '' },
 
-    { id: 'prec_5', key: 'COMBO_5', name: '五连绝世', description: '连续答对 5 题', category: 'PRECISION', icon: '⚡' },
-    { id: 'prec_10', key: 'COMBO_10', name: '不可阻挡', description: '连续答对 10 题', category: 'PRECISION', icon: '🔥' },
-    { id: 'prec_20', key: 'COMBO_20', name: '神射手', description: '连续答对 20 题', category: 'PRECISION', icon: '🏹' },
-    { id: 'prec_30', key: 'COMBO_30', name: '超神', description: '连续答对 30 题', category: 'PRECISION', icon: '💫' },
-    { id: 'prec_50', key: 'COMBO_50', name: '鹰眼', description: '连续答对 50 题', category: 'PRECISION', icon: '🦅' },
+    { id: 'prec_5', key: 'COMBO_5', name: '五连绝世', description: '连续答对 5 题', category: 'PRECISION', icon: '' },
+    { id: 'prec_10', key: 'COMBO_10', name: '不可阻挡', description: '连续答对 10 题', category: 'PRECISION', icon: '' },
+    { id: 'prec_20', key: 'COMBO_20', name: '神射手', description: '连续答对 20 题', category: 'PRECISION', icon: '' },
+    { id: 'prec_30', key: 'COMBO_30', name: '超神', description: '连续答对 30 题', category: 'PRECISION', icon: '' },
+    { id: 'prec_50', key: 'COMBO_50', name: '鹰眼', description: '连续答对 50 题', category: 'PRECISION', icon: '' },
 
-    { id: 'vol_10', key: 'WORDS_10', name: '积跬步', description: '掌握 10 个单词', category: 'VOLUME', icon: '🦶' },
-    { id: 'vol_30', key: 'WORDS_30', name: '入门', description: '掌握 30 个单词', category: 'VOLUME', icon: '🚪' },
-    { id: 'vol_50', key: 'WORDS_50', name: '第一桶金', description: '掌握 50 个单词', category: 'VOLUME', icon: '💰' },
-    { id: 'vol_100', key: 'WORDS_100', name: '百词斩', description: '掌握 100 个单词', category: 'VOLUME', icon: '🗡️' },
-    { id: 'vol_200', key: 'WORDS_200', name: '积少成多', description: '掌握 200 个单词', category: 'VOLUME', icon: '📚' },
-    { id: 'vol_500', key: 'WORDS_500', name: '博闻强识', description: '掌握 500 个单词', category: 'VOLUME', icon: '🧠' },
-    { id: 'vol_650', key: 'WORDS_650', name: '半壁江山', description: '掌握 650 个单词 (50%)', category: 'VOLUME', icon: '⚔️' },
-    { id: 'vol_1000', key: 'WORDS_1000', name: '千词斩', description: '掌握 1000 个单词', category: 'VOLUME', icon: '🔥' },
-    { id: 'vol_1300', key: 'WORDS_1300', name: '大满贯', description: '掌握全库 1300+ 个单词', category: 'VOLUME', icon: '👑' },
+    { id: 'vol_10', key: 'WORDS_10', name: '积跬步', description: '掌握 10 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_30', key: 'WORDS_30', name: '入门', description: '掌握 30 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_50', key: 'WORDS_50', name: '第一桶金', description: '掌握 50 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_100', key: 'WORDS_100', name: '百词斩', description: '掌握 100 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_200', key: 'WORDS_200', name: '积少成多', description: '掌握 200 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_500', key: 'WORDS_500', name: '博闻强识', description: '掌握 500 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_650', key: 'WORDS_650', name: '半壁江山', description: '掌握 650 个单词 (50%)', category: 'VOLUME', icon: '' },
+    { id: 'vol_1000', key: 'WORDS_1000', name: '千词斩', description: '掌握 1000 个单词', category: 'VOLUME', icon: '' },
+    { id: 'vol_1300', key: 'WORDS_1300', name: '大满贯', description: '掌握全库 1300+ 个单词', category: 'VOLUME', icon: '' },
 
-    { id: 'wealth_50', key: 'COINS_50', name: '零花钱', description: '累计获得 50 金币', category: 'WEALTH', icon: '🪙' },
-    { id: 'wealth_100', key: 'COINS_100', name: '储蓄罐', description: '累计获得 100 金币', category: 'WEALTH', icon: '🐷' },
-    { id: 'wealth_500', key: 'COINS_500', name: '第一桶金', description: '累计获得 500 金币', category: 'WEALTH', icon: '💰' },
-    { id: 'wealth_1000', key: 'COINS_1000', name: '小富翁', description: '累计获得 1000 金币', category: 'WEALTH', icon: '💸' },
-    { id: 'wealth_5000', key: 'COINS_5000', name: '财阀', description: '累计获得 5000 金币', category: 'WEALTH', icon: '🏦' },
+    { id: 'wealth_50', key: 'COINS_50', name: '零花钱', description: '累计获得 50 金币', category: 'WEALTH', icon: '' },
+    { id: 'wealth_100', key: 'COINS_100', name: '储蓄罐', description: '累计获得 100 金币', category: 'WEALTH', icon: '' },
+    { id: 'wealth_500', key: 'COINS_500', name: '第一桶金', description: '累计获得 500 金币', category: 'WEALTH', icon: '' },
+    { id: 'wealth_1000', key: 'COINS_1000', name: '小富翁', description: '累计获得 1000 金币', category: 'WEALTH', icon: '' },
+    { id: 'wealth_5000', key: 'COINS_5000', name: '财阀', description: '累计获得 5000 金币', category: 'WEALTH', icon: '' },
 
-    { id: 'spec_night', key: 'NIGHT_OWL', name: '夜猫子', description: '在凌晨 0:00 - 4:00 之间完成一次学习', category: 'SPECIAL', icon: '🦉' },
-    { id: 'spec_morning', key: 'EARLY_BIRD', name: '早起的鸟儿', description: '在清晨 5:00 - 7:00 之间完成一次学习', category: 'SPECIAL', icon: '🐦' }
+    { id: 'spec_night', key: 'NIGHT_OWL', name: '夜猫子', description: '在凌晨 0:00 - 4:00 之间完成一次学习', category: 'SPECIAL', icon: '' },
+    { id: 'spec_morning', key: 'EARLY_BIRD', name: '早起的鸟儿', description: '在清晨 5:00 - 7:00 之间完成一次学习', category: 'SPECIAL', icon: '' }
 ]
 
 exports.main = async (event, context) => {
@@ -698,7 +698,7 @@ async function getSocialFeed(openid, { limit = 20 } = {}) {
             return {
                 id: row._id || `feed_${idx}`,
                 username: user.username || 'User',
-                title: `${ach.icon || '🏆'} ${ach.name || '解锁成就'}`,
+                title: ach.name || '解锁成就',
                 timestamp: row.unlockedAt
             }
         })

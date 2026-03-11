@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { GameState, Actions } from '../state.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const user = GameState.user;
 const state = GameState;
+const uiIcons = UI_ICONS;
 
 const currentTab = ref('dashboard');
 
@@ -82,7 +84,7 @@ const goBack = () => {
       <!-- 2x2糖果色卡片 -->
       <view class="stats-grid">
         <view class="stat-card mint">
-          <text class="stat-icon">📚</text>
+          <image class="stat-icon-image" :src="uiIcons.book" mode="aspectFit" />
           <text class="stat-title">Total</text>
           <text class="stat-count">{{ stats.total }}</text>
           <view class="stat-trend">
@@ -92,7 +94,7 @@ const goBack = () => {
         </view>
         
         <view class="stat-card blue">
-          <text class="stat-icon">📖</text>
+          <image class="stat-icon-image" :src="uiIcons.search" mode="aspectFit" />
           <text class="stat-title">Learning</text>
           <text class="stat-count">{{ stats.learning }}</text>
           <view class="stat-trend">
@@ -102,7 +104,7 @@ const goBack = () => {
         </view>
         
         <view class="stat-card yellow">
-          <text class="stat-icon">✅</text>
+          <image class="stat-icon-image" :src="uiIcons.ok" mode="aspectFit" />
           <text class="stat-title">Mastered</text>
           <text class="stat-count">{{ stats.mastered }}</text>
           <view class="stat-trend">
@@ -115,7 +117,7 @@ const goBack = () => {
           <text class="start-text">Start</text>
           <text class="start-text">learning</text>
           <view class="play-icon">
-            <text class="play-icon-text">▶</text>
+            <text class="play-icon-text">></text>
           </view>
         </view>
       </view>
@@ -123,17 +125,17 @@ const goBack = () => {
       <!-- 底部圆形功能按钮 -->
       <view class="bottom-actions">
         <view class="action-circle blue" @click="console.log('复习')">
-          <text class="action-icon">📖</text>
+          <image class="action-icon-image" :src="uiIcons.search" mode="aspectFit" />
           <text class="action-label">复习</text>
         </view>
         
         <view class="action-circle pink" @click="startPK">
-          <text class="action-icon">⚔️</text>
+          <image class="action-icon-image" :src="uiIcons.pk" mode="aspectFit" />
           <text class="action-label">PK</text>
         </view>
         
         <view class="action-circle yellow" @click="viewLeaderboard">
-          <text class="action-icon">🏆</text>
+          <image class="action-icon-image" :src="uiIcons.rank" mode="aspectFit" />
           <text class="action-label">排行</text>
         </view>
       </view>
@@ -160,7 +162,7 @@ const goBack = () => {
           <view class="progress-fill-mini" :style="{ width: '30%' }"></view>
         </view>
         <view class="hint-btn">
-          <text class="hint-text">💡</text>
+          <image class="hint-icon-image" :src="uiIcons.search" mode="aspectFit" />
         </view>
       </view>
       
@@ -169,7 +171,7 @@ const goBack = () => {
         <text class="word-phonetic">/ˈɒbviəs/</text>
         
         <view class="sound-btn">
-          <text class="sound-icon">🔊</text>
+          <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
         </view>
         
         <text class="tap-hint">点击显示释义</text>
@@ -214,7 +216,7 @@ const goBack = () => {
           <text class="pk-score opponent">3</text>
           <text class="pk-name">AI</text>
           <view class="pk-avatar opponent-avatar">
-            <text class="avatar-text">🤖</text>
+            <image class="avatar-icon-image" :src="uiIcons.bot" mode="aspectFit" />
           </view>
         </view>
       </view>
@@ -244,12 +246,15 @@ const goBack = () => {
     <!-- 结果页面预览 -->
     <view v-if="currentTab === 'result'" class="preview-content result-preview">
       <view class="result-content">
-        <text class="result-emoji">🎉</text>
+        <image class="result-emoji-image" :src="uiIcons.ok" mode="aspectFit" />
         <text class="result-title">Well Done!</text>
         
         <view class="result-rewards">
           <text class="reward-xp">+50 XP</text>
-          <text class="reward-coins">+10 💰</text>
+          <view class="reward-coins-wrap">
+            <image class="reward-coin-icon" :src="uiIcons.coin" mode="aspectFit" />
+            <text class="reward-coins">+10 COIN</text>
+          </view>
         </view>
         
         <view class="result-summary">
@@ -405,12 +410,13 @@ const goBack = () => {
   background: #FFB5D0;
 }
 
-.stat-icon {
+.stat-icon-image {
   position: absolute;
   top: 20rpx;
   right: 20rpx;
-  font-size: 40rpx;
-  opacity: 0.4;
+  width: 40rpx;
+  height: 40rpx;
+  opacity: 0.5;
 }
 
 .stat-title {
@@ -513,8 +519,9 @@ const goBack = () => {
   background: #F9E975;
 }
 
-.action-icon {
-  font-size: 40rpx;
+.action-icon-image {
+  width: 40rpx;
+  height: 40rpx;
   margin-bottom: 4rpx;
 }
 
@@ -588,9 +595,14 @@ const goBack = () => {
   justify-content: center;
 }
 
-.back-text, .hint-text {
+.back-text {
   font-size: 28rpx;
   color: white;
+}
+
+.hint-icon-image {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .progress-bar-mini {
@@ -642,8 +654,9 @@ const goBack = () => {
   margin-bottom: 32rpx;
 }
 
-.sound-icon {
-  font-size: 32rpx;
+.sound-icon-image {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .tap-hint {
@@ -721,6 +734,11 @@ const goBack = () => {
 
 .opponent-avatar {
   background: linear-gradient(135deg, #F472B6, #DB2777);
+}
+
+.avatar-icon-image {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 .pk-name {
@@ -838,10 +856,11 @@ const goBack = () => {
   text-align: center;
 }
 
-.result-emoji {
-  font-size: 120rpx;
+.result-emoji-image {
+  width: 120rpx;
+  height: 120rpx;
+  margin: 0 auto 24rpx;
   display: block;
-  margin-bottom: 24rpx;
 }
 
 .result-title {
@@ -857,9 +876,10 @@ const goBack = () => {
   justify-content: center;
   gap: 24rpx;
   margin-bottom: 40rpx;
+  align-items: center;
 }
 
-.reward-xp, .reward-coins {
+.reward-xp, .reward-coins-wrap {
   font-size: 32rpx;
   font-weight: 700;
   padding: 16rpx 32rpx;
@@ -871,8 +891,22 @@ const goBack = () => {
   color: #1a1a1a;
 }
 
-.reward-coins {
+.reward-coins-wrap {
   background: #A8F0C6;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.reward-coin-icon {
+  width: 30rpx;
+  height: 30rpx;
+}
+
+.reward-coins {
+  font-size: 32rpx;
+  font-weight: 700;
   color: #1a1a1a;
 }
 

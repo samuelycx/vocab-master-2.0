@@ -16,7 +16,7 @@
       
       <!-- 中央悬浮按钮 -->
       <view v-if="showCenterButton" class="center-button" @click="handleCenterClick">
-        <text class="center-icon">▶</text>
+        <text class="center-icon">></text>
       </view>
     </view>
     <view class="safe-area"></view>

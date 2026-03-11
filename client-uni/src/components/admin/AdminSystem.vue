@@ -46,7 +46,7 @@ onMounted(() => {
                 <div class="flex justify-between items-center p-4 bg-slate-50 dark_bg-slate-900 rounded-xl transition-colors hover_bg-slate-100 dark_hover_bg-slate-dark-opacity-95">
                     <div>
                         <div class="font-bold text-slate-800 dark_text-white flex items-center gap-2">
-                            <text class="text-rose-500">🥊</text>
+                            <text class="text-rose-500">PK</text>
                             PK Arena
                         </div>
                         <div class="text-xs text-slate-400 mt-1">Enable/Disable Multiplayer & Bot Arena</div>

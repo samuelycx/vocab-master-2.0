@@ -4,6 +4,7 @@ import { Actions, GameState } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const words = ref([]);
 const loading = ref(false);
@@ -12,6 +13,7 @@ const hasMore = ref(true);
 const search = ref('');
 const serverTotal = ref(0);
 const { t } = useI18n();
+const uiIcons = UI_ICONS;
 const totalCount = computed(() => {
     if (search.value && search.value.trim()) return words.value.length;
     const n = Number(serverTotal.value || GameState.user.totalLearned || 0);
@@ -172,14 +174,14 @@ const getMasteryLevel = (status, repetition) => {
                 <text class="header-sub">{{ t('vocab_count', { count: totalCount }) }}</text>
             </view>
             <view class="header-icon">
-                <text>📚</text>
+                <image class="header-icon-image" :src="uiIcons.book" mode="aspectFit" />
             </view>
         </view>
 
         <!-- Search Bar -->
         <view class="search-section">
             <view class="search-box">
-                <text class="search-icon">🔍</text>
+                <image class="search-icon-image" :src="uiIcons.search" mode="aspectFit" />
                 <input 
                     v-model="search"
                     class="search-input"
@@ -206,7 +208,9 @@ const getMasteryLevel = (status, repetition) => {
         <scroll-view scroll-y class="word-list" @scrolltolower="loadMore">
             <!-- Empty State -->
             <view v-if="(!displayWords || displayWords.length === 0) && !loading" class="empty-state">
-                <view class="empty-icon">📚</view>
+                <view class="empty-icon">
+                    <image class="empty-icon-image" :src="uiIcons.book" mode="aspectFit" />
+                </view>
                 <text class="empty-title">{{ t('vocab_empty_title') }}</text>
                 <text class="empty-sub">{{ t('vocab_empty_sub') }}</text>
             </view>
@@ -235,7 +239,7 @@ const getMasteryLevel = (status, repetition) => {
                         </view>
                         
                         <view class="sound-btn" @click="GameEngine.playAudio(record.word.text || record.word.word)">
-                            <text>🔊</text>
+                            <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
                         </view>
                     </view>
                     
@@ -333,7 +337,6 @@ const getMasteryLevel = (status, repetition) => {
 }
 
 .header-icon {
-  font-size: 40rpx;
   width: 72rpx;
   height: 72rpx;
   background: linear-gradient(135deg, #A0D8F1 0%, #7BC8E8 100%);
@@ -342,6 +345,10 @@ const getMasteryLevel = (status, repetition) => {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(160, 216, 241, 0.4);
+}
+.header-icon-image {
+  width: 42rpx;
+  height: 42rpx;
 }
 
 /* Search */
@@ -359,8 +366,9 @@ const getMasteryLevel = (status, repetition) => {
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
-.search-icon {
-  font-size: 32rpx;
+.search-icon-image {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .search-input {
@@ -509,7 +517,10 @@ const getMasteryLevel = (status, repetition) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
+}
+.sound-icon-image {
+  width: 30rpx;
+  height: 30rpx;
 }
 
 .sound-btn:active {
@@ -568,9 +579,18 @@ const getMasteryLevel = (status, repetition) => {
 }
 
 .empty-icon {
-  font-size: 100rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
+  background: #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 32rpx;
-  opacity: 0.3;
+}
+.empty-icon-image {
+  width: 56rpx;
+  height: 56rpx;
 }
 
 .empty-title {

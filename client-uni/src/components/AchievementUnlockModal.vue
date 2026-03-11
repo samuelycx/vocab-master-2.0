@@ -1,8 +1,15 @@
 <script setup>
+import { computed } from 'vue';
+import { getAchievementIconById } from '../utils/achievement-icons.js';
+import { useI18n } from '../i18n.js';
+
 const props = defineProps({
     achievement: Object, // { name, description, icon }
     onClose: Function
 });
+const { t } = useI18n();
+
+const achievementIcon = computed(() => getAchievementIconById(props.achievement?.id || props.achievement?.achievementId));
 </script>
 
 <template>
@@ -11,16 +18,16 @@ const props = defineProps({
             
             <view class="relative z-10 flex flex-col items-center">
                 <view class="w-24 h-24 bg-yellow-100 rounded-3xl flex items-center justify-center text-5xl shadow-inner mb-6 animate-pulse-slow">
-                    <text>{{ achievement?.icon || '#' }}</text>
+                    <image class="icon-image" :src="achievementIcon" mode="aspectFit" />
                 </view>
                 
-                <text class="text-2xl font-black text-slate-800 mb-2 block">解锁新成就!</text>
+                <text class="text-2xl font-black text-slate-800 mb-2 block">{{ t('achievement_unlock_title') }}</text>
                 
                 <text class="text-slate-800 font-bold text-xl mb-1 block">{{ achievement?.name }}</text>
                 <text class="text-slate-400 text-sm mb-8 px-4 leading-relaxed block">{{ achievement?.description }}</text>
 
                 <button @click="onClose" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg active_scale-95 transition-transform">
-                    太棒了!
+                    {{ t('achievement_unlock_cta') }}
                 </button>
             </view>
         </view>
@@ -28,6 +35,11 @@ const props = defineProps({
 </template>
 
 <style scoped>
+.icon-image {
+    width: 72rpx;
+    height: 72rpx;
+}
+
 .animate-slide-up {
     animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

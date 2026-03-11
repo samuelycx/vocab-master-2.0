@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const props = defineProps({
     onBack: Function
@@ -20,7 +21,8 @@ const settings = GameState.settings;
 const isAdmin = (GameState.user?.role === 'ADMIN');
 const showResetConfirm = ref(false);
 const resetLoading = ref(false);
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const uiIcons = UI_ICONS;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const getAvatarUrl = (avatar) => {
@@ -56,7 +58,7 @@ const syncProfileToServer = async ({ username, avatar }, successToast = false) =
     });
 
     if (successToast) {
-        uni.showToast({ title: '已同步微信资料', icon: 'success' });
+        uni.showToast({ title: t('settings_sync_success'), icon: 'success' });
     }
     return true;
 };
@@ -112,8 +114,8 @@ const goToProfile = async () => {
         try {
             const profile = await new Promise((resolve, reject) => {
                 getProfile({
-                    desc: '用于展示你的昵称和头像',
-                    lang: 'zh_CN',
+                    desc: t('settings_profile_auth_desc'),
+                    lang: locale.value === 'en-US' ? 'en' : 'zh_CN',
                     success: resolve,
                     fail: reject
                 });
@@ -126,9 +128,9 @@ const goToProfile = async () => {
             if (await syncProfileToServer({ username, avatar }, true)) {
                 return;
             }
-            uni.showToast({ title: '同步失败', icon: 'none' });
+            uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });
         } catch (e) {
-            uni.showToast({ title: '未完成微信授权，已进入手动设置', icon: 'none' });
+            uni.showToast({ title: t('settings_sync_cancelled'), icon: 'none' });
         }
     }
     Actions.setView('profile-setup');
@@ -193,7 +195,7 @@ onMounted(async () => {
                 
                 <view class="setting-item">
                     <view class="setting-left">
-                        <text class="setting-icon">🔊</text>
+                        <image class="setting-icon-image" :src="uiIcons.sound" mode="aspectFit" />
                         <text class="setting-label">{{ t('settings_sound') }}</text>
                     </view>
                     
@@ -208,7 +210,7 @@ onMounted(async () => {
 
                 <view class="setting-item language-item">
                     <view class="setting-left">
-                        <text class="setting-icon">🌐</text>
+                        <image class="setting-icon-image" :src="uiIcons.lang" mode="aspectFit" />
                         <text class="setting-label">{{ t('settings_language') }}</text>
                     </view>
                     <view class="language-switch">
@@ -450,8 +452,9 @@ onMounted(async () => {
     gap: 20rpx;
 }
 
-.setting-icon {
-    font-size: 36rpx;
+.setting-icon-image {
+    width: 34rpx;
+    height: 34rpx;
 }
 
 .setting-label {

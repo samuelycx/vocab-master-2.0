@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const user = GameState.user;
 const activeTab = ref('leaderboard');
@@ -10,6 +11,7 @@ const loading = ref(false);
 const leaderboard = ref([]);
 const feed = ref([]);
 const { t } = useI18n();
+const uiIcons = UI_ICONS;
 const myId = computed(() => user.id || user._id || user.openid || '');
 
 onMounted(async () => {
@@ -43,9 +45,9 @@ const goBack = () => {
 };
 
 const getRankStyle = (index) => {
-    if (index === 0) return { bg: '#F9E975', icon: '🥇' };
-    if (index === 1) return { bg: '#A0D8F1', icon: '🥈' };
-    if (index === 2) return { bg: '#FFB5D0', icon: '🥉' };
+    if (index === 0) return { bg: '#F9E975', icon: '1' };
+    if (index === 1) return { bg: '#A0D8F1', icon: '2' };
+    if (index === 2) return { bg: '#FFB5D0', icon: '3' };
     return { bg: '#f0f0f0', icon: (index + 1).toString() };
 };
 
@@ -71,7 +73,7 @@ const formatTime = (timestamp) => {
                 <text class="header-sub">{{ t('social_subtitle') }}</text>
             </view>
             <view class="header-icon">
-                <text>🏆</text>
+                <image class="header-icon-image" :src="uiIcons.rank" mode="aspectFit" />
             </view>
         </view>
 
@@ -155,7 +157,7 @@ const formatTime = (timestamp) => {
             </view>
 
             <view v-if="!loading && leaderboard.length === 0" class="empty">
-                <text class="empty-icon">📊</text>
+                <view class="empty-icon"><image class="empty-icon-image" :src="uiIcons.rank" mode="aspectFit" /></view>
                 <text class="empty-text">{{ t('social_empty_rank') }}</text>
             </view>
         </scroll-view>
@@ -163,7 +165,7 @@ const formatTime = (timestamp) => {
         <!-- Activity Feed -->
         <scroll-view v-if="activeTab === 'feed'" scroll-y class="content">
             <view v-if="feed.length === 0" class="empty">
-                <text class="empty-icon">📭</text>
+                <view class="empty-icon"><image class="empty-icon-image" :src="uiIcons.feed" mode="aspectFit" /></view>
                 <text class="empty-text">{{ t('social_empty_feed') }}</text>
             </view>
 
@@ -248,7 +250,6 @@ const formatTime = (timestamp) => {
 }
 
 .header-icon {
-  font-size: 40rpx;
   width: 72rpx;
   height: 72rpx;
   background: linear-gradient(135deg, #F9E975 0%, #E5D450 100%);
@@ -257,6 +258,10 @@ const formatTime = (timestamp) => {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(249, 233, 117, 0.4);
+}
+.header-icon-image {
+  width: 42rpx;
+  height: 42rpx;
 }
 
 /* My Rank Card */
@@ -404,7 +409,7 @@ const formatTime = (timestamp) => {
 }
 
 .rank-icon {
-  font-size: 36rpx;
+  font-size: 28rpx;
   font-weight: 900;
 }
 
@@ -550,9 +555,18 @@ const formatTime = (timestamp) => {
 }
 
 .empty-icon {
-  font-size: 80rpx;
+  background: #eef2f7;
+  border-radius: 16rpx;
+  width: 140rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 24rpx;
-  opacity: 0.3;
+}
+.empty-icon-image {
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .empty-text {

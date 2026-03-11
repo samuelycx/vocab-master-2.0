@@ -1,10 +1,12 @@
 <script setup>
-import { computed, watch, ref } from 'vue';
+import { computed, watch, ref, onUnmounted } from 'vue';
 import { GameState } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const session = GameEngine.session;
+const uiIcons = UI_ICONS;
 const combo = computed(() => GameState.game.combo);
 const isFlipped = ref(false);
 const { t } = useI18n();
@@ -16,7 +18,8 @@ watch(() => session.currentWord, (newWord) => {
     if (newWord.examples && newWord.examples.length > 0) {
       const ex = newWord.examples[Math.floor(Math.random() * newWord.examples.length)];
       // Mask the word (case insensitive)
-      const regex = new RegExp(newWord.word, 'gi');
+      const escaped = String(newWord.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'gi');
       session.currentExample = {
         original: ex,
         masked: ex.replace(regex, '______')
@@ -87,6 +90,10 @@ watch(() => session.isAnswered, (answered) => {
     isFlipped.value = true;
   }
 });
+
+onUnmounted(() => {
+  GameEngine.stopAudio();
+});
 </script>
 
 <template>
@@ -105,7 +112,7 @@ watch(() => session.isAnswered, (answered) => {
       </view>
       
       <view class="combo-display animate-pulse" v-if="combo > 1">
-        <text class="combo-text">🔥 {{ combo }}</text>
+        <text class="combo-text">COMBO {{ combo }}</text>
       </view>
     </view>
     
@@ -127,7 +134,7 @@ watch(() => session.isAnswered, (answered) => {
           </view>
           
           <view class="sound-btn" @click.stop="playAudio">
-            <text class="sound-icon">🔊</text>
+            <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
           </view>
           
         </view>
@@ -170,7 +177,7 @@ watch(() => session.isAnswered, (answered) => {
 /* 页面容器 - 紫色渐变背景 */
 .game-arena {
   min-height: 100vh;
-  background: linear-gradient(180deg, #5A459D 0%, #7B66C5 50%, #9B8AD5 100%);
+  background: #f7f3ec;
   padding: calc(var(--header-height, 88px) + 16rpx) 32rpx 40rpx;
   display: flex;
   flex-direction: column;
@@ -188,8 +195,8 @@ watch(() => session.isAnswered, (answered) => {
 .back-btn {
   width: 72rpx;
   height: 72rpx;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10rpx);
+  background: #ffffff;
+  border: 1px solid #ebe4da;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -204,7 +211,7 @@ watch(() => session.isAnswered, (answered) => {
 
 .back-icon {
   font-size: 36rpx;
-  color: white;
+  color: #111827;
   font-weight: 700;
 }
 
@@ -217,7 +224,7 @@ watch(() => session.isAnswered, (answered) => {
 
 .progress-bar {
   height: 16rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e5e7eb;
   border-radius: 32rpx;
   overflow: hidden;
 }
@@ -232,22 +239,22 @@ watch(() => session.isAnswered, (answered) => {
 
 .progress-text {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #64748b;
   font-weight: 600;
   text-align: center;
 }
 
 .combo-display {
   padding: 12rpx 20rpx;
-  background: linear-gradient(135deg, #FFB5D0 0%, #FF8AB3 100%);
+  background: #111827;
   border-radius: 24rpx;
   box-shadow: 0 4rpx 12rpx rgba(255, 181, 208, 0.4);
 }
 
 .combo-text {
-  font-size: 26rpx;
+  font-size: 20rpx;
   font-weight: 800;
-  color: white;
+  color: #f9fafb;
 }
 
 /* 单词卡片容器 */
@@ -344,8 +351,9 @@ watch(() => session.isAnswered, (answered) => {
     0 1rpx 0 rgba(255, 255, 255, 0.8) inset;
 }
 
-.sound-icon {
-  font-size: 44rpx;
+.sound-icon-image {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .tap-hint {

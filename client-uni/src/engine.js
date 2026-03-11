@@ -517,4 +517,10 @@ export const GameEngine = {
             }
         }
     }
+    ,
+    stopAudio() {
+        if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
+        this.autoPlayHandle = null;
+        this._destroyAudio(this.audioContext);
+    }
 };

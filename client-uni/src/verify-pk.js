@@ -89,7 +89,7 @@ global.SpeechSynthesisUtterance = class { };
 global.fetch = async () => ({ ok: true, json: async () => ({}) });
 
 async function verify() {
-    console.log('🚀 Starting PK Verification...');
+    console.log('[START] Starting PK Verification...');
 
     // Dynamic import to ensure globals are set first
     const { GameEngine } = await import('./src/engine.js');
@@ -115,7 +115,7 @@ async function verify() {
 
     if (GameEngine.session.mode !== 'pk') throw new Error('Mode is not pk');
     if (!GameState.game.pk.isActive) throw new Error('PK state is not active');
-    console.log('✅ PK Session Started');
+    console.log('[OK] PK Session Started');
 
     // 2. Simulate User Scoring
     const currentWord = GameEngine.session.queue[GameEngine.session.currentIndex];
@@ -126,7 +126,7 @@ async function verify() {
     GameEngine.submitAnswer(correctOption);
 
     if (GameState.game.pk.userScore <= initialScore) throw new Error('User score did not increase');
-    console.log(`✅ User Score: ${initialScore} -> ${GameState.game.pk.userScore}`);
+    console.log(`[OK] User Score: ${initialScore} -> ${GameState.game.pk.userScore}`);
 
     // 3. Simulate Bot Loop
     console.log('3. Simulating Bot Loop...');
@@ -138,9 +138,9 @@ async function verify() {
 
     console.log(`   Bot Score after 20 ticks: ${GameState.game.pk.opponent.score}`);
     if (GameState.game.pk.opponent.score === initialBotScore) {
-        console.warn('⚠️ Bot score did not increase (unlucky?)');
+        console.warn('[WARN] Bot score did not increase (unlucky?)');
     } else {
-        console.log('✅ Bot is scoring');
+        console.log('[OK] Bot is scoring');
     }
 
     // 4. Test Win Condition
@@ -151,11 +151,11 @@ async function verify() {
     if (GameState.game.pk.winner !== 'user') throw new Error('User did not win with high score');
     if (GameState.game.pk.isActive) throw new Error('PK should be inactive after win');
 
-    console.log('✅ Win condition verified');
-    console.log('🎉 All PK Verification Steps Passed!');
+    console.log('[OK] Win condition verified');
+    console.log('[DONE] All PK Verification Steps Passed!');
 }
 
 verify().catch(e => {
-    console.error('❌ Verification Failed:', e);
+    console.error('X Verification Failed:', e);
     process.exit(1);
 });

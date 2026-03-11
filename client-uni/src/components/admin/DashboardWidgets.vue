@@ -19,13 +19,13 @@ defineProps({
             <view class="flex justify-between items-start mb-4">
                 <text class="text-slate-400 text-xxs font-black uppercase tracking-widest-2 block">Total Users</text>
                 <view class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark_shadow-none transition-transform group-hover_rotate-12">
-                    <text>👥</text>
+                    <text>US</text>
                 </view>
             </view>
             <view>
                 <text class="text-4xl font-black text-slate-800 dark_text-white block">{{ stats.totalUsers }}</text>
                 <view class="text-xxs text-green-500 font-black mt-2 flex items-center gap-1 uppercase tracking-wider">
-                    <text>⬆️</text>
+                    <text>UP</text>
                     <text>12% increase</text>
                 </view>
             </view>
@@ -35,7 +35,7 @@ defineProps({
             <view class="flex justify-between items-start mb-4">
                 <text class="text-slate-400 text-xxs font-black uppercase tracking-widest-2 block">Active Today</text>
                 <view class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-200 dark_shadow-none transition-transform group-hover_rotate-12">
-                    <text>📈</text>
+                    <text>UP</text>
                 </view>
             </view>
             <view>
@@ -61,7 +61,7 @@ defineProps({
             <view class="flex justify-between items-start mb-4">
                 <text class="text-slate-400 text-xxs font-black uppercase tracking-widest-2 block">System Health</text>
                 <view class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400 to-pink-600 text-white flex items-center justify-center shadow-lg shadow-rose-200 dark_shadow-none transition-transform group-hover_rotate-12">
-                    <text>💓</text>
+                    <text>HP</text>
                 </view>
             </view>
             <view>

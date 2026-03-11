@@ -1,9 +1,10 @@
 <script setup>
-import { computed, watch, ref } from 'vue';
+import { computed, watch, ref, onUnmounted } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { SocketManager } from '../socket.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const session = GameEngine.session;
 const pk = computed(() => GameState.game.pk);
@@ -12,8 +13,9 @@ const isSearching = ref(false);
 const isInLobby = ref(true);
 const joinCode = ref('');
 const { t } = useI18n();
+const uiIcons = UI_ICONS;
 
-const DEFAULT_AVATAR = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2SJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0';
+const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const isEmoji = (str) => {
     if (!str || typeof str !== 'string') return false;
@@ -47,7 +49,13 @@ const startPK = (mode) => {
         isInLobby.value = false;
         isSearching.value = true;
         try {
-            SocketManager.joinQueue(user.id, user.username, user.avatar);
+            const uid = user.id || user._id || user.openid;
+            if (!uid) {
+                uni.showToast({ title: t('dashboard_login_first'), icon: 'none' });
+                isSearching.value = false;
+                return;
+            }
+            SocketManager.joinQueue(uid, user.username, user.avatar);
         } catch (err) {
             console.error('Failed to join queue:', err);
             isSearching.value = false;
@@ -87,6 +95,10 @@ const getOptionClass = (option) => {
 };
 
 const WIN_SCORE = 200;
+
+onUnmounted(() => {
+    GameEngine.stopAudio();
+});
 </script>
 
 <template>
@@ -105,7 +117,9 @@ const WIN_SCORE = 200;
 
         <!-- Lobby -->
         <view v-if="isInLobby" class="lobby">
-            <view class="lobby-icon animate-bounce">⚔️</view>
+            <view class="lobby-icon animate-bounce">
+                <image class="lobby-icon-image" :src="uiIcons.pk" mode="aspectFit" />
+            </view>
             
             <text class="lobby-title">{{ t('pk_lobby_title') }}</text>
             
@@ -113,7 +127,9 @@ const WIN_SCORE = 200;
             
             <view class="mode-cards">
                 <view class="mode-card ranked" @click="startPK('online')">
-                    <view class="mode-icon">🏅</view>
+                    <view class="mode-icon">
+                        <image class="mode-icon-image" :src="uiIcons.rank" mode="aspectFit" />
+                    </view>
                     
                     <view class="mode-info">
                         <text class="mode-name">{{ t('pk_ranked') }}</text>
@@ -124,7 +140,9 @@ const WIN_SCORE = 200;
                 </view>
                 
                 <view class="mode-card practice" @click="startPK('bot')">
-                    <view class="mode-icon">🤖</view>
+                    <view class="mode-icon">
+                        <image class="mode-icon-image" :src="uiIcons.bot" mode="aspectFit" />
+                    </view>
                     
                     <view class="mode-info">
                         <text class="mode-name">{{ t('pk_practice') }}</text>
@@ -139,7 +157,9 @@ const WIN_SCORE = 200;
         <!-- Searching -->
         <view v-else-if="isSearching" class="searching">
             <view class="search-ring">
-                <view class="search-icon">🛰️</view>
+                <view class="search-icon">
+                    <image class="search-icon-image" :src="uiIcons.sync" mode="aspectFit" />
+                </view>
             </view>
             
             <text class="search-title">{{ t('pk_searching') }}</text>
@@ -209,7 +229,7 @@ const WIN_SCORE = 200;
                     <text class="word-phonetic">{{ getPhoneticText(session.currentWord) || t('arena_no_phonetic') }}</text>
                     
                     <view class="word-sound" @click="GameEngine.playAudio(session.currentWord?.word)">
-                        <text>🔊</text>
+                        <image class="sound-icon-image" :src="uiIcons.sound" mode="aspectFit" />
                     </view>
                 </view>
             </view>
@@ -236,13 +256,13 @@ const WIN_SCORE = 200;
             <!-- Feedback -->
             <view v-if="session.isAnswered" class="feedback-overlay">
                 <view class="feedback-box" :class="{ correct: session.isCorrect, wrong: !session.isCorrect }">
-                    <text class="feedback-icon">{{ session.isCorrect ? '🎉' : '💪' }}</text>
+                    <image class="feedback-icon-image" :src="session.isCorrect ? uiIcons.ok : uiIcons.pk" mode="aspectFit" />
                     
                     <text class="feedback-text">{{ session.isCorrect ? t('pk_great') : t('pk_keep_going') }}</text>
                     
                     <view v-if="session.isCorrect" class="feedback-rewards">
                         <text class="reward">+{{ session.lastAwardXP || 10 }} XP</text>
-                        <text class="reward">+{{ session.lastAwardCoins || 1 }} 💰</text>
+                        <text class="reward">+{{ session.lastAwardCoins || 1 }} COIN</text>
                     </view>
                 </view>
             </view>
@@ -259,7 +279,7 @@ const WIN_SCORE = 200;
             </view>
 
             <view class="result-card" :class="{ winner: pk.winner === 'user' }">
-                <text class="result-icon">{{ pk.winner === 'user' ? '🏆' : '💪' }}</text>
+                <image class="result-icon-image" :src="pk.winner === 'user' ? uiIcons.ok : uiIcons.pk" mode="aspectFit" />
                 
                 <text class="result-title">{{ pk.winner === 'user' ? t('pk_win') : t('pk_lose') }}</text>
                 
@@ -284,7 +304,7 @@ const WIN_SCORE = 200;
 <style scoped>
 .pk-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #5A459D 0%, #7B66C5 50%, #9B8AD5 100%);
+  background: #f7f3ec;
   padding: calc(var(--header-height, 88px) + 16rpx) 28rpx 28rpx;
   display: flex;
   flex-direction: column;
@@ -301,7 +321,8 @@ const WIN_SCORE = 200;
 .back-btn {
   width: 72rpx;
   height: 72rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  border: 1px solid #ebe4da;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -315,13 +336,13 @@ const WIN_SCORE = 200;
 .back-icon {
   font-size: 36rpx;
   font-weight: 700;
-  color: white;
+  color: #111827;
 }
 
 .pk-title {
   font-size: 36rpx;
   font-weight: 900;
-  color: white;
+  color: #111827;
 }
 
 .placeholder {
@@ -339,20 +360,31 @@ const WIN_SCORE = 200;
 }
 
 .lobby-icon {
-  font-size: 100rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  border: 1px solid #ebe4da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 32rpx;
+}
+.lobby-icon-image {
+  width: 76rpx;
+  height: 76rpx;
 }
 
 .lobby-title {
   font-size: 44rpx;
   font-weight: 900;
-  color: white;
+  color: #111827;
   margin-bottom: 16rpx;
 }
 
 .lobby-sub {
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-bottom: 60rpx;
 }
 
@@ -382,7 +414,6 @@ const WIN_SCORE = 200;
 }
 
 .mode-icon {
-  font-size: 48rpx;
   width: 80rpx;
   height: 80rpx;
   background: rgba(255, 255, 255, 0.1);
@@ -390,6 +421,10 @@ const WIN_SCORE = 200;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.mode-icon-image {
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .mode-info {
@@ -456,30 +491,33 @@ const WIN_SCORE = 200;
 }
 
 .search-icon {
-  font-size: 80rpx;
   animation: none;
+}
+.search-icon-image {
+  width: 72rpx;
+  height: 72rpx;
 }
 
 .search-title {
   font-size: 40rpx;
   font-weight: 900;
-  color: white;
+  color: #111827;
   margin-bottom: 16rpx;
 }
 
 .search-sub {
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-bottom: 60rpx;
 }
 
 .cancel-btn {
   padding: 24rpx 60rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #111827;
   border-radius: 16rpx;
   font-size: 28rpx;
   font-weight: 700;
-  color: white;
+  color: #f9fafb;
 }
 
 .cancel-btn:active {
@@ -498,7 +536,8 @@ const WIN_SCORE = 200;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #ebe4da;
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -540,14 +579,14 @@ const WIN_SCORE = 200;
 .player-name {
   font-size: 24rpx;
   font-weight: 700;
-  color: white;
+  color: #111827;
   display: block;
   margin-bottom: 8rpx;
 }
 
 .score-bar {
   height: 8rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e5e7eb;
   border-radius: 8rpx;
   overflow: hidden;
 }
@@ -569,7 +608,7 @@ const WIN_SCORE = 200;
 .score-text {
   font-size: 36rpx;
   font-weight: 900;
-  color: white;
+  color: #111827;
   min-width: 60rpx;
   text-align: center;
 }
@@ -644,7 +683,10 @@ const WIN_SCORE = 200;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+}
+.sound-icon-image {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .word-sound:active {
@@ -762,8 +804,9 @@ const WIN_SCORE = 200;
   100% { transform: scale(1); opacity: 1; }
 }
 
-.feedback-icon {
-  font-size: 80rpx;
+.feedback-icon-image {
+  width: 68rpx;
+  height: 68rpx;
 }
 
 .feedback-text {
@@ -854,8 +897,9 @@ const WIN_SCORE = 200;
   100% { transform: translateY(0); opacity: 1; }
 }
 
-.result-icon {
-  font-size: 100rpx;
+.result-icon-image {
+  width: 90rpx;
+  height: 90rpx;
   animation: bounce 0.6s ease;
 }
 

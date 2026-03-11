@@ -3,9 +3,11 @@ import { computed } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { useI18n } from '../i18n.js';
+import { UI_ICONS } from '../utils/ui-icons.js';
 
 const lastSession = computed(() => GameState.game.lastSession || { xp: 0, coins: 0, correct: 0, total: 0 });
 const { t } = useI18n();
+const uiIcons = UI_ICONS;
 
 const accuracy = computed(() => {
     if (!lastSession.value.total) return 0;
@@ -44,7 +46,7 @@ const learnAgain = () => {
         <view class="result-content">
             <!-- 图标 -->
             <view class="result-icon animate-pop-in">
-                🎉
+                <image class="result-icon-image" :src="uiIcons.ok" mode="aspectFit" />
             </view>
 
             <!-- 标题 -->
@@ -60,7 +62,10 @@ const learnAgain = () => {
                 
                 <view class="reward-card coins">
                     <text class="reward-value">+{{ lastSession.coins }}</text>
-                    <text class="reward-label">💰</text>
+                    <view class="reward-coin-wrap">
+                        <image class="reward-coin-icon" :src="uiIcons.coin" mode="aspectFit" />
+                        <text class="reward-label">COIN</text>
+                    </view>
                 </view>
             </view>
 
@@ -96,7 +101,7 @@ const learnAgain = () => {
 <style scoped>
 .result-page {
     min-height: 100vh;
-    background: linear-gradient(180deg, #5A459D 0%, #7B66C5 50%, #9B8AD5 100%);
+    background: #f7f3ec;
     padding: calc(var(--header-height, 88px) + 40rpx) 40rpx 40rpx;
     display: flex;
     flex-direction: column;
@@ -120,7 +125,8 @@ const learnAgain = () => {
 .back-btn {
     width: 72rpx;
     height: 72rpx;
-    background: rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #ebe4da;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -135,7 +141,7 @@ const learnAgain = () => {
 .back-icon {
     font-size: 36rpx;
     font-weight: 700;
-    color: white;
+    color: #111827;
 }
 
 .header-spacer {
@@ -181,9 +187,20 @@ const learnAgain = () => {
 
 /* 图标 */
 .result-icon {
-    font-size: 120rpx;
+    width: 140rpx;
+    height: 140rpx;
+    border-radius: 36rpx;
+    background: #ffffff;
+    border: 1px solid #ebe4da;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 24rpx;
     animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.result-icon-image {
+    width: 88rpx;
+    height: 88rpx;
 }
 
 @keyframes iconBounce {
@@ -195,14 +212,14 @@ const learnAgain = () => {
 .result-title {
     font-size: 64rpx;
     font-weight: 900;
-    color: white;
+    color: #111827;
     letter-spacing: 4rpx;
     margin-bottom: 12rpx;
 }
 
 .result-subtitle {
     font-size: 28rpx;
-    color: rgba(255, 255, 255, 0.7);
+    color: #6b7280;
     margin-bottom: 48rpx;
 }
 
@@ -244,6 +261,15 @@ const learnAgain = () => {
     font-size: 24rpx;
     font-weight: 700;
     color: #333;
+}
+.reward-coin-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+}
+.reward-coin-icon {
+    width: 30rpx;
+    height: 30rpx;
 }
 
 /* 统计卡片 */

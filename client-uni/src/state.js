@@ -183,7 +183,7 @@ export const Actions = {
     initPK(opponentName, avatar) {
         state.game.pk = {
             isActive: true,
-            opponent: { name: opponentName || 'AI Challenger', avatar: avatar || '🤖', score: 0 },
+            opponent: { name: opponentName || 'AI Challenger', avatar: avatar || 'BOT', score: 0 },
             userScore: 0,
             round: 0,
             winner: null

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { API } from '../api.js';
+import { useI18n } from '../i18n.js';
 
 const props = defineProps({
     onClose: Function
@@ -8,6 +9,7 @@ const props = defineProps({
 
 const leaderboard = ref([]);
 const loading = ref(true);
+const { t } = useI18n();
 
 const loadLeaderboard = async () => {
     loading.value = true;
@@ -32,8 +34,8 @@ onMounted(() => {
             <view class="p-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-white relative overflow-hidden">
                 <view class="relative z-10 flex justify-between items-center">
                     <view>
-                        <text class="text-2xl font-black uppercase tracking-wider block">排行榜</text>
-                        <text class="text-yellow-100 font-bold text-sm block">谁是词汇大师？</text>
+                        <text class="text-2xl font-black uppercase tracking-wider block">{{ t('leaderboard_title') }}</text>
+                        <text class="text-yellow-100 font-bold text-sm block">{{ t('leaderboard_subtitle') }}</text>
                     </view>
                     <text class="text-4xl">#</text>
                 </view>
@@ -43,7 +45,7 @@ onMounted(() => {
                 </view>
                 
                 <button @click="onClose" class="absolute top-4 right-4 bg-black-opacity-20 w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors">
-                    <text>❌</text>
+                    <text>×</text>
                 </button>
             </view>
 
@@ -51,11 +53,11 @@ onMounted(() => {
             <view class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                 <view v-if="loading" class="flex flex-col items-center justify-center h-40 gap-4 text-slate-400">
                     <view class="w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin"></view>
-                    <text>加载中...</text>
+                    <text>{{ t('common_loading') }}</text>
                 </view>
 
                 <view v-else-if="leaderboard.length === 0" class="text-center text-slate-400 py-10">
-                    <text>暂无数据</text>
+                    <text>{{ t('leaderboard_empty') }}</text>
                 </view>
 
                 <view 
@@ -85,26 +87,26 @@ onMounted(() => {
                     <view class="w-12 h-12 rounded-full bg-white dark_bg-slate-600 flex items-center justify-center text-xl shadow-sm border border-slate-100 dark_border-slate-500 relative">
                         <text>{{ user.avatar }}</text>
                         <view v-if="index < 3" class="absolute -top-1 -right-1 text-sm bg-white dark_bg-slate-800 rounded-full shadow-sm w-5 h-5 flex items-center justify-center">
-                            <text>{{ index === 0 ? '👑' : (index === 1 ? '🥈' : '🥉') }}</text>
+                            <text>{{ index === 0 ? '1' : (index === 1 ? '2' : '3') }}</text>
                         </view>
                     </view>
 
                     <!-- Info -->
                     <view class="flex-1 min-w-0">
                         <text class="font-bold text-slate-800 dark_text-white truncate block">{{ user.username }}</text>
-                        <text class="text-xs text-slate-500 dark_text-slate-400 font-medium block">Level {{ user.level }}</text>
+                        <text class="text-xs text-slate-500 dark_text-slate-400 font-medium block">{{ t('leaderboard_level', { level: user.level }) }}</text>
                     </view>
 
                     <!-- Score -->
                     <view class="text-right">
                         <text class="font-black text-indigo-500 dark_text-indigo-400 block">{{ user.xp }} XP</text>
-                        <text class="text-xs text-slate-400 dark_text-slate-500 font-bold block" v-if="user.totalCorrect">词汇量 {{ user.totalCorrect }}</text>
+                        <text class="text-xs text-slate-400 dark_text-slate-500 font-bold block" v-if="user.totalCorrect">{{ t('leaderboard_vocab', { count: user.totalCorrect }) }}</text>
                     </view>
                 </view>
             </view>
 
             <view class="p-4 border-t border-slate-100 dark_border-slate-700 text-center text-xs text-slate-400 dark_text-slate-500">
-                <text>每 24 小时更新</text>
+                <text>{{ t('leaderboard_refresh') }}</text>
             </view>
         </view>
     </view>

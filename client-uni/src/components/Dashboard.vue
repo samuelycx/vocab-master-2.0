@@ -4,6 +4,7 @@ import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { getAchievementIconById } from '../utils/achievement-icons.js';
 
 const DAILY_GOAL = 10;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
@@ -33,12 +34,12 @@ const progressPercent = computed(() => Math.min((stats.value.todayLearned / DAIL
 const pkEnabled = computed(() => state.system?.modules?.pk_arena_enabled !== false);
 const dashboardClass = computed(() => state.settings.language === 'en-US' ? 'lang-en' : 'lang-zh');
 
-const unlockedAchievementIcons = computed(() => {
+const unlockedAchievementIds = computed(() => {
   const list = Array.isArray(user.achievements) ? user.achievements : [];
-  return list
-    .map((item) => item?.achievement?.icon || item?.icon)
-    .filter((icon) => typeof icon === 'string' && icon.trim().length > 0)
-    .slice(0, 8);
+  const ids = list
+    .map((item) => item?.achievementId || item?.id)
+    .filter((id) => typeof id === 'string' && id.trim().length > 0);
+  return [...new Set(ids)];
 });
 
 const focusMode = computed(() => {
@@ -62,11 +63,12 @@ const primaryActionLabel = computed(() =>
   t(focusMode.value === 'review' ? 'dashboard_focus_cta_review' : 'dashboard_focus_cta_learn')
 );
 
-const streakLabel = computed(() =>
-  stats.value.streak > 0
-    ? t('dashboard_streak_chip', { count: stats.value.streak })
-    : t('dashboard_streak_chip_start')
-);
+const ctaSubLabel = computed(() => {
+  if (state.settings.language === 'en-US') {
+    return stats.value.streak > 0 ? `Learning streak ${stats.value.streak} days` : 'Start your streak today';
+  }
+  return stats.value.streak > 0 ? `已持续学习 ${stats.value.streak} 天` : '从今天开始连续学习';
+});
 
 const reviewCardSubtitle = computed(() =>
   reviewCount.value > 0 ? t('dashboard_review_card_sub_due') : t('dashboard_review_card_sub_empty')
@@ -75,6 +77,16 @@ const reviewCardSubtitle = computed(() =>
 const arenaPillLabel = computed(() =>
   pkEnabled.value ? t('dashboard_arena_cta') : t('dashboard_pk_off')
 );
+const achievementSlots = computed(() => {
+  const maxSlots = 12;
+  const ids = ['default', ...unlockedAchievementIds.value.slice(0, maxSlots - 1)];
+  return Array.from({ length: maxSlots }, (_, idx) => ids[idx] || '');
+});
+const achievementRows = computed(() => [
+  achievementSlots.value.slice(0, 6),
+  achievementSlots.value.slice(6, 12)
+]);
+const getAchievementIcon = (achievementId) => getAchievementIconById(achievementId);
 
 const startLearning = () => {
   GameEngine.startSession(DAILY_GOAL);
@@ -148,10 +160,13 @@ onMounted(loadDashboard);
 
           <view class="focus-actions">
             <view class="primary-cta" hover-class="button-press" @click="runPrimaryAction">
-              <text class="primary-cta-text">{{ primaryActionLabel }}</text>
-            </view>
-            <view class="streak-chip">
-              <text class="streak-chip-text">{{ streakLabel }}</text>
+              <view class="primary-cta-copy">
+                <text class="primary-cta-text">{{ primaryActionLabel }}</text>
+                <text class="primary-cta-sub">{{ ctaSubLabel }}</text>
+              </view>
+              <view class="primary-cta-icon">
+                <text class="primary-cta-icon-text">></text>
+              </view>
             </view>
           </view>
         </view>
@@ -184,7 +199,6 @@ onMounted(loadDashboard);
     </view>
 
     <view class="social-card animate-slide-in-up delay-300">
-      <text class="social-kicker">{{ t('dashboard_social_kicker') }}</text>
       <view class="social-actions">
         <view class="social-pill rank-pill" hover-class="button-press" @click="gotoSocial">
           <text class="social-pill-text">{{ t('dashboard_rank_cta') }}</text>
@@ -202,17 +216,22 @@ onMounted(loadDashboard);
 
     <view class="achievement-rail animate-fade-in delay-400" @click="gotoAchievement">
       <view class="achievement-copy">
-        <text class="achievement-title">{{ t('dashboard_achievement_progress') }}</text>
-        <text class="achievement-count">{{ t('dashboard_achievement_lit', { count: unlockedAchievementIcons.length }) }}</text>
+        <text class="achievement-title">{{ t('dashboard_achievement') }}</text>
+        <text class="achievement-count">{{ t('dashboard_achievement_lit', { count: unlockedAchievementIds.length }) }}</text>
       </view>
-      <view class="achievement-track">
-        <view v-if="unlockedAchievementIcons.length > 0" class="achievement-icons">
-          <view v-for="(icon, index) in unlockedAchievementIcons" :key="index" class="achievement-chip">
-            <text class="achievement-icon">{{ icon }}</text>
+      <view class="achievement-track-grid">
+        <view v-for="(row, rowIndex) in achievementRows" :key="rowIndex" class="achievement-row">
+          <view
+            v-for="(achievementId, colIndex) in row"
+            :key="`${rowIndex}-${colIndex}`"
+            class="achievement-chip"
+            :class="{
+              filled: !!achievementId,
+              highlighted: rowIndex === 0 && colIndex === 0
+            }"
+          >
+            <image v-if="achievementId" class="achievement-icon-image" :src="getAchievementIcon(achievementId)" mode="aspectFit" />
           </view>
-        </view>
-        <view v-else class="achievement-empty">
-          <text class="achievement-empty-text">{{ t('dashboard_achievement_empty') }}</text>
         </view>
       </view>
       <view class="achievement-arrow-button">
@@ -264,13 +283,14 @@ onMounted(loadDashboard);
   height: 176rpx;
   border-radius: 50%;
   background: #f58652;
+  pointer-events: none;
 }
 
 .focus-avatar {
   position: absolute;
   top: 52rpx;
   right: 66rpx;
-  z-index: 2;
+  z-index: 5;
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
@@ -347,12 +367,11 @@ onMounted(loadDashboard);
 .focus-actions {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
   margin-top: 28rpx;
 }
 
 .primary-cta,
-.streak-chip,
 .social-pill,
 .achievement-arrow-button {
   display: inline-flex;
@@ -361,31 +380,49 @@ onMounted(loadDashboard);
 }
 
 .primary-cta {
-  min-width: 180rpx;
-  height: 76rpx;
-  padding: 0 28rpx;
-  border-radius: 999rpx;
-  background: #151515;
+  width: 254rpx;
+  height: 86rpx;
+  padding: 10rpx 16rpx;
+  border-radius: 24rpx;
+  background: #6f58d9;
+  justify-content: space-between;
+}
+
+.primary-cta-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+  min-width: 0;
 }
 
 .primary-cta-text {
-  color: #fff9f1;
-  font-size: 28rpx;
+  color: #ffffff;
+  font-size: 30rpx;
   font-weight: 800;
 }
 
-.streak-chip {
-  min-width: 152rpx;
-  height: 76rpx;
-  padding: 0 24rpx;
-  border-radius: 999rpx;
-  background: #f3e4b6;
+.primary-cta-sub {
+  color: #e9deff;
+  font-size: 18rpx;
+  line-height: 1.2;
+  font-weight: 700;
 }
 
-.streak-chip-text {
-  color: #7d5a12;
-  font-size: 24rpx;
-  font-weight: 700;
+.primary-cta-icon {
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 17rpx;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.primary-cta-icon-text {
+  color: #fff9f1;
+  font-size: 16rpx;
+  font-weight: 800;
 }
 
 .focus-summary {
@@ -501,24 +538,17 @@ onMounted(loadDashboard);
 .social-card {
   border-radius: 22rpx;
   background: #ffffff;
-  padding: 18rpx;
+  padding: 14rpx 16rpx;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
-  min-height: 132rpx;
-}
-
-.social-kicker {
-  color: #6b6b6b;
-  font-size: 20rpx;
-  font-weight: 700;
+  min-height: 94rpx;
 }
 
 .social-pill {
   flex: 1;
   min-width: 0;
-  height: 70rpx;
-  border-radius: 999rpx;
+  height: 74rpx;
+  border-radius: 18rpx;
   padding: 0 24rpx;
   border: 2rpx solid transparent;
 }
@@ -545,88 +575,93 @@ onMounted(loadDashboard);
 
 .achievement-rail {
   border-radius: 22rpx;
-  background: #fff8f0;
-  padding: 18rpx;
+  background: #ffffff;
+  padding: 16rpx;
   display: flex;
   align-items: center;
-  gap: 14rpx;
-  min-height: 120rpx;
+  justify-content: space-between;
+  gap: 12rpx;
+  min-height: 142rpx;
 }
 
 .achievement-copy {
-  width: 168rpx;
+  width: 82rpx;
+  min-width: 82rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.achievement-title {
+  color: #1a1a1a;
+  font-size: 18rpx;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.achievement-count {
+  color: #6b6b6b;
+  font-size: 10rpx;
+}
+
+.achievement-track-grid {
+  width: 220rpx;
+  min-width: 220rpx;
+  height: 88rpx;
+  border-radius: 18rpx;
+  background: #f4ece4;
+  padding: 10rpx;
   display: flex;
   flex-direction: column;
   gap: 6rpx;
 }
 
-.achievement-title {
-  color: #1a1a1a;
-  font-size: 30rpx;
-  font-weight: 800;
-}
-
-.achievement-count {
-  color: #6b6b6b;
-  font-size: 20rpx;
-}
-
-.achievement-track {
-  flex: 1;
-  min-width: 0;
-  height: 82rpx;
-  border-radius: 18rpx;
-  background: #f4ece4;
-  padding: 12rpx;
+.achievement-row {
+  width: 100%;
+  height: 30rpx;
   display: flex;
   align-items: center;
-  overflow: hidden;
-}
-
-.achievement-icons {
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
+  gap: 6rpx;
 }
 
 .achievement-chip {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 14rpx;
-  background: #f7e8ff;
-  display: flex;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 10rpx;
+  background: #ffffff;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.achievement-icon {
-  font-size: 28rpx;
+.achievement-chip.filled {
+  background: #ffffff;
 }
 
-.achievement-empty {
-  width: 100%;
-  display: flex;
-  align-items: center;
+.achievement-chip.highlighted {
+  background: #f7d463;
 }
 
-.achievement-empty-text {
-  color: #94a3b8;
-  font-size: 20rpx;
-  line-height: 1.35;
+.achievement-icon-image {
+  width: 20rpx;
+  height: 20rpx;
 }
 
 .achievement-arrow-button {
-  width: 64rpx;
-  height: 64rpx;
+  width: 42rpx;
+  height: 42rpx;
   border-radius: 999rpx;
   background: #151515;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .achievement-arrow {
   color: #fff9f1;
-  font-size: 28rpx;
+  font-size: 18rpx;
   font-weight: 800;
 }
 
