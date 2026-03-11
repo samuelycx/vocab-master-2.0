@@ -8,6 +8,7 @@ import { translate } from './i18n.js';
 const CORRECT_DELAY_MS = 2600;
 const WRONG_DELAY_MS = 3600;
 const tr = (key, params) => translate(GameState.settings.language || 'zh-CN', key, params);
+const AUDIO_DEBUG = true;
 
 export const GameEngine = {
     session: reactive({
@@ -39,6 +40,9 @@ export const GameEngine = {
     lastAudioAt: 0,
 
     async startSession(count = 10) {
+        if (AUDIO_DEBUG) {
+            console.log('[AudioDebug] startSession', { count, at: Date.now() });
+        }
         const rawWords = await API.getSessionWords(count);
         if (!rawWords || rawWords.length === 0) {
             uni.showModal({
@@ -158,6 +162,13 @@ export const GameEngine = {
     },
 
     _setupSession(queueWords, poolWords, mode) {
+        if (AUDIO_DEBUG) {
+            console.log('[AudioDebug] _setupSession', {
+                mode,
+                queueCount: Array.isArray(queueWords) ? queueWords.length : 0,
+                at: Date.now()
+            });
+        }
         Actions.resetCombo();
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         this.autoPlayHandle = null;
@@ -213,6 +224,13 @@ export const GameEngine = {
 
         const wordKey = this.session.queue[this.session.currentIndex];
         const wordData = this.wordMap[wordKey];
+        if (AUDIO_DEBUG) {
+            console.log('[AudioDebug] loadNextQuestion', {
+                index: this.session.currentIndex,
+                word: wordKey,
+                at: Date.now()
+            });
+        }
 
         this.session.currentWord = {
             word: wordData.text,
@@ -235,8 +253,14 @@ export const GameEngine = {
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         if (!text) return;
         this.autoPlayHandle = setTimeout(() => {
+            if (AUDIO_DEBUG) {
+                console.log('[AudioDebug] autoPlay fire', { text, at: Date.now() });
+            }
             this.playAudio(text, { dedupeWindowMs: 800 });
         }, 120);
+        if (AUDIO_DEBUG) {
+            console.log('[AudioDebug] autoPlay scheduled', { text, delayMs: 120, at: Date.now() });
+        }
     },
 
     startTimer() {
@@ -450,10 +474,23 @@ export const GameEngine = {
         const now = Date.now();
         const audioKey = normalizedText.toLowerCase();
         if (dedupeWindowMs > 0 && this.lastAudioKey === audioKey && (now - this.lastAudioAt) < dedupeWindowMs) {
+            if (AUDIO_DEBUG) {
+                console.log('[AudioDebug] playAudio dedupe-skip', {
+                    text: normalizedText,
+                    dedupeWindowMs,
+                    lastKey: this.lastAudioKey,
+                    lastAt: this.lastAudioAt,
+                    now
+                });
+            }
             return;
         }
         this.lastAudioKey = audioKey;
         this.lastAudioAt = now;
+
+        if (AUDIO_DEBUG) {
+            console.log('[AudioDebug] playAudio start', { text: normalizedText, now, dedupeWindowMs });
+        }
 
         if (normalizedText === 'correct' || normalizedText === 'success') {
             return;
@@ -471,9 +508,14 @@ export const GameEngine = {
         // English Pronunciation using Youdao TTS API
         innerAudioContext.src = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(normalizedText)}&type=2`;
         innerAudioContext.onPlay(() => {
-            console.log('Start playing pronunciation');
+            if (AUDIO_DEBUG) {
+                console.log('[AudioDebug] onPlay', { text: normalizedText, at: Date.now() });
+            }
         });
         innerAudioContext.onEnded(() => {
+            if (AUDIO_DEBUG) {
+                console.log('[AudioDebug] onEnded', { text: normalizedText, at: Date.now() });
+            }
             this._destroyAudio(innerAudioContext);
         });
         innerAudioContext.onError((res) => {
