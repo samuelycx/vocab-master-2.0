@@ -24,6 +24,7 @@ const resetLoading = ref(false);
 const { t, locale } = useI18n();
 const uiIcons = UI_ICONS;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+const PROFILE_DEBUG = true;
 
 const getAvatarUrl = (avatar) => {
     if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
@@ -106,6 +107,9 @@ const handleSecretAdmin = () => {
 };
 
 const goToProfile = async () => {
+    if (PROFILE_DEBUG) {
+        console.log('[ProfileDebug] goToProfile click');
+    }
     // WeChat nickname/avatar requires user gesture; this click path is suitable.
     const getProfile =
         (typeof uni !== 'undefined' && typeof uni.getUserProfile === 'function')
@@ -128,6 +132,9 @@ const goToProfile = async () => {
             const userInfo = profile?.userInfo || {};
             const username = String(userInfo.nickName || '').trim();
             const avatar = String(userInfo.avatarUrl || '').trim();
+            if (PROFILE_DEBUG) {
+                console.log('[ProfileDebug] getUserProfile result', { username, avatar });
+            }
 
             if (!username && !avatar) {
                 uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });
@@ -148,7 +155,14 @@ const goToProfile = async () => {
             }
             uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });
         } catch (e) {
+            if (PROFILE_DEBUG) {
+                console.log('[ProfileDebug] getUserProfile fail', e);
+            }
             uni.showToast({ title: t('settings_sync_cancelled'), icon: 'none' });
+        }
+    } else {
+        if (PROFILE_DEBUG) {
+            console.log('[ProfileDebug] getUserProfile not available');
         }
     }
     Actions.setView('profile-setup');
