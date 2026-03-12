@@ -48,6 +48,9 @@ const syncProfileToServer = async ({ username, avatar }, successToast = false) =
     if (!safeUsername && !safeAvatar) return false;
 
     const res = await API.updateProfile({ username: safeUsername, avatar: safeAvatar });
+    if (typeof console !== 'undefined') {
+        console.log('[ProfileDebug] updateProfile response', res);
+    }
     if (!res || !res.success) return false;
 
     Actions.setUser({
@@ -126,7 +129,21 @@ const goToProfile = async () => {
             const username = String(userInfo.nickName || '').trim();
             const avatar = String(userInfo.avatarUrl || '').trim();
 
+            if (!username && !avatar) {
+                uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });
+                return;
+            }
+
             if (await syncProfileToServer({ username, avatar }, true)) {
+                try {
+                    const refreshed = await API.login();
+                    if (refreshed && refreshed.success && refreshed.data) {
+                        Actions.setUser(refreshed.data);
+                        uni.setStorageSync('vocab_user', JSON.stringify(refreshed.data));
+                    }
+                } catch (e) {
+                    console.warn('Failed to refresh user after profile sync', e);
+                }
                 return;
             }
             uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });
