@@ -17,12 +17,27 @@ import ProfileSetup from '../../components/ProfileSetup.vue';
 import { Actions, GameState } from '../../state.js';
 import { API } from '../../api.js';
 
+const LOGIN_DEBUG = true;
+
 onMounted(async () => {
   try {
     // Auto-login (Moved from Welcome.vue)
+    if (LOGIN_DEBUG) {
+      console.log('[LoginDebug] cached user', {
+        id: GameState.user.id,
+        openid: GameState.user.openid,
+        username: GameState.user.username,
+        isProfileSet: GameState.user.isProfileSet,
+        at: Date.now()
+      });
+    }
+
     if (!GameState.user.id) {
       try {
         const res = await API.login();
+        if (LOGIN_DEBUG) {
+          console.log('[LoginDebug] login response', res);
+        }
         if (res && res.success && res.data) {
           Actions.setUser(res.data);
           uni.setStorageSync('vocab_user', JSON.stringify(res.data));
