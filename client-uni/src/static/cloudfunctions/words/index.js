@@ -78,18 +78,31 @@ async function getSessionWords({ count } = {}) {
     const safeCount = Math.max(1, Math.min(Number(count) || 10, 100))
     const totalRes = await db.collection('words').count()
     const total = Number(totalRes?.total) || 0
-    const sampleSize = Math.min(500, Math.max(safeCount * 5, safeCount), total || safeCount * 5)
-    const res = await db.collection('words')
-        .aggregate()
-        .sample({ size: sampleSize })
-        .end()
 
-    const words = (res.list || [])
-        .map(normalizeWord)
-        .filter(w => w.text && Array.isArray(w.meanings) && w.meanings.length > 0)
-        .slice(0, safeCount)
+    const desiredSample = Math.max(safeCount * 5, safeCount, 200)
+    const sampleSize = Math.min(Math.max(200, desiredSample), Math.max(total || desiredSample, desiredSample), 1000)
 
-    return { success: true, data: words, total, requested: safeCount, sampled: sampleSize }
+    let attempts = 0
+    const picked = new Map()
+    while (picked.size < safeCount && attempts < 5) {
+        const res = await db.collection('words')
+            .aggregate()
+            .sample({ size: sampleSize })
+            .end()
+
+        for (const row of (res.list || [])) {
+            if (!row || !row._id) continue
+            if (picked.has(row._id)) continue
+            const normalized = normalizeWord(row)
+            if (!normalized.text || !Array.isArray(normalized.meanings) || normalized.meanings.length === 0) continue
+            picked.set(row._id, normalized)
+            if (picked.size >= safeCount) break
+        }
+        attempts += 1
+    }
+
+    const words = Array.from(picked.values()).slice(0, safeCount)
+    return { success: true, data: words, total, requested: safeCount, sampled: sampleSize, attempts }
 }
 
 async function searchWords({ query } = {}) {

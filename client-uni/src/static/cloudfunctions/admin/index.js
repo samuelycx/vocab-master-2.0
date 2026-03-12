@@ -10,6 +10,14 @@ exports.main = async (event, context) => {
         const testOpenid = event && event.data && event.data.openid
         const openid = OPENID || testOpenid
         
+        if (!openid) {
+            return {
+                success: false,
+                code: 'MISSING_OPENID',
+                msg: 'Missing OPENID. Please pass data.openid in cloud test.'
+            }
+        }
+
         const userRes = await db.collection('users').where({ openid }).get()
         const user = userRes.data[0]
         
