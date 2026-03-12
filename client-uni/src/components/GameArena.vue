@@ -11,9 +11,23 @@ const isFlipped = ref(false);
 const { t } = useI18n();
 const lifeCount = ref(3);
 
+const PHONETIC_DEBUG = true;
+
 // Auto-play audio when word changes
 watch(() => session.currentWord, (newWord) => {
   if (newWord) {
+    if (PHONETIC_DEBUG) {
+      console.log('[PhoneticDebug] word fields', {
+        text: newWord.word,
+        phonetic: newWord.phonetic,
+        pronunciation: newWord.pronunciation,
+        phoneticAm: newWord.phoneticAm,
+        phoneticBr: newWord.phoneticBr,
+        usphone: newWord.usphone,
+        ukphone: newWord.ukphone,
+        phonetics: newWord.phonetics
+      });
+    }
     // Select random example if available
     if (newWord.examples && newWord.examples.length > 0) {
       const ex = newWord.examples[Math.floor(Math.random() * newWord.examples.length)];
