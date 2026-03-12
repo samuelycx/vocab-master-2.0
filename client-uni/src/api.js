@@ -37,7 +37,10 @@ export const API = {
         if (typeof console !== 'undefined') {
             console.log('[CountDebug] getSessionWords response', {
                 success: res?.success,
-                size: Array.isArray(res?.data) ? res.data.length : 0
+                size: Array.isArray(res?.data) ? res.data.length : 0,
+                total: res?.total,
+                requested: res?.requested,
+                sampled: res?.sampled
             });
         }
         return res.success ? res.data : [];

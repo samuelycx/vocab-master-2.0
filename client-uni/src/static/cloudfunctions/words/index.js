@@ -76,9 +76,12 @@ exports.main = async (event, context) => {
 
 async function getSessionWords({ count } = {}) {
     const safeCount = Math.max(1, Math.min(Number(count) || 10, 100))
+    const totalRes = await db.collection('words').count()
+    const total = Number(totalRes?.total) || 0
+    const sampleSize = Math.min(500, Math.max(safeCount * 5, safeCount), total || safeCount * 5)
     const res = await db.collection('words')
         .aggregate()
-        .sample({ size: Math.min(500, safeCount * 5) })
+        .sample({ size: sampleSize })
         .end()
 
     const words = (res.list || [])
@@ -86,7 +89,7 @@ async function getSessionWords({ count } = {}) {
         .filter(w => w.text && Array.isArray(w.meanings) && w.meanings.length > 0)
         .slice(0, safeCount)
 
-    return { success: true, data: words }
+    return { success: true, data: words, total, requested: safeCount, sampled: sampleSize }
 }
 
 async function searchWords({ query } = {}) {
