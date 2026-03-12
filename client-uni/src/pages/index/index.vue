@@ -33,21 +33,19 @@ onMounted(async () => {
       });
     }
 
-    if (!GameState.user.id) {
-      try {
-        const res = await API.login();
-        if (LOGIN_DEBUG) {
-          console.log('[LoginDebug] login response', res);
-        }
-        if (res && res.success && res.data) {
-          Actions.setUser(res.data);
-          uni.setStorageSync('vocab_user', JSON.stringify(res.data));
-        } else if (res && res.success === false && res.msg) {
-          uni.showToast({ title: res.msg, icon: 'none' });
-        }
-      } catch (err) {
-        console.error('Auto-login failed', err);
+    try {
+      const res = await API.login();
+      if (LOGIN_DEBUG) {
+        console.log('[LoginDebug] login response', res);
       }
+      if (res && res.success && res.data) {
+        Actions.setUser(res.data);
+        uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+      } else if (res && res.success === false && res.msg) {
+        uni.showToast({ title: res.msg, icon: 'none' });
+      }
+    } catch (err) {
+      console.error('Auto-login failed', err);
     }
 
     // Fetch System Configs (Feature Flags)
