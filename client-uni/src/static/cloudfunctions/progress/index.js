@@ -111,6 +111,9 @@ exports.main = async (event, context) => {
             case 'getSocialFeed':
                 result = await getSocialFeed(openid, event.data)
                 break
+            case 'resetProgress':
+                result = await resetProgress(openid)
+                break
             default:
                 result = { success: false, code: 'UNKNOWN_TYPE', msg: 'Unknown type' }
         }
@@ -122,6 +125,33 @@ exports.main = async (event, context) => {
     } catch (e) {
         console.error('progress main failed:', e)
         return { success: false, code: 'PROGRESS_MAIN_ERROR', msg: e.message }
+    }
+}
+
+async function resetProgress(openid) {
+    try {
+        // Clear learning progress and achievements
+        await db.collection('progress').where({ openid }).remove()
+        await db.collection('user_achievements').where({ openid }).remove()
+
+        // Reset user stats
+        await db.collection('users').where({ openid }).update({
+            data: {
+                level: 1,
+                xp: 0,
+                coins: 0,
+                streak: 0,
+                totalCorrect: 0,
+                totalLearned: 0,
+                maxCombo: 0,
+                achievements: [],
+                lastActive: db.serverDate()
+            }
+        })
+
+        return { success: true }
+    } catch (e) {
+        return { success: false, msg: e.message }
     }
 }
 

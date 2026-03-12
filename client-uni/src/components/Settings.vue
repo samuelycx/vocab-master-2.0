@@ -74,7 +74,7 @@ const setLanguage = (language) => {
 const handleReset = async () => {
     resetLoading.value = true;
     try {
-        const res = await API.resetProgress(GameState.user.id);
+        const res = await API.resetProgress();
         if (res && res.success) {
             Actions.reset();
             uni.reLaunch({ url: '/pages/index/index' });
@@ -88,6 +88,7 @@ const handleReset = async () => {
 };
 
 const logout = () => {
+    Actions.reset();
     uni.removeStorageSync('vocab_user');
     uni.reLaunch({ url: '/pages/index/index' });
 };
@@ -262,10 +263,11 @@ onMounted(async () => {
 <style scoped>
 .settings-page {
     min-height: 100vh;
-    background: #F7F7F9;
-    padding: calc(var(--header-height, 88px) + 16rpx) 28rpx 28rpx;
+    background: #F6F1E8;
+    padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 34.9rpx;
     display: flex;
     flex-direction: column;
+    gap: 24.4rpx;
 }
 
 /* Header */
@@ -273,34 +275,33 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 32rpx;
+    height: 118.6rpx;
 }
 
 .back-btn {
-    width: 72rpx;
-    height: 72rpx;
-    background: white;
-    border-radius: 50%;
+    width: 76.7rpx;
+    height: 76.7rpx;
+    background: #ffffff;
+    border-radius: 38.4rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .back-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
 .back-icon {
-    font-size: 36rpx;
-    font-weight: 700;
-    color: #333;
+    font-size: 31.4rpx;
+    font-weight: 600;
+    color: #111111;
 }
 
 .header-title {
-    font-size: 40rpx;
-    font-weight: 900;
-    color: #1a1a1a;
+    font-size: 48.8rpx;
+    font-weight: 600;
+    color: #111111;
 }
 
 .header-center {
@@ -311,38 +312,35 @@ onMounted(async () => {
 }
 
 .build-tag {
-    font-size: 18rpx;
-    color: #999;
+    font-size: 24.4rpx;
+    color: #7B758B;
     font-weight: 600;
 }
 
 .header-placeholder {
-    width: 72rpx;
+    width: 76.7rpx;
 }
 
 /* User Card */
 .user-card {
-    background: linear-gradient(135deg, #5A459D 0%, #7B66C5 100%);
-    border-radius: 32rpx;
-    padding: 40rpx;
+    background: #FFF9F1;
+    border-radius: 38.4rpx;
+    padding: 0 27.9rpx;
     display: flex;
     align-items: center;
-    gap: 24rpx;
-    margin-bottom: 32rpx;
-    box-shadow: 0 12rpx 32rpx rgba(90, 69, 157, 0.3);
+    gap: 24.4rpx;
+    height: 164rpx;
+    justify-content: space-between;
 }
 
 .user-avatar {
-    width: 100rpx;
-    height: 100rpx;
-    background: white;
-    border-radius: 50%;
+    width: 90.7rpx;
+    height: 90.7rpx;
+    background: #ffffff;
+    border-radius: 45.3rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 44rpx;
-    font-weight: 800;
-    color: #5A459D;
     overflow: hidden;
 }
 
@@ -357,22 +355,21 @@ onMounted(async () => {
 }
 
 .user-name {
-    font-size: 36rpx;
-    font-weight: 800;
-    color: white;
+    font-size: 34.9rpx;
+    font-weight: 600;
+    color: #111111;
     display: block;
-    margin-bottom: 8rpx;
 }
 
 .user-level {
-    font-size: 26rpx;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 24.4rpx;
+    color: #6B7280;
     font-weight: 600;
 }
 
 .user-arrow {
-    font-size: 32rpx;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 31.4rpx;
+    color: #6B7280;
 }
 
 /* Settings Content */
@@ -381,28 +378,26 @@ onMounted(async () => {
 }
 
 .section {
-    margin-bottom: 32rpx;
+    margin-bottom: 24.4rpx;
 }
 
 .section-title {
-    font-size: 26rpx;
-    font-weight: 700;
-    color: #999;
+    font-size: 24.4rpx;
+    font-weight: 600;
+    color: #9CA3AF;
     display: block;
-    margin-bottom: 16rpx;
-    text-transform: uppercase;
-    letter-spacing: 2rpx;
+    margin-bottom: 17.4rpx;
 }
 
 /* Setting Item */
 .setting-item {
-    background: white;
-    border-radius: 24rpx;
-    padding: 28rpx 32rpx;
+    background: #ffffff;
+    border-radius: 38.4rpx;
+    padding: 27.9rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+    margin-bottom: 17.4rpx;
 }
 
 .language-item {
@@ -419,14 +414,14 @@ onMounted(async () => {
     text-align: center;
     padding: 10rpx 16rpx;
     border-radius: 999rpx;
-    background: #eef2ff;
-    color: #334155;
-    font-size: 22rpx;
-    font-weight: 700;
+    background: #EDE7DD;
+    color: #6B7280;
+    font-size: 24.4rpx;
+    font-weight: 600;
 }
 
 .lang-btn.active {
-    background: #5A459D;
+    background: #6F58D9;
     color: #fff;
 }
 
@@ -442,17 +437,17 @@ onMounted(async () => {
 }
 
 .setting-label {
-    font-size: 30rpx;
+    font-size: 31.4rpx;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #111111;
 }
 
 /* Toggle */
 .toggle {
-    width: 96rpx;
-    height: 52rpx;
-    background: #e0e0e0;
-    border-radius: 26rpx;
+    width: 104.7rpx;
+    height: 55.8rpx;
+    background: #EDE7DD;
+    border-radius: 27.9rpx;
     position: relative;
     transition: all 0.3s ease;
 }
@@ -462,59 +457,58 @@ onMounted(async () => {
 }
 
 .toggle-knob {
-    width: 44rpx;
-    height: 44rpx;
+    width: 48.8rpx;
+    height: 48.8rpx;
     background: white;
     border-radius: 50%;
     position: absolute;
-    top: 4rpx;
-    left: 4rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+    top: 3.5rpx;
+    left: 3.5rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 }
 
 .toggle.active .toggle-knob {
-    left: 48rpx;
+    left: 52.3rpx;
 }
 
 /* About */
 .about-item {
-    background: white;
-    border-radius: 24rpx;
-    padding: 28rpx 32rpx;
+    background: #ffffff;
+    border-radius: 38.4rpx;
+    padding: 27.9rpx;
     display: flex;
     justify-content: space-between;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-    margin-bottom: 16rpx;
+    margin-bottom: 17.4rpx;
 }
 
 .about-label {
-    font-size: 30rpx;
+    font-size: 31.4rpx;
     font-weight: 600;
-    color: #333;
+    color: #111111;
 }
 
 .about-value {
-    font-size: 30rpx;
-    color: #999;
+    font-size: 31.4rpx;
+    color: #6B7280;
 }
 
 /* Bottom Actions */
 .bottom-actions {
     display: flex;
     flex-direction: column;
-    gap: 16rpx;
-    margin-top: 32rpx;
-    padding-bottom: 40rpx;
+    gap: 17.4rpx;
+    margin-top: 24.4rpx;
+    padding-bottom: 34.9rpx;
 }
 
 .action-btn {
     width: 100%;
-    padding: 28rpx;
-    border-radius: 24rpx;
+    padding: 27.9rpx;
+    border-radius: 38.4rpx;
     text-align: center;
-    font-size: 30rpx;
-    font-weight: 700;
+    font-size: 31.4rpx;
+    font-weight: 600;
     transition: all 0.2s ease;
 }
 

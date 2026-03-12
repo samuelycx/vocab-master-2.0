@@ -140,8 +140,8 @@ export const API = {
         return [];
     },
 
-    async resetProgress(userId) {
-        return { success: true };
+    async resetProgress() {
+        return await callCloud('progress', 'resetProgress', {});
     },
 
     async updateCategory(userId, category) {
