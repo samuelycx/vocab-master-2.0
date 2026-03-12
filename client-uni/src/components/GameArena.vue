@@ -115,7 +115,7 @@ onUnmounted(() => {
         <view class="card-front">
           <text class="word-text">{{ session.currentWord?.word }}</text>
           <text class="word-phonetic">{{ phoneticText }}</text>
-          <text class="example-text">答题后卡片翻转展示结果与奖励</text>
+          <text class="example-text">{{ session.currentExample?.masked || t('arena_no_example') }}</text>
         </view>
         
         <!-- 背面：答题反馈 -->
@@ -160,17 +160,6 @@ onUnmounted(() => {
       </view>
     </view>
 
-    <view class="arena-footer">
-      <text class="footer-score">Correct +10XP  +1 Coin</text>
-      <view class="footer-submit" @click="handleAnswer(session.correctOption)">
-        <text class="footer-submit-text">提交</text>
-      </view>
-    </view>
-
-    <view class="flip-hint">
-      <text class="flip-hint-text">Card flips to show answer / reward</text>
-    </view>
-    
   </view>
 </template>
 
@@ -179,11 +168,11 @@ onUnmounted(() => {
 .game-arena {
   min-height: 100vh;
   background: #f6f1e8;
-  padding: calc(var(--header-height, 88px) + 62rpx) 24rpx 20rpx;
+  padding: calc(env(safe-area-inset-top, 0px) + 108.1rpx) 41.9rpx 34.9rpx;
   display: flex;
   flex-direction: column;
   position: relative;
-  gap: 12rpx;
+  gap: 20.9rpx;
 }
 
 /* 顶部导航 */
@@ -191,33 +180,33 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56rpx;
+  height: 97.7rpx;
 }
 
 .back-btn {
-  width: 42rpx;
-  height: 42rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
   background: #ffffff;
-  border-radius: 21rpx;
+  border-radius: 38.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .back-icon {
-  font-size: 22rpx;
-  color: #111827;
-  font-weight: 700;
+  font-size: 31.4rpx;
+  color: #111111;
+  font-weight: 600;
 }
 
 .progress-text {
-  font-size: 14rpx;
+  font-size: 24.4rpx;
   color: #6b7280;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .life-text {
-  font-size: 16rpx;
+  font-size: 24.4rpx;
   color: #6b7280;
   font-weight: 600;
 }
@@ -234,7 +223,7 @@ onUnmounted(() => {
 /* 3D 翻转卡片 */
 .word-card {
   width: 100%;
-  height: 360rpx;
+  height: 627.9rpx;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -251,14 +240,14 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: #fcecc7;
-  border-radius: 28rpx;
+  border-radius: 48.8rpx;
   box-shadow: none;
   backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16rpx;
+  padding: 27.9rpx;
 }
 
 .card-label {
@@ -271,22 +260,22 @@ onUnmounted(() => {
 }
 
 .word-text {
-  font-size: 56rpx;
+  font-size: 64rpx;
   font-weight: 700;
   font-family: Georgia, "Times New Roman", serif;
   color: #1a1a1a;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .word-phonetic {
-  font-size: 18rpx;
+  font-size: 24.4rpx;
   color: #7a7a7a;
-  margin-bottom: 12rpx;
+  margin-bottom: 20rpx;
 }
 
 .example-text {
-  font-size: 16rpx;
-  color: #5f5a54;
+  font-size: 24.4rpx;
+  color: #6b6b6b;
   text-align: center;
   line-height: 1.4;
 }
@@ -318,20 +307,22 @@ onUnmounted(() => {
 .options-container {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 14rpx;
+  height: 400rpx;
+  justify-content: center;
 }
 
 .options-row {
   display: flex;
-  gap: 10rpx;
+  gap: 14rpx;
 }
 
 .option-btn {
   flex: 1;
-  height: 60rpx;
+  height: 170rpx;
   background: #ffffff;
-  border-radius: 16rpx;
-  padding: 0 16rpx;
+  border-radius: 38.4rpx;
+  padding: 0 24rpx;
   display: flex;
   align-items: center;
   gap: 12rpx;
@@ -339,8 +330,8 @@ onUnmounted(() => {
 }
 
 .option-text {
-  font-size: 18rpx;
-  font-weight: 700;
+  font-size: 28rpx;
+  font-weight: 600;
   color: #1a1a1a;
   line-height: 1.3;
 }
@@ -358,54 +349,6 @@ onUnmounted(() => {
 
 .option-faded {
   opacity: 0.5;
-}
-
-.arena-footer {
-  height: 88rpx;
-  border-radius: 18rpx;
-  background: #16171b;
-  padding: 0 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 12rpx;
-}
-
-.footer-score {
-  color: #c9f86a;
-  font-size: 13rpx;
-  font-weight: 700;
-}
-
-.footer-submit {
-  width: 128rpx;
-  height: 46rpx;
-  border-radius: 16rpx;
-  background: #6e58d9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-submit-text {
-  color: #ffffff;
-  font-size: 16rpx;
-  font-weight: 800;
-}
-
-.flip-hint {
-  height: 36rpx;
-  border-radius: 18rpx;
-  background: #ede7dd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flip-hint-text {
-  color: #6b7280;
-  font-size: 14rpx;
-  font-weight: 700;
 }
 
 @keyframes correctPulse {
