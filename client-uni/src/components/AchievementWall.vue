@@ -40,6 +40,14 @@ const unlockedIds = computed(() => {
 const isUnlocked = (achievementId) => unlockedIds.value.includes(achievementId);
 const unlockedCount = computed(() => unlockedIds.value.length);
 const getIcon = (achievementId) => getAchievementIconById(achievementId);
+
+const HIDDEN_ACHIEVEMENTS = new Set(['spec_night', 'spec_morning']);
+const visibleAchievements = computed(() => {
+  return achievements.value.filter((item) => {
+    if (!item || !item.id) return false;
+    return !HIDDEN_ACHIEVEMENTS.has(item.id) || isUnlocked(item.id);
+  });
+});
 </script>
 
 <template>
@@ -50,7 +58,7 @@ const getIcon = (achievementId) => getAchievementIconById(achievementId);
       </view>
       <view class="header-content">
         <text class="header-title">{{ t('achievement_wall_title') }}</text>
-        <text class="header-sub">{{ t('achievement_wall_unlocked', { count: unlockedCount, total: achievements.length }) }}</text>
+        <text class="header-sub">{{ t('achievement_wall_unlocked', { count: unlockedCount, total: visibleAchievements.length }) }}</text>
       </view>
       <view class="header-placeholder"></view>
     </view>
@@ -58,7 +66,7 @@ const getIcon = (achievementId) => getAchievementIconById(achievementId);
     <view class="summary-card">
       <view class="summary-left">
         <text class="summary-kicker">{{ t('achievement_wall_progress') }}</text>
-        <text class="summary-main">{{ t('achievement_wall_badges', { count: unlockedCount, total: achievements.length }) }}</text>
+        <text class="summary-main">{{ t('achievement_wall_badges', { count: unlockedCount, total: visibleAchievements.length }) }}</text>
       </view>
       <image class="summary-icon-image" :src="getIcon('default')" mode="aspectFit" />
     </view>
@@ -72,7 +80,7 @@ const getIcon = (achievementId) => getAchievementIconById(achievementId);
 
         <view class="grid">
           <view
-            v-for="ach in achievements.filter((item) => item.category === categoryKey)"
+            v-for="ach in visibleAchievements.filter((item) => item.category === categoryKey)"
             :key="ach.id"
             class="card"
             :class="{ locked: !isUnlocked(ach.id) }"
@@ -87,7 +95,7 @@ const getIcon = (achievementId) => getAchievementIconById(achievementId);
         </view>
       </view>
 
-      <view v-if="achievements.length === 0" class="empty">
+      <view v-if="visibleAchievements.length === 0" class="empty">
         <text class="empty-text">{{ t('achievement_wall_empty') }}</text>
       </view>
     </scroll-view>
