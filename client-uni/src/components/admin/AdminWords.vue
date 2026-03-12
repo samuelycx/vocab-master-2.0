@@ -55,6 +55,27 @@ const handleNormalize = async () => {
         loading.value = false;
     }
 };
+
+const handleFillPhonetics = async () => {
+    if (loading.value) return;
+    loading.value = true;
+    try {
+        const res = await API.fillPhonetics(500);
+        if (res && res.success) {
+            uni.showModal({
+                title: '补齐完成',
+                content: `共扫描 ${res.total || 0} 条，补齐 ${res.updated || 0} 条`,
+                showCancel: false
+            });
+        } else {
+            uni.showModal({ title: '错误', content: res?.msg || '音标补齐失败', showCancel: false });
+        }
+    } catch (e) {
+        uni.showModal({ title: '错误', content: e?.message || '音标补齐失败', showCancel: false });
+    } finally {
+        loading.value = false;
+    }
+};
 </script>
 
 <template>
@@ -76,6 +97,10 @@ const handleNormalize = async () => {
                 <button @click="handleNormalize" :disabled="loading" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl font-bold text-sm active_scale-95 flex items-center gap-2">
                     <text>CLR</text>
                     <text>清洗词库</text>
+                </button>
+                <button @click="handleFillPhonetics" :disabled="loading" class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-bold text-sm active_scale-95 flex items-center gap-2">
+                    <text>PH</text>
+                    <text>补齐音标</text>
                 </button>
             </view>
         </view>

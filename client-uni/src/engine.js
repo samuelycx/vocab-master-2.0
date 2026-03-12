@@ -44,7 +44,15 @@ export const GameEngine = {
         if (AUDIO_DEBUG) {
             console.log('[AudioDebug] startSession', { count, at: Date.now() });
         }
+        if (typeof console !== 'undefined') {
+            console.log('[CountDebug] startSession', { count });
+        }
         const rawWords = await API.getSessionWords(count);
+        if (typeof console !== 'undefined') {
+            console.log('[CountDebug] startSession words', {
+                size: Array.isArray(rawWords) ? rawWords.length : 0
+            });
+        }
         if (!rawWords || rawWords.length === 0) {
             uni.showModal({
                 title: tr('common_notice'),

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import Welcome from '../../components/Welcome.vue';
 import Dashboard from '../../components/Dashboard.vue';
 import GameArena from '../../components/GameArena.vue';
@@ -16,6 +16,7 @@ import ProfileSetup from '../../components/ProfileSetup.vue';
 
 import { Actions, GameState } from '../../state.js';
 import { API } from '../../api.js';
+import { GameEngine } from '../../engine.js';
 
 const LOGIN_DEBUG = true;
 
@@ -72,6 +73,11 @@ onMounted(async () => {
     }
   } catch (e) {
     console.error('App initialization failed', e);
+  }
+});
+watch(() => GameState.game.view, (next, prev) => {
+  if (prev !== next) {
+    GameEngine.stopAudio();
   }
 });
 const currentView = computed(() => GameState.game.view);

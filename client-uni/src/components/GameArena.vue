@@ -9,7 +9,6 @@ const session = GameEngine.session;
 const uiIcons = UI_ICONS;
 const isFlipped = ref(false);
 const { t } = useI18n();
-const lifeCount = ref(3);
 
 const PHONETIC_DEBUG = true;
 
@@ -116,7 +115,7 @@ onUnmounted(() => {
         <text class="back-icon">←</text>
       </view>
       <text class="progress-text">{{ progressLabel }}</text>
-      <text class="life-text">❤️ {{ lifeCount }}</text>
+      <view class="header-placeholder"></view>
     </view>
     
     <!-- 单词卡片 -->
@@ -223,6 +222,11 @@ onUnmounted(() => {
   font-size: 24.4rpx;
   color: #6b7280;
   font-weight: 600;
+}
+
+.header-placeholder {
+  width: 76.7rpx;
+  height: 76.7rpx;
 }
 
 /* 单词卡片容器 */

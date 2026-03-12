@@ -1,6 +1,7 @@
 <script>
 import { INTER_BASE64, PLAYFAIR_BASE64 } from './static/fonts/font-data.js';
 import './style.css';
+import { GameEngine } from './engine.js';
 
 export default {
 	onLaunch: function() {
@@ -38,6 +39,7 @@ export default {
 	},
 	onHide: function() {
 		console.log('App Hide')
+		GameEngine.stopAudio();
 	}
 }
 </script>

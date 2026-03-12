@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const https = require('https')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
@@ -35,6 +36,9 @@ exports.main = async (event, context) => {
                 break
             case 'normalizeWords':
                 result = await normalizeWords(event.data)
+                break
+            case 'fillPhonetics':
+                result = await fillPhonetics(event.data)
                 break
             default:
                 result = { success: false, code: 'UNKNOWN_TYPE', msg: 'Unknown type' }
@@ -263,6 +267,74 @@ async function normalizeWords({ limit = 2000 } = {}) {
                 }
             })
             updated++
+        }
+
+        return { success: true, total: rows.length, updated }
+    } catch (e) {
+        return { success: false, msg: e.message }
+    }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function fetchJson(url) {
+    return new Promise((resolve) => {
+        https.get(url, (res) => {
+            let raw = ''
+            res.on('data', (chunk) => { raw += chunk })
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(raw)
+                    resolve(parsed)
+                } catch (e) {
+                    resolve(null)
+                }
+            })
+        }).on('error', () => resolve(null))
+    })
+}
+
+function pickPhoneticFromApi(payload) {
+    if (!Array.isArray(payload)) return ''
+    for (const entry of payload) {
+        const phonetics = Array.isArray(entry?.phonetics) ? entry.phonetics : []
+        const hit = phonetics.find(p => p && typeof p.text === 'string' && p.text.trim())
+        if (hit && hit.text) return String(hit.text).trim()
+    }
+    return ''
+}
+
+async function fillPhonetics({ limit = 500 } = {}) {
+    try {
+        const safeLimit = Math.min(Math.max(Number(limit) || 500, 1), 2000)
+        const res = await db.collection('words').limit(safeLimit).get()
+        const rows = res.data || []
+        let updated = 0
+
+        for (const row of rows) {
+            const existing = pickPhoneticFromDoc(row)
+            if (existing) continue
+
+            const wordText = String(row.text || '').trim()
+            if (!wordText) continue
+
+            const apiRes = await fetchJson(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(wordText)}`)
+            const phonetic = normalizePhonetic(pickPhoneticFromApi(apiRes))
+            if (!phonetic) {
+                await sleep(120)
+                continue
+            }
+
+            await db.collection('words').doc(row._id).update({
+                data: {
+                    phonetic,
+                    phoneticUpdatedAt: db.serverDate()
+                }
+            })
+            updated++
+            await sleep(120)
         }
 
         return { success: true, total: rows.length, updated }

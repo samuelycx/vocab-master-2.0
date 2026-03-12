@@ -30,7 +30,16 @@ const callCloud = async (name, type, data = {}) => {
 export const API = {
     // --- Word API ---
     async getSessionWords(count = DEFAULT_LEARN_COUNT) {
+        if (typeof console !== 'undefined') {
+            console.log('[CountDebug] getSessionWords request', { count });
+        }
         const res = await callCloud('words', 'getSessionWords', { count });
+        if (typeof console !== 'undefined') {
+            console.log('[CountDebug] getSessionWords response', {
+                success: res?.success,
+                size: Array.isArray(res?.data) ? res.data.length : 0
+            });
+        }
         return res.success ? res.data : [];
     },
 
@@ -80,6 +89,11 @@ export const API = {
 
     async updateProfile({ username, avatar }) {
         return await callCloud('auth', 'updateProfile', { username, avatar });
+    },
+
+    // --- Admin API ---
+    async fillPhonetics(limit = 500) {
+        return await callCloud('admin', 'fillPhonetics', { limit });
     },
 
     // --- Progress API ---
