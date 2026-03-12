@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
+import { DEFAULT_LEARN_COUNT } from '../constants.js';
 import { API } from '../api.js';
 import AchievementWall from './AchievementWall.vue';
 import VocabularyList from './VocabularyList.vue';
@@ -18,7 +19,7 @@ const loading = ref(true);
 const settings = GameState.settings;
 
 const startGame = () => {
-    GameEngine.startSession(10);
+    GameEngine.startSession(DEFAULT_LEARN_COUNT);
 };
 
 const startReview = async () => {

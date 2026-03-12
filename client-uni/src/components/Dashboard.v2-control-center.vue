@@ -4,8 +4,9 @@ import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { DEFAULT_LEARN_COUNT } from '../constants.js';
 
-const DAILY_GOAL = 10;
+const DAILY_GOAL = DEFAULT_LEARN_COUNT;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const user = GameState.user;

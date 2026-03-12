@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
+import { DEFAULT_LEARN_COUNT } from '../constants.js';
 import { useI18n } from '../i18n.js';
 import { UI_ICONS } from '../utils/ui-icons.js';
 
@@ -19,7 +20,7 @@ const goHome = () => {
 };
 
 const learnAgain = () => {
-    GameEngine.startSession(10);
+    GameEngine.startSession(DEFAULT_LEARN_COUNT);
     Actions.setView('arena');
 };
 </script>
@@ -30,69 +31,45 @@ const learnAgain = () => {
             <view class="back-btn" @click="goHome">
                 <text class="back-icon">←</text>
             </view>
+            <text class="header-title">学习结果</text>
             <view class="header-spacer"></view>
         </view>
 
-        <!-- 撒花特效 -->
-        <view class="confetti-container">
-            <view v-for="i in 25" :key="i" class="confetti" :style="{
-                left: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 2 + 's',
-                backgroundColor: ['#A8F0C6', '#A0D8F1', '#F9E975', '#FFB5D0', '#7B66C5'][Math.floor(Math.random() * 5)]
-            }"></view>
+        <view class="hero-card">
+            <text class="hero-icon">🎉</text>
+            <text class="hero-title">干得漂亮！</text>
+            <text class="hero-sub">今天又进步了一点</text>
         </view>
 
-        <!-- 主内容 -->
-        <view class="result-content">
-            <!-- 图标 -->
-            <view class="result-icon animate-pop-in">
-                <image class="result-icon-image" :src="uiIcons.ok" mode="aspectFit" />
+        <view class="reward-row">
+            <view class="reward-card xp">
+                <text class="reward-value">+{{ lastSession.xp }}</text>
+                <text class="reward-label">XP</text>
             </view>
-
-            <!-- 标题 -->
-            <text class="result-title animate-slide-in-up">{{ t('result_well_done') }}</text>
-            <text class="result-subtitle animate-fade-in">{{ t('result_subtitle') }}</text>
-
-            <!-- XP 和金币 -->
-            <view class="rewards-row animate-slide-in-up delay-100">
-                <view class="reward-card xp">
-                    <text class="reward-value">+{{ lastSession.xp }}</text>
-                    <text class="reward-label">XP</text>
-                </view>
-                
-                <view class="reward-card coins">
-                    <text class="reward-value">+{{ lastSession.coins }}</text>
-                    <view class="reward-coin-wrap">
-                        <image class="reward-coin-icon" :src="uiIcons.coin" mode="aspectFit" />
-                        <text class="reward-label">COIN</text>
-                    </view>
-                </view>
+            <view class="reward-card coin">
+                <text class="reward-value">+{{ lastSession.coins }}</text>
+                <text class="reward-label">COIN</text>
             </view>
+        </view>
 
-            <!-- 统计 -->
-            <view class="stats-card animate-scale-in delay-200">
-                <view class="stat-row">
-                    <text class="stat-label">{{ t('result_correct') }}</text>
-                    <text class="stat-value">{{ lastSession.correct }} / {{ lastSession.total }}</text>
-                </view>
-                
-                <view class="stat-divider"></view>
-                
-                <view class="stat-row">
-                    <text class="stat-label">{{ t('result_accuracy') }}</text>
-                    <text class="stat-value accuracy">{{ accuracy }}%</text>
-                </view>
+        <view class="stats-card">
+            <text class="stats-title">本轮统计</text>
+            <view class="stat-row">
+                <text class="stat-label">{{ t('result_correct') }}</text>
+                <text class="stat-value">{{ lastSession.correct }} / {{ lastSession.total }}</text>
             </view>
+            <view class="stat-row">
+                <text class="stat-label">{{ t('result_accuracy') }}</text>
+                <text class="stat-value">{{ accuracy }}%</text>
+            </view>
+        </view>
 
-            <!-- 按钮 -->
-            <view class="buttons animate-slide-in-up delay-300">
-                <view class="btn-primary" @click="learnAgain">
-                    <text>{{ t('result_learn_again') }}</text>
-                </view>
-                
-                <view class="btn-secondary" @click="goHome">
-                    <text>{{ t('result_back_home') }}</text>
-                </view>
+        <view class="actions-row">
+            <view class="btn-primary" @click="learnAgain">
+                <text>再学一次</text>
+            </view>
+            <view class="btn-secondary" @click="goHome">
+                <text>返回首页</text>
             </view>
         </view>
     </view>
@@ -101,296 +78,165 @@ const learnAgain = () => {
 <style scoped>
 .result-page {
     min-height: 100vh;
-    background: #f7f3ec;
-    padding: calc(var(--header-height, 88px) + 40rpx) 40rpx 40rpx;
+    background: #f6f1e8;
+    padding: 108.1rpx 41.9rpx 41.9rpx;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+    gap: 27.9rpx;
 }
 
 .result-header {
-    position: absolute;
-    top: calc(var(--header-height, 88px) + 8rpx);
-    left: 28rpx;
-    right: 28rpx;
-    z-index: 20;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 90.7rpx;
 }
 
 .back-btn {
-    width: 72rpx;
-    height: 72rpx;
+    width: 73.3rpx;
+    height: 73.3rpx;
     background: #ffffff;
-    border: 1px solid #ebe4da;
-    border-radius: 50%;
+    border-radius: 36.6rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(10rpx);
-}
-
-.back-btn:active {
-    transform: scale(0.95);
 }
 
 .back-icon {
-    font-size: 36rpx;
-    font-weight: 700;
+    font-size: 31.4rpx;
+    font-weight: 800;
     color: #111827;
+}
+
+.header-title {
+    font-size: 34.9rpx;
+    font-weight: 800;
+    color: #1a1a1a;
 }
 
 .header-spacer {
-    width: 72rpx;
+    width: 73.3rpx;
+    height: 73.3rpx;
 }
 
-/* 撒花特效 */
-.confetti-container {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.confetti {
-    position: absolute;
-    width: 16rpx;
-    height: 16rpx;
-    top: -20rpx;
-    border-radius: 50%;
-    animation: confettiFall 3s ease-out forwards;
-}
-
-@keyframes confettiFall {
-    0% {
-        transform: translateY(0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(120vh) rotate(720deg) scale(0.5);
-        opacity: 0;
-    }
-}
-
-/* 主内容 */
-.result-content {
+.hero-card {
+    height: 314rpx;
+    border-radius: 41.9rpx;
+    background: #fff9f1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
-    max-width: 560rpx;
-}
-
-/* 图标 */
-.result-icon {
-    width: 140rpx;
-    height: 140rpx;
-    border-radius: 36rpx;
-    background: #ffffff;
-    border: 1px solid #ebe4da;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    margin-bottom: 24rpx;
-    animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.result-icon-image {
-    width: 88rpx;
-    height: 88rpx;
+    gap: 14rpx;
 }
 
-@keyframes iconBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+.hero-icon {
+    font-size: 73.3rpx;
 }
 
-/* 标题 */
-.result-title {
-    font-size: 64rpx;
-    font-weight: 900;
-    color: #111827;
-    letter-spacing: 4rpx;
-    margin-bottom: 12rpx;
+.hero-title {
+    font-size: 55.8rpx;
+    font-weight: 800;
+    color: #1a1a1a;
 }
 
-.result-subtitle {
-    font-size: 28rpx;
-    color: #6b7280;
-    margin-bottom: 48rpx;
+.hero-sub {
+    font-size: 24.4rpx;
+    font-weight: 400;
+    color: #6b6b6b;
 }
 
-/* 奖励 */
-.rewards-row {
+.reward-row {
     display: flex;
-    gap: 24rpx;
-    margin-bottom: 40rpx;
+    gap: 20.9rpx;
+    height: 184.9rpx;
 }
 
 .reward-card {
-    background: white;
-    border-radius: 24rpx;
-    padding: 32rpx 48rpx;
+    flex: 1;
+    border-radius: 34.9rpx;
+    background: #dcd3ff;
+    padding: 27.9rpx;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
-    min-width: 160rpx;
+    gap: 10.5rpx;
 }
 
-.reward-card.xp {
-    background: linear-gradient(135deg, #A8F0C6 0%, #7EE0A8 100%);
-}
-
-.reward-card.coins {
-    background: linear-gradient(135deg, #F9E975 0%, #E5D450 100%);
+.reward-card.coin {
+    background: #fcecc7;
 }
 
 .reward-value {
-    font-size: 48rpx;
-    font-weight: 900;
+    font-size: 59.3rpx;
+    font-weight: 800;
     color: #1a1a1a;
-    display: block;
-    margin-bottom: 8rpx;
 }
 
 .reward-label {
-    font-size: 24rpx;
+    font-size: 20.9rpx;
     font-weight: 700;
-    color: #333;
-}
-.reward-coin-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8rpx;
-}
-.reward-coin-icon {
-    width: 30rpx;
-    height: 30rpx;
+    color: #1a1a1a;
 }
 
-/* 统计卡片 */
 .stats-card {
-    background: white;
-    border-radius: 32rpx;
-    padding: 40rpx;
-    width: 100%;
-    box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.15);
-    margin-bottom: 48rpx;
+    height: 279.1rpx;
+    border-radius: 38.4rpx;
+    background: #ffffff;
+    padding: 27.9rpx;
+    display: flex;
+    flex-direction: column;
+    gap: 20.9rpx;
+}
+
+.stats-title {
+    font-size: 24.4rpx;
+    font-weight: 700;
+    color: #6b6b6b;
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 48.8rpx;
 }
 
 .stat-label {
-    font-size: 28rpx;
-    color: #666;
+    font-size: 27.9rpx;
     font-weight: 600;
+    color: #6b6b6b;
 }
 
 .stat-value {
-    font-size: 36rpx;
+    font-size: 31.4rpx;
     font-weight: 800;
     color: #1a1a1a;
 }
 
-.stat-value.accuracy {
-    color: #5A459D;
-}
-
-.stat-divider {
-    height: 2rpx;
-    background: #f0f0f0;
-    margin: 24rpx 0;
-}
-
-/* 按钮 */
-.buttons {
-    width: 100%;
+.actions-row {
+    height: 170.9rpx;
     display: flex;
-    flex-direction: column;
-    gap: 20rpx;
+    gap: 20.9rpx;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    border-radius: 34.9rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 31.4rpx;
+    font-weight: 800;
 }
 
 .btn-primary {
-    width: 100%;
-    padding: 32rpx;
-    background: white;
-    color: #5A459D;
-    font-size: 32rpx;
-    font-weight: 800;
-    border-radius: 24rpx;
-    text-align: center;
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-}
-
-.btn-primary:active {
-    transform: scale(0.98);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+    background: #6f58d9;
+    color: #ffffff;
 }
 
 .btn-secondary {
-    width: 100%;
-    padding: 32rpx;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 28rpx;
-    font-weight: 700;
-    border-radius: 24rpx;
-    text-align: center;
-    border: 2rpx solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s ease;
-}
-
-.btn-secondary:active {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* 动画类 */
-.animate-pop-in {
-    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-slide-in-up {
-    animation: slideInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.4s ease forwards;
-}
-
-.animate-scale-in {
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-
-@keyframes popIn {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes slideInUp {
-    0% { opacity: 0; transform: translateY(40rpx); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-@keyframes scaleIn {
-    0% { opacity: 0; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1); }
+    background: #ffffff;
+    color: #1a1a1a;
 }
 </style>

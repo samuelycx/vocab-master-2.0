@@ -1,6 +1,8 @@
 // WeChat Cloud Development API Client
 // This replaces the REST-based api.js to use Cloud Functions
 
+import { DEFAULT_LEARN_COUNT } from './constants.js';
+
 const callCloud = async (name, type, data = {}) => {
     try {
         if (typeof wx === 'undefined' || !wx.cloud) {
@@ -27,7 +29,7 @@ const callCloud = async (name, type, data = {}) => {
 
 export const API = {
     // --- Word API ---
-    async getSessionWords(count = 10) {
+    async getSessionWords(count = DEFAULT_LEARN_COUNT) {
         const res = await callCloud('words', 'getSessionWords', { count });
         return res.success ? res.data : [];
     },

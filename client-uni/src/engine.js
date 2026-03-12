@@ -4,6 +4,7 @@ import { reactive } from 'vue';
 import { GameState, Actions } from './state.js';
 import { API } from './api.js';
 import { translate } from './i18n.js';
+import { DEFAULT_LEARN_COUNT } from './constants.js';
 
 const CORRECT_DELAY_MS = 2600;
 const WRONG_DELAY_MS = 3600;
@@ -39,7 +40,7 @@ export const GameEngine = {
     lastAudioKey: '',
     lastAudioAt: 0,
 
-    async startSession(count = 10) {
+    async startSession(count = DEFAULT_LEARN_COUNT) {
         if (AUDIO_DEBUG) {
             console.log('[AudioDebug] startSession', { count, at: Date.now() });
         }

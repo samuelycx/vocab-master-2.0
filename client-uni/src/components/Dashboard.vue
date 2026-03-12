@@ -4,9 +4,10 @@ import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
+import { DEFAULT_LEARN_COUNT } from '../constants.js';
 import { getAchievementIconById } from '../utils/achievement-icons.js';
 
-const DAILY_GOAL = 10;
+const DAILY_GOAL = DEFAULT_LEARN_COUNT;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const user = GameState.user;
@@ -176,7 +177,7 @@ onMounted(loadDashboard);
         <view class="focus-summary">
           <text class="focus-summary-kicker">{{ t('dashboard_focus_progress') }}</text>
           <text class="focus-summary-value">{{ stats.todayLearned }} / {{ DAILY_GOAL }}</text>
-          <text class="focus-summary-sub">学完本轮后&#10;解锁奖励</text>
+          <text class="focus-summary-sub" space="nbsp">学完本轮后\n解锁奖励</text>
           <view class="focus-summary-track">
             <view class="focus-summary-fill" :style="{ width: progressPercent + '%' }"></view>
           </view>
@@ -245,11 +246,11 @@ onMounted(loadDashboard);
 .dashboard {
   min-height: 100%;
   box-sizing: border-box;
-  padding: calc(var(--header-height, 88px) + 62rpx) 24rpx calc(env(safe-area-inset-bottom, 0px) + 16rpx);
+  padding: calc(env(safe-area-inset-top, 0px) + 190rpx) 41.9rpx 27.9rpx;
   background: #f6f1e8;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 24.4rpx;
   font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
@@ -258,29 +259,21 @@ onMounted(loadDashboard);
   font-family: "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.focus-card,
-.info-card,
-.social-card,
-.achievement-rail {
-  border: 2rpx solid #e7ddd0;
-  box-shadow: 0 16rpx 28rpx rgba(32, 24, 14, 0.08);
-}
-
 .focus-card {
   position: relative;
   overflow: hidden;
-  border-radius: 30rpx;
+  border-radius: 52.3rpx;
   background: #fff9f1;
-  padding: 20rpx;
-  height: 292rpx;
+  padding: 0;
+  height: 509.3rpx;
 }
 
 .focus-orb {
   position: absolute;
-  top: -44rpx;
-  right: 6rpx;
-  width: 170rpx;
-  height: 170rpx;
+  top: -76.7rpx;
+  right: 14rpx;
+  width: 296.6rpx;
+  height: 296.6rpx;
   border-radius: 50%;
   background: #ff8a5b;
   pointer-events: none;
@@ -288,10 +281,10 @@ onMounted(loadDashboard);
 
 .focus-glow {
   position: absolute;
-  top: 120rpx;
-  right: 24rpx;
-  width: 88rpx;
-  height: 88rpx;
+  top: 209.3rpx;
+  right: 62.8rpx;
+  width: 153.5rpx;
+  height: 153.5rpx;
   border-radius: 50%;
   background: #ffd8c3;
   pointer-events: none;
@@ -299,11 +292,11 @@ onMounted(loadDashboard);
 
 .focus-avatar {
   position: absolute;
-  top: 18rpx;
-  right: 66rpx;
+  top: 31.4rpx;
+  right: 62.8rpx;
   z-index: 5;
-  width: 64rpx;
-  height: 64rpx;
+  width: 111.6rpx;
+  height: 111.6rpx;
   border-radius: 50%;
   padding: 0;
   background: #efe7dd;
@@ -326,71 +319,71 @@ onMounted(loadDashboard);
 
 .avatar-core {
   position: absolute;
-  width: 30rpx;
-  height: 30rpx;
+  width: 52.3rpx;
+  height: 52.3rpx;
   border-radius: 50%;
   background: #d2c7b8;
 }
 
 .focus-kicker {
-  position: relative;
-  z-index: 2;
+  position: absolute;
+  left: 34.9rpx;
+  top: 34.9rpx;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  height: 30rpx;
-  padding: 0 12rpx;
-  border-radius: 15rpx;
+  width: 191.9rpx;
+  min-height: 52.3rpx;
+  padding: 8.7rpx 20.9rpx;
+  border-radius: 26.2rpx;
   background: #ffe5d6;
   color: #9a4f2e;
-  font-size: 12rpx;
+  font-size: 20.9rpx;
   font-weight: 800;
 }
 
 .focus-grid {
   position: relative;
   z-index: 2;
-  margin-top: 14rpx;
-  display: flex;
-  align-items: flex-end;
-  gap: 10rpx;
+  margin-top: 0;
 }
 
 .focus-main {
   min-width: 0;
-  flex: 1;
 }
 
 .focus-title {
+  position: absolute;
+  left: 34.9rpx;
+  top: 111.6rpx;
+  width: 359.3rpx;
   display: block;
   color: #1a1a1a;
-  font-size: 34rpx;
+  font-size: 59.3rpx;
   line-height: 1.1;
   font-weight: 800;
 }
 
-.dashboard.lang-en .focus-title {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 56rpx;
-  font-weight: 700;
-}
-
 .focus-subtitle {
+  position: absolute;
+  left: 34.9rpx;
+  top: 307rpx;
+  width: 359.3rpx;
   display: block;
-  margin-top: 12rpx;
+  margin-top: 0;
   color: #3d3d3d;
-  font-size: 14rpx;
+  font-size: 24.4rpx;
   line-height: 1.4;
 }
 
-.dashboard.lang-en .focus-subtitle {
-  font-size: 22rpx;
-}
-
 .focus-actions {
+  position: absolute;
+  left: 34.9rpx;
+  top: 368rpx;
   display: flex;
   align-items: center;
-  gap: 10rpx;
-  margin-top: 18rpx;
+  gap: 17.4rpx;
+  margin-top: 0;
 }
 
 .primary-cta,
@@ -402,10 +395,10 @@ onMounted(loadDashboard);
 }
 
 .primary-cta {
-  width: 183rpx;
-  height: 63rpx;
-  padding: 10rpx 14rpx;
-  border-radius: 24rpx;
+  width: 319.2rpx;
+  height: 109.9rpx;
+  padding: 17.4rpx 24.4rpx;
+  border-radius: 41.9rpx;
   background: #6f58d9;
   justify-content: space-between;
 }
@@ -413,27 +406,29 @@ onMounted(loadDashboard);
 .primary-cta-copy {
   display: flex;
   flex-direction: column;
-  gap: 2rpx;
+  gap: 3.5rpx;
   min-width: 0;
 }
 
 .primary-cta-text {
   color: #ffffff;
-  font-size: 18rpx;
+  font-size: 31.4rpx;
   font-weight: 800;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .primary-cta-sub {
   color: #e9deff;
-  font-size: 10rpx;
+  font-size: 17.4rpx;
   line-height: 1.2;
   font-weight: 700;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .primary-cta-icon {
-  width: 28rpx;
-  height: 28rpx;
-  border-radius: 14rpx;
+  width: 48.8rpx;
+  height: 48.8rpx;
+  border-radius: 24.4rpx;
   background: rgba(255, 255, 255, 0.2);
   display: inline-flex;
   align-items: center;
@@ -443,45 +438,49 @@ onMounted(loadDashboard);
 
 .primary-cta-icon-text {
   color: #fff9f1;
-  font-size: 12rpx;
+  font-size: 20.9rpx;
   font-weight: 800;
 }
 
 .focus-summary {
-  width: 136rpx;
-  height: 142rpx;
-  padding: 12rpx;
-  border-radius: 24rpx;
+  position: absolute;
+  left: 394.2rpx;
+  top: 230.2rpx;
+  width: 237.2rpx;
+  height: 247.7rpx;
+  padding: 20.9rpx;
+  border-radius: 41.9rpx;
   background: #1a1a1a;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 10.5rpx;
   box-shadow: none;
 }
 
 .focus-summary-kicker {
   color: #c9f66c;
-  font-size: 10rpx;
+  font-size: 17.4rpx;
   font-weight: 800;
 }
 
 .focus-summary-value {
   color: #fff9f1;
-  font-size: 28rpx;
+  font-size: 48.8rpx;
   line-height: 1;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  font-family: "SF Pro", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .focus-summary-sub {
   color: #d8d2c8;
-  font-size: 10rpx;
+  font-size: 17.4rpx;
   line-height: 1.2;
 }
 
 .focus-summary-track {
   width: 100%;
-  height: 10rpx;
+  height: 17.4rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.15);
   overflow: hidden;
@@ -494,35 +493,37 @@ onMounted(loadDashboard);
   transition: width 0.6s ease;
 }
 
-.core-row,
+.core-row {
+  display: flex;
+  gap: 24.4rpx;
+}
+
 .social-actions {
   display: flex;
-  gap: 14rpx;
+  gap: 17.4rpx;
 }
 
 .info-card {
   flex: 1;
   min-width: 0;
-  height: 172rpx;
-  border-radius: 24rpx;
-  padding: 18rpx;
+  height: 300rpx;
+  border-radius: 41.9rpx;
+  padding: 31.4rpx;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 17.4rpx;
 }
 
 .review-card {
-  background: #e2dbf6;
-  border-color: #cfc2ec;
+  background: #dcd3ff;
 }
 
 .wordbook-card {
-  background: #dcebdd;
-  border-color: #c7d9cc;
+  background: #cdead7;
 }
 
 .info-kicker {
-  font-size: 11rpx;
+  font-size: 19.2rpx;
   font-weight: 800;
 }
 
@@ -536,42 +537,44 @@ onMounted(loadDashboard);
 
 .info-value {
   color: #1a1a1a;
-  font-size: 50rpx;
+  font-size: 87.2rpx;
   line-height: 1;
   font-weight: 800;
-  margin-top: 4rpx;
+  margin-top: 7rpx;
   font-variant-numeric: tabular-nums;
+  font-family: "SF Pro", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .info-title {
   color: #1a1a1a;
-  font-size: 30rpx;
+  font-size: 52.3rpx;
   font-weight: 800;
   line-height: 1.12;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .info-sub {
   margin-top: auto;
   color: #5a534c;
-  font-size: 14rpx;
+  font-size: 24.4rpx;
   line-height: 1.35;
 }
 
 .social-card {
-  border-radius: 22rpx;
+  border-radius: 38.4rpx;
   background: #ffffff;
-  padding: 14rpx 16rpx;
+  padding: 24.4rpx 27.9rpx;
   display: flex;
   flex-direction: column;
-  height: 94rpx;
+  height: 164rpx;
 }
 
 .social-pill {
   flex: 1;
   min-width: 0;
-  height: 74rpx;
-  border-radius: 18rpx;
-  padding: 0 14rpx;
+  height: 129.1rpx;
+  border-radius: 31.4rpx;
+  padding: 0 24.4rpx;
   border: 2rpx solid transparent;
 }
 
@@ -591,65 +594,69 @@ onMounted(loadDashboard);
 
 .social-pill-text {
   color: #1a1a1a;
-  font-size: 26rpx;
+  font-size: 45.3rpx;
   font-weight: 800;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .achievement-rail {
-  border-radius: 22rpx;
+  border-radius: 38.4rpx;
   background: #ffffff;
-  padding: 16rpx;
+  padding: 27.9rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
-  height: 142rpx;
+  gap: 20.9rpx;
+  height: 247.7rpx;
 }
 
 .achievement-copy {
-  width: 50rpx;
-  min-width: 50rpx;
+  width: 87.2rpx;
+  min-width: 87.2rpx;
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 7rpx;
 }
 
 .achievement-title {
   color: #1a1a1a;
-  font-size: 18rpx;
+  font-size: 31.4rpx;
   font-weight: 800;
   line-height: 1.1;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  white-space: nowrap;
 }
 
 .achievement-count {
   color: #6b6b6b;
-  font-size: 10rpx;
+  font-size: 17.4rpx;
+  font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .achievement-track-grid {
-  width: 220rpx;
-  min-width: 220rpx;
-  height: 88rpx;
-  border-radius: 18rpx;
+  width: 383.7rpx;
+  min-width: 383.7rpx;
+  height: 153.5rpx;
+  border-radius: 31.4rpx;
   background: #f3ebe2;
-  padding: 10rpx;
+  padding: 17.4rpx;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 10.5rpx;
 }
 
 .achievement-row {
   width: 100%;
-  height: 30rpx;
+  height: 52.3rpx;
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 10.5rpx;
 }
 
 .achievement-chip {
-  width: 28rpx;
-  height: 28rpx;
-  border-radius: 10rpx;
+  width: 48.8rpx;
+  height: 48.8rpx;
+  border-radius: 17.4rpx;
   background: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -666,14 +673,14 @@ onMounted(loadDashboard);
 }
 
 .achievement-icon-image {
-  width: 20rpx;
-  height: 20rpx;
+  width: 34.9rpx;
+  height: 34.9rpx;
 }
 
 .achievement-arrow-button {
-  width: 42rpx;
-  height: 42rpx;
-  border-radius: 21rpx;
+  width: 73.3rpx;
+  height: 73.3rpx;
+  border-radius: 36.6rpx;
   background: #1a1a1a;
   flex-shrink: 0;
   display: inline-flex;
@@ -683,22 +690,8 @@ onMounted(loadDashboard);
 
 .achievement-arrow {
   color: #fff9f1;
-  font-size: 18rpx;
+  font-size: 31.4rpx;
   font-weight: 800;
 }
 
-.dashboard.lang-en .focus-card {
-  background: #fff8f0;
-}
-
-.dashboard.lang-en .focus-kicker,
-.dashboard.lang-en .social-kicker,
-.dashboard.lang-en .info-kicker,
-.dashboard.lang-en .focus-summary-kicker {
-  letter-spacing: 0.02em;
-}
-
-.dashboard.lang-en .achievement-title {
-  font-size: 28rpx;
-}
 </style>
