@@ -25,6 +25,7 @@ const { t, locale } = useI18n();
 const uiIcons = UI_ICONS;
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 const PROFILE_DEBUG = true;
+const openid = ref(GameState.user?.openid || '');
 
 const getAvatarUrl = (avatar) => {
     if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
@@ -71,6 +72,22 @@ const toggleSound = () => {
     Actions.updateSettings('soundEnabled', !settings.soundEnabled);
 };
 
+const login = async () => {
+    try {
+        const res = await API.login();
+        if (res && res.success && res.data) {
+            Actions.setUser(res.data);
+            Actions.setLogin(true);
+            uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+            uni.showToast({ title: '登录成功', icon: 'success' });
+        } else {
+            uni.showToast({ title: res?.msg || '登录失败', icon: 'none' });
+        }
+    } catch (e) {
+        uni.showToast({ title: e?.message || '登录失败', icon: 'none' });
+    }
+};
+
 const setLanguage = (language) => {
     Actions.updateSettings('language', language);
 };
@@ -93,8 +110,26 @@ const handleReset = async () => {
 
 const logout = () => {
     Actions.reset();
+    Actions.setLogin(false);
     uni.removeStorageSync('vocab_user');
     uni.reLaunch({ url: '/pages/index/index' });
+};
+
+const copyOpenId = () => {
+    const value = String(GameState.user?.openid || '').trim();
+    if (!value) {
+        uni.showToast({ title: 'OpenID 暂无', icon: 'none' });
+        return;
+    }
+    uni.setClipboardData({
+        data: value,
+        success: () => {
+            uni.showToast({ title: 'OpenID 已复制', icon: 'success' });
+        },
+        fail: () => {
+            uni.showToast({ title: '复制失败', icon: 'none' });
+        }
+    });
 };
 
 const adminClickCount = ref(0);
@@ -170,6 +205,7 @@ const goToProfile = async () => {
 
 onMounted(async () => {
     // Silent getUserInfo is restricted by WeChat; keep profile sync on user gesture only.
+    openid.value = GameState.user?.openid || '';
 });
 </script>
 
@@ -201,6 +237,12 @@ onMounted(async () => {
             </view>
             
             <view class="user-arrow">→</view>
+        </view>
+        <view class="openid-row">
+            <text class="openid-text">OpenID: {{ GameState.user.openid || '暂无' }}</text>
+            <view class="openid-copy" :class="{ disabled: !GameState.user.openid }" @click="copyOpenId">
+                复制
+            </view>
         </view>
 
         <!-- Settings Sections -->
@@ -258,8 +300,11 @@ onMounted(async () => {
 
         <!-- Bottom Buttons -->
         <view class="bottom-actions">
-            <view class="action-btn logout" @click="logout">
+            <view v-if="GameState.user.isLoggedIn" class="action-btn logout" @click="logout">
                 <text>{{ t('settings_logout') }}</text>
+            </view>
+            <view v-else class="action-btn logout" @click="login">
+                <text>{{ t('settings_login') }}</text>
             </view>
             
             <view class="action-btn danger" @click="showResetConfirm = true">
@@ -354,7 +399,7 @@ onMounted(async () => {
 
 /* User Card */
 .user-card {
-    background: #FFF9F1;
+    background: linear-gradient(180deg, #fffaf4 0%, #fff6ec 100%);
     border-radius: 38.4rpx;
     padding: 0 27.9rpx;
     display: flex;
@@ -362,17 +407,51 @@ onMounted(async () => {
     gap: 24.4rpx;
     height: 164rpx;
     justify-content: space-between;
+    border: 2rpx solid #f1e6d7;
+    box-shadow: 0 14rpx 34rpx rgba(26, 26, 26, 0.04);
+}
+
+.openid-row {
+    margin-top: 10.5rpx;
+    background: #FFF9F1;
+    border-radius: 20.9rpx;
+    padding: 16.3rpx 22.4rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 22.4rpx;
+    color: #6b7280;
+}
+
+.openid-text {
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.openid-copy {
+    padding: 6.9rpx 20.9rpx;
+    border-radius: 20.9rpx;
+    background: #ede7dd;
+    color: #111111;
+    font-weight: 600;
+}
+
+.openid-copy.disabled {
+    opacity: 0.5;
 }
 
 .user-avatar {
-    width: 90.7rpx;
-    height: 90.7rpx;
-    background: #ffffff;
-    border-radius: 45.3rpx;
+  width: 90.7rpx;
+  height: 90.7rpx;
+  background: #ffffff;
+  border-radius: 45.3rpx;
     display: flex;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(26, 26, 26, 0.08);
 }
 
 .avatar-img {
@@ -386,8 +465,8 @@ onMounted(async () => {
 }
 
 .user-name {
-    font-size: 34.9rpx;
-    font-weight: 600;
+    font-size: 36.6rpx;
+    font-weight: 500;
     color: #111111;
     display: block;
 }
@@ -414,7 +493,7 @@ onMounted(async () => {
 
 .section-title {
     font-size: 24.4rpx;
-    font-weight: 600;
+    font-weight: 500;
     color: #9CA3AF;
     display: block;
     margin-bottom: 17.4rpx;
@@ -528,8 +607,8 @@ onMounted(async () => {
 .bottom-actions {
     display: flex;
     flex-direction: column;
-    gap: 17.4rpx;
-    margin-top: 24.4rpx;
+    gap: 24.4rpx;
+    margin-top: 45.3rpx;
     padding-bottom: 34.9rpx;
 }
 
@@ -630,8 +709,8 @@ onMounted(async () => {
 /* Secret Admin */
 .secret-admin {
     text-align: center;
-    padding: 40rpx;
-    opacity: 0.3;
+    padding: 31.4rpx 40rpx 10.5rpx;
+    opacity: 0.12;
 }
 
 .secret-admin text {

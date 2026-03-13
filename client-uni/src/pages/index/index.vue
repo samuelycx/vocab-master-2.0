@@ -33,19 +33,35 @@ onMounted(async () => {
       });
     }
 
-    try {
-      const res = await API.login();
-      if (LOGIN_DEBUG) {
-        console.log('[LoginDebug] login response', res);
+    if (GameState.user.isLoggedIn) {
+      try {
+        const res = await API.login();
+        if (LOGIN_DEBUG) {
+          console.log('[LoginDebug] login response', res);
+        }
+        if (res && res.success && res.data) {
+          Actions.setUser(res.data);
+          Actions.setLogin(true);
+          uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+          if (LOGIN_DEBUG) {
+            console.log('[LoginDebug] login data openid', {
+              openid: res.data.openid,
+              id: res.data.id,
+              username: res.data.username
+            });
+            console.log('[LoginDebug] user after login', {
+              id: GameState.user.id,
+              openid: GameState.user.openid,
+              username: GameState.user.username,
+              isProfileSet: GameState.user.isProfileSet
+            });
+          }
+        } else if (res && res.success === false && res.msg) {
+          uni.showToast({ title: res.msg, icon: 'none' });
+        }
+      } catch (err) {
+        console.error('Auto-login failed', err);
       }
-      if (res && res.success && res.data) {
-        Actions.setUser(res.data);
-        uni.setStorageSync('vocab_user', JSON.stringify(res.data));
-      } else if (res && res.success === false && res.msg) {
-        uni.showToast({ title: res.msg, icon: 'none' });
-      }
-    } catch (err) {
-      console.error('Auto-login failed', err);
     }
 
     // Fetch System Configs (Feature Flags)

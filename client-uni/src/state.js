@@ -10,7 +10,8 @@ const initialState = {
         streak: 1,
         coins: 100,
         avatar: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-        isProfileSet: true
+        isProfileSet: true,
+        isLoggedIn: false
     },
     game: {
         view: 'dashboard', // welcome, dashboard, settings, arena, result, social, category_selection
@@ -90,9 +91,11 @@ if (!parsed.overlay) parsed.overlay = { ...initialState.overlay };
 if (!parsed.system) parsed.system = { ...initialState.system };
 if (!parsed.settings) parsed.settings = { ...initialState.settings };
 if (!parsed.game) parsed.game = { ...initialState.game };
+if (!parsed.user) parsed.user = { ...initialState.user };
 parsed.systemLayout = { ...initialState.systemLayout }; // Always fresh from hardware
 
 parsed.settings = { ...initialState.settings, ...parsed.settings };
+parsed.user = { ...initialState.user, ...parsed.user };
 
 if (!parsed.game.social) {
     parsed.game.social = { ...initialState.game.social };
@@ -167,6 +170,9 @@ export const Actions = {
     },
     setUser(userData) {
         Object.assign(state.user, userData);
+    },
+    setLogin(isLoggedIn) {
+        state.user.isLoggedIn = Boolean(isLoggedIn);
     },
     addCoins(amount) {
         state.user.coins += amount;
