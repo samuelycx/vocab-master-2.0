@@ -170,6 +170,9 @@ export const Actions = {
     },
     setUser(userData) {
         Object.assign(state.user, userData);
+        if (userData && (userData.openid || userData.id)) {
+            state.user.isLoggedIn = true;
+        }
     },
     setLogin(isLoggedIn) {
         state.user.isLoggedIn = Boolean(isLoggedIn);

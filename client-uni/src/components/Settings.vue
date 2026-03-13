@@ -72,7 +72,13 @@ const toggleSound = () => {
     Actions.updateSettings('soundEnabled', !settings.soundEnabled);
 };
 
+const isLoggedIn = () => Boolean(GameState.user?.isLoggedIn || GameState.user?.openid || GameState.user?.id);
+
 const login = async () => {
+    if (isLoggedIn()) {
+        uni.showToast({ title: '已登录', icon: 'none' });
+        return;
+    }
     try {
         const res = await API.login();
         if (res && res.success && res.data) {
@@ -300,7 +306,7 @@ onMounted(async () => {
 
         <!-- Bottom Buttons -->
         <view class="bottom-actions">
-            <view v-if="GameState.user.isLoggedIn" class="action-btn logout" @click="logout">
+            <view v-if="isLoggedIn()" class="action-btn logout" @click="logout">
                 <text>{{ t('settings_logout') }}</text>
             </view>
             <view v-else class="action-btn logout" @click="login">

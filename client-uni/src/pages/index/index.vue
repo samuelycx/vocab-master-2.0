@@ -33,6 +33,10 @@ onMounted(async () => {
       });
     }
 
+    if (GameState.user.openid || GameState.user.id) {
+      Actions.setLogin(true);
+    }
+
     if (GameState.user.isLoggedIn) {
       try {
         const res = await API.login();
