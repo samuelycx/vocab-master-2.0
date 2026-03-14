@@ -1,4 +1,4 @@
-# UI Guideline (client-uni)
+# UI Guideline (miniprogram)
 
 ## Goal
 - Keep all pages in one visual language.
