@@ -1,112 +1,172 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+function getStoredToken() {
+    return localStorage.getItem('vocab_token');
+}
+
+async function requestJSON(path, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+    };
+    const token = options.token ?? getStoredToken();
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        return {
+            success: false,
+            status: response.status,
+            ...data,
+        };
+    }
+
+    return data;
+}
+
 export const API = {
     async getSessionWords(count = 10, category = 'GENERAL') {
         try {
-            const url = `${API_URL}/word/session?count=${count}${category ? `&category=${category}` : ''}`;
-            const res = await fetch(url);
-            return await res.json();
+            const data = await requestJSON(`/words/session?count=${count}${category ? `&category=${category}` : ''}`, {
+                method: 'GET',
+            });
+            return data?.data?.words || [];
         } catch (e) {
             console.error('Failed to fetch words', e);
             return [];
         }
     },
 
-    async updateCategory(userId, category) {
+    async updateCategory(category) {
         try {
-            const res = await fetch(`${API_URL}/progress/set-category`, {
+            const res = await requestJSON(`/progress/set-category`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, category })
+                body: JSON.stringify({ category })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Failed to update category', e);
             return null;
         }
     },
 
-    async getReviews(userId) {
+    async getReviews() {
         try {
-            const res = await fetch(`${API_URL}/word/review?userId=${userId}`);
-            return await res.json();
+            return await requestJSON('/word/review', { method: 'GET' });
         } catch (e) {
             console.error('Failed to fetch reviews', e);
             return [];
         }
     },
 
-    async getMistakes(userId) {
+    async getReviewCount() {
         try {
-            const res = await fetch(`${API_URL}/word/mistakes?userId=${userId}`);
-            return await res.json();
+            const res = await requestJSON('/progress/reviews', { method: 'GET' });
+            return res?.data?.total ?? 0;
+        } catch (e) {
+            console.error('Failed to fetch review count', e);
+            return 0;
+        }
+    },
+
+    async getMistakes() {
+        try {
+            return await requestJSON('/word/mistakes', { method: 'GET' });
         } catch (e) {
             console.error('Failed to fetch mistakes', e);
             return [];
         }
     },
 
-    async getLearnedWords(userId, page = 1, limit = 20, search = '') {
+    async getLearnedWords(page = 1, limit = 20, search = '') {
         try {
-            const res = await fetch(`${API_URL}/word/learned?userId=${userId}&page=${page}&limit=${limit}&search=${search}`);
-            if (!res.ok) return null;
-            return await res.json();
+            return await requestJSON(`/word/learned?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
+                method: 'GET',
+            });
         } catch (e) {
             console.error(e);
             return null;
         }
     },
 
-    async login(username) {
+    async loginWithPassword(username, password) {
         try {
-            // First try to login
-            let res = await fetch(`${API_URL}/auth/login`, {
+            return await requestJSON('/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ username, password })
             });
-            let data = await res.json();
-
-            if (!data.success) {
-                // If failed, try to create (Auto-register for now per simple UX)
-                res = await fetch(`${API_URL}/auth/create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username })
-                });
-                data = await res.json();
-            }
-            return data;
         } catch (e) {
             console.error('Login failed', e);
             return { success: false, error: e.message };
         }
     },
 
-    async syncProgress(userId, wordId, status, xp = 0, coins = 0) {
+    async registerWithPassword(username, password) {
         try {
-            const res = await fetch(`${API_URL}/progress/sync`, {
+            return await requestJSON('/auth/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+        } catch (e) {
+            console.error('Register failed', e);
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getCurrentUser(token) {
+        try {
+            return await requestJSON('/auth/me', {
+                method: 'GET',
+                token,
+            });
+        } catch (e) {
+            console.error('Get current user failed', e);
+            return { success: false, error: e.message };
+        }
+    },
+
+    async logout(token) {
+        try {
+            return await requestJSON('/auth/logout', {
+                method: 'POST',
+                token,
+            });
+        } catch (e) {
+            console.error('Logout failed', e);
+            return { success: false, error: e.message };
+        }
+    },
+
+    async syncProgress(wordId, status, xp = 0, coins = 0, mode = 'learn') {
+        try {
+            const res = await requestJSON(`/progress/sync`, {
+                method: 'POST',
                 body: JSON.stringify({
-                    userId,
                     wordId,
                     status,
                     xpGained: xp,
-                    coinsGained: coins
+                    coinsGained: coins,
+                    mode
                 })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Sync failed', e);
             return null;
         }
     },
 
-    async getStats(userId) {
+    async getStats() {
         try {
-            const res = await fetch(`${API_URL}/progress/stats?userId=${userId}`);
-            return await res.json();
+            const res = await requestJSON('/progress/stats', { method: 'GET' });
+            return res?.data || null;
         } catch (e) {
             console.error('Failed to get stats', e);
             return null;
@@ -121,8 +181,7 @@ export const API = {
         // or just hardcode visually in frontend?
         // Better to fetch. Let's add getAchievements to API.
         try {
-            const res = await fetch(`${API_URL}/progress/achievements`);
-            return await res.json();
+            return await requestJSON('/progress/achievements', { method: 'GET' });
         } catch (e) {
             return [];
         }
@@ -133,8 +192,7 @@ export const API = {
     // --- System API ---
     async getSystemConfigs() {
         try {
-            const res = await fetch(`${API_URL}/config`);
-            return await res.json();
+            return await requestJSON('/config', { method: 'GET', token: null });
         } catch (e) {
             console.error('Failed to load configs', e);
             return { pk_arena_enabled: true }; // Default fallback
@@ -192,14 +250,13 @@ export const API = {
         }
     },
 
-    async setCategory(userId, category) {
+    async setUserCategory(userId, category) {
         try {
-            const res = await fetch(`${API_URL}/progress/set-category`, {
+            const res = await requestJSON(`/admin/set-category`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, category })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Failed to set category', e);
             return null;
@@ -218,14 +275,12 @@ export const API = {
         }
     },
 
-    async resetProgress(userId) {
+    async resetProgress() {
         try {
-            const res = await fetch(`${API_URL}/progress/reset`, {
+            const res = await requestJSON(`/progress/reset`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Reset failed', e);
             return null;
@@ -257,10 +312,9 @@ export const API = {
     },
 
     // --- Social API ---
-    async getSocialFeed(userId) {
+    async getSocialFeed() {
         try {
-            const res = await fetch(`${API_URL}/social/feed/${userId}`);
-            return await res.json();
+            return await requestJSON('/social/feed', { method: 'GET' });
         } catch (e) {
             console.error('Failed to fetch social feed', e);
             return [];
@@ -269,46 +323,43 @@ export const API = {
 
     async getLeaderboard() {
         try {
-            const res = await fetch(`${API_URL}/social/leaderboard`);
-            return await res.json();
+            const res = await requestJSON('/leaderboard', { method: 'GET', token: null });
+            return res?.data?.entries || [];
         } catch (e) {
             console.error('Failed to fetch leaderboard', e);
             return [];
         }
     },
 
-    async getFriends(userId) {
+    async getFriends() {
         try {
-            const res = await fetch(`${API_URL}/social/friends/${userId}`);
-            return await res.json();
+            return await requestJSON('/social/friends', { method: 'GET' });
         } catch (e) {
             console.error('Failed to fetch friends', e);
             return { following: [], followers: [] };
         }
     },
 
-    async followUser(followerId, followingId) {
+    async followUser(followingId) {
         try {
-            const res = await fetch(`${API_URL}/social/follow`, {
+            const res = await requestJSON(`/social/follow`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ followerId, followingId })
+                body: JSON.stringify({ followingId })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Failed to follow user', e);
             return null;
         }
     },
 
-    async unfollowUser(followerId, followingId) {
+    async unfollowUser(followingId) {
         try {
-            const res = await fetch(`${API_URL}/social/unfollow`, {
+            const res = await requestJSON(`/social/unfollow`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ followerId, followingId })
+                body: JSON.stringify({ followingId })
             });
-            return await res.json();
+            return res;
         } catch (e) {
             console.error('Failed to unfollow user', e);
             return null;
@@ -317,8 +368,9 @@ export const API = {
 
     async searchUsers(query) {
         try {
-            const res = await fetch(`${API_URL}/social/search?q=${encodeURIComponent(query)}`);
-            return await res.json();
+            return await requestJSON(`/social/search?q=${encodeURIComponent(query)}`, {
+                method: 'GET',
+            });
         } catch (e) {
             console.error('Failed to search users', e);
             return [];

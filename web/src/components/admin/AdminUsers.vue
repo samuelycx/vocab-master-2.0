@@ -13,7 +13,7 @@ const fetchUsers = async () => {
 };
 
 const setUserCategory = async (userId, category) => {
-    await API.setCategory(userId, category);
+    await API.setUserCategory(userId, category);
     await fetchUsers(); 
 };
 

@@ -13,6 +13,9 @@ datasource db {
 model User {
   id          String   @id @default(uuid())
   username    String   @unique
+  passwordHash String?
+  sessionToken String? @unique
+  sessionExpiresAt DateTime?
   role        String   @default("USER") // USER, ADMIN
   avatar      String   @default("🎓")
   level       Int      @default(1)
@@ -26,6 +29,7 @@ model User {
   totalCorrect Int     @default(0)
   
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   targetCategory String @default("GENERAL") // NEW: TOEFL, GRE, BUSINESS, etc.
   
@@ -125,6 +129,7 @@ model StudyRecord {
   repetition  Int      @default(0)    // Consecutive correct
   easeFactor  Float    @default(2.5)  // SM-2 Ease Factor
   mistakeCount Int     @default(0)    // For Mistake Book
+  reviewStage Int      @default(0)    // Fixed review stage (0-7)
   
   user      User     @relation(fields: [userId], references: [id])
   word      Word     @relation(fields: [wordId], references: [id])

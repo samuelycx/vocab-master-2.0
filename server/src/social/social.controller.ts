@@ -1,28 +1,42 @@
-import { Controller, Post, Get, Body, Query, Param } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
+import { AuthService } from '../auth/auth.service';
 import { SocialService } from './social.service';
 
 @Controller('social')
 export class SocialController {
-    constructor(private readonly socialService: SocialService) { }
+    constructor(
+        private readonly socialService: SocialService,
+        private readonly authService: AuthService,
+    ) { }
 
     @Post('follow')
-    async follow(@Body() data: { followerId: string, followingId: string }) {
-        return this.socialService.followUser(data.followerId, data.followingId);
+    async follow(
+        @Headers('authorization') authorization: string,
+        @Body() data: { followingId: string },
+    ) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.socialService.followUser(user.id, data.followingId);
     }
 
     @Post('unfollow')
-    async unfollow(@Body() data: { followerId: string, followingId: string }) {
-        return this.socialService.unfollowUser(data.followerId, data.followingId);
+    async unfollow(
+        @Headers('authorization') authorization: string,
+        @Body() data: { followingId: string },
+    ) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.socialService.unfollowUser(user.id, data.followingId);
     }
 
-    @Get('feed/:userId')
-    async getFeed(@Param('userId') userId: string) {
-        return this.socialService.getSocialFeed(userId);
+    @Get('feed')
+    async getFeed(@Headers('authorization') authorization: string) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.socialService.getSocialFeed(user.id);
     }
 
-    @Get('friends/:userId')
-    async getFriends(@Param('userId') userId: string) {
-        return this.socialService.getFriends(userId);
+    @Get('friends')
+    async getFriends(@Headers('authorization') authorization: string) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.socialService.getFriends(user.id);
     }
 
     @Get('search')

@@ -1,134 +1,277 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue';
-import { GameState } from '../state.js';
+import { ref, onMounted, watch, computed } from 'vue';
+import { Actions, GameState } from '../state.js';
+import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 
 const props = defineProps({
-    onBack: Function
+  onBack: Function,
 });
 
 const words = ref([]);
-const page = ref(1);
-const totalPages = ref(1);
-const search = ref('');
 const loading = ref(false);
-const userId = GameState.user.id;
+const page = ref(1);
+const hasMore = ref(true);
+const search = ref('');
+const serverTotal = ref(0);
 
-const loadWords = async () => {
-    if (loading.value) return;
-    loading.value = true;
-    try {
-        const res = await API.getLearnedWords(userId, page.value, 20, search.value);
-        if (res) {
-            if (page.value === 1) {
-                words.value = res.data;
-            } else {
-                words.value = [...words.value, ...res.data];
-            }
-            totalPages.value = res.lastPage;
-        }
-    } finally {
-        loading.value = false;
-    }
-};
-
-// Debounce search
-let timeout;
-watch(search, () => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-        page.value = 1;
-        loadWords();
-    }, 300);
+const totalCount = computed(() => {
+  if (search.value.trim()) return words.value.length;
+  const n = Number(serverTotal.value || GameState.user.totalLearned || 0);
+  return Number.isFinite(n) && n >= 0 ? n : words.value.length;
 });
 
-const loadMore = () => {
-    if (page.value < totalPages.value) {
-        page.value++;
-        loadWords();
-    }
+const statusPriority = (status) => {
+  if (status === 'LEARNING') return 1;
+  if (status === 'MASTERED') return 2;
+  return 3;
 };
 
-const getStatusColor = (status, repetition) => {
-    if (status === 'MASTERED' || repetition > 3) return 'bg-green-100 text-green-700';
-    if (status === 'LEARNING') return 'bg-blue-100 text-blue-700';
-    return 'bg-slate-100 text-slate-500';
+const displayWords = computed(() => {
+  return [...words.value].sort((a, b) => {
+    const ap = statusPriority(a?.status);
+    const bp = statusPriority(b?.status);
+    if (ap !== bp) return ap - bp;
+    return Number(b?.repetition || 0) - Number(a?.repetition || 0);
+  });
+});
+
+const parseMeaningList = (meanings) => {
+  if (Array.isArray(meanings)) return meanings;
+  if (typeof meanings === 'string') {
+    try {
+      const parsed = JSON.parse(meanings);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (_) {
+      return [meanings];
+    }
+    return [meanings];
+  }
+  return [];
 };
+
+const detectPosFromMeanings = (meanings) => {
+  const list = parseMeaningList(meanings);
+  const hit = list.find((item) => typeof item === 'string' && /^[a-z]+\./i.test(item.trim()));
+  return hit?.trim().match(/^([a-z]+\.)/i)?.[1]?.toLowerCase() || '';
+};
+
+const normalizePartOfSpeech = (pos, meanings) => String(pos || '').trim().toLowerCase() || detectPosFromMeanings(meanings) || 'n.';
+
+const cleanMeaningText = (text) => {
+  if (typeof text !== 'string') return '';
+  return text.replace(/^\s*[a-z]+\.\s*/i, '').replace(/示意[:：]?\s*/g, '').replace(/\s+/g, ' ').trim();
+};
+
+const safeParseMeanings = (meanings) => parseMeaningList(meanings).map(cleanMeaningText).filter(Boolean).join('；');
 
 const getStatusLabel = (status, repetition) => {
-    if (status === 'MASTERED' || repetition > 3) return '已掌握';
-    if (status === 'LEARNING') return '学习中';
-    return '新词';
+  if (status === 'MASTERED') return '已掌握';
+  if (status === 'LEARNING') return '学习中';
+  if ((repetition || 0) > 0) return '待巩固';
+  return '新词';
 };
 
-onMounted(() => {
-    loadWords();
+const getStatusClass = (status, repetition) => {
+  if (status === 'MASTERED') return 'bg-mint';
+  if (status === 'LEARNING') return 'bg-sky';
+  if ((repetition || 0) > 0) return 'bg-lemon';
+  return 'bg-pink';
+};
+
+const getMasteryLevel = (status, repetition) => {
+  if (status === 'MASTERED') return { color: '#A8F0C6', label: '熟练', percent: 100 };
+  const r = Number(repetition || 0);
+  if (r >= 5) return { color: '#A0D8F1', label: '稳定', percent: 85 };
+  if (r >= 3) return { color: '#A0D8F1', label: '进阶', percent: 65 };
+  if (r >= 1) return { color: '#F9E975', label: '入门', percent: 35 };
+  return { color: '#FFB5D0', label: '新词', percent: 15 };
+};
+
+const loadMore = async () => {
+  if (loading.value || !hasMore.value) return;
+  loading.value = true;
+  try {
+    const data = await API.getLearnedWords(page.value, 20, search.value);
+    const list = Array.isArray(data?.data) ? data.data : [];
+    if (page.value === 1) {
+      serverTotal.value = Number(data?.total) || list.length;
+    }
+    words.value = page.value === 1 ? list : [...words.value, ...list];
+    const lastPage = Number(data?.lastPage) || 1;
+    hasMore.value = page.value < lastPage;
+    page.value += 1;
+  } catch (error) {
+    console.error('Load vocabulary failed', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+watch(search, () => {
+  page.value = 1;
+  hasMore.value = true;
+  words.value = [];
+  serverTotal.value = 0;
+  loadMore();
 });
+
+onMounted(loadMore);
+
+const handleBack = () => {
+  if (props.onBack) {
+    props.onBack();
+    return;
+  }
+  Actions.setView('dashboard');
+};
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col p-4 md:p-6 w-full max-w-5xl mx-auto h-full overflow-hidden transition-colors">
-        <!-- Header -->
-        <div class="flex items-center gap-4 mb-6">
-            <button @click="onBack" class="w-10 h-10 rounded-full bg-surface border border-slate-100 dark:border-white/5 flex items-center justify-center text-text-muted hover:text-primary active:scale-95 transition-all">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1 class="text-2xl font-black text-text-main">我的词汇量</h1>
-        </div>
+  <div class="vocab-page">
+    <header class="header">
+      <button class="back-btn" @click="handleBack">
+        <span class="back-icon">←</span>
+      </button>
+      <div class="header-content">
+        <div class="header-title">我的词库</div>
+        <div class="header-sub">已记录 {{ totalCount }} 个单词</div>
+      </div>
+      <div class="header-icon">📘</div>
+    </header>
 
-        <!-- Search -->
-        <div class="relative mb-6">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-text-muted"></i>
-            <input 
-                v-model="search"
-                type="text" 
-                placeholder="搜索单词..." 
-                class="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent shadow-sm focus:border-primary focus:outline-none font-bold text-text-main bg-surface transition-colors placeholder:text-text-muted/50"
-            >
-        </div>
+    <section class="search-section">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input v-model="search" class="search-input" placeholder="搜索单词" type="text">
+      </div>
+    </section>
 
-        <!-- List -->
-        <div class="flex-1 overflow-y-auto space-y-3 pb-24 pr-2" id="vocab-list">
-            <div v-if="words.length === 0 && !loading" class="text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4 opacity-20"><i class="fas fa-book-open"></i></div>
-                <p>暂无单词记录</p>
-                <p class="text-sm mt-2">快去开始每日挑战吧！</p>
+    <section class="stats-section">
+      <div class="stat-card mint">
+        <div class="stat-value">{{ totalCount }}</div>
+        <div class="stat-label">词条总数</div>
+      </div>
+      <div class="stat-card sky">
+        <div class="stat-value">{{ GameState.user.level || 1 }}</div>
+        <div class="stat-label">当前等级</div>
+      </div>
+    </section>
+
+    <div class="word-list" @scroll.passive="(e) => { const el = e.target; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) loadMore(); }">
+      <div v-if="(!displayWords || displayWords.length === 0) && !loading" class="empty-state">
+        <div class="empty-icon">📚</div>
+        <div class="empty-title">还没有词汇记录</div>
+        <div class="empty-sub">完成学习后，这里会逐渐积累你的个人词库。</div>
+      </div>
+
+      <div class="word-cards">
+        <article v-for="record in displayWords" :key="record.id" class="word-card">
+          <div class="word-header">
+            <div class="word-main">
+              <div class="word-text">{{ record.word.text || record.word.word }}</div>
+              <div class="word-tags">
+                <span class="word-tag" :class="getStatusClass(record.status, record.repetition)">{{ getStatusLabel(record.status, record.repetition) }}</span>
+                <span class="word-pos">{{ normalizePartOfSpeech(record.word.partOfSpeech, record.word.meanings) }}</span>
+              </div>
             </div>
+            <button class="sound-btn" @click="GameEngine.playAudio(record.word.text || record.word.word)">🔊</button>
+          </div>
 
-            <div 
-                v-for="record in words" 
-                :key="record.id" 
-                class="bg-surface rounded-2xl p-4 flex justify-between items-center animate-slide-up shadow-sm border border-slate-100 dark:border-white/5"
-            >
-                <div>
-                    <div class="flex items-baseline gap-2 mb-1">
-                        <h3 class="text-xl font-black text-text-main">{{ record.word.word }}</h3>
-                        <span class="text-xs font-bold text-text-muted italic">{{ record.word.partOfSpeech }}</span>
-                    </div>
-                    
-                    <!-- Parse JSON meanings/examples if needed, or show simple fallback -->
-                    <!-- Assuming meanings cleaned to array -->
-                    <p class="text-text-muted text-sm line-clamp-1">
-                         {{ Array.isArray(JSON.parse(record.word.meanings || '[]')) ? JSON.parse(record.word.meanings)[0] : record.word.meanings }}
-                    </p>
-                </div>
+          <div class="word-meaning">{{ safeParseMeanings(record.word.meanings) }}</div>
 
-                <div class="flex flex-col items-end gap-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold" :class="getStatusColor(record.status, record.repetition)">
-                        {{ getStatusLabel(record.status, record.repetition) }}
-                    </span>
-                    <div v-if="record.nextReview" class="text-[10px] text-text-muted font-medium">
-                        复习: {{ new Date(record.nextReview).toLocaleDateString() }}
-                    </div>
-                </div>
+          <div class="mastery-section">
+            <div class="mastery-header">
+              <span class="mastery-label">掌握度</span>
+              <span class="mastery-level" :style="{ color: getMasteryLevel(record.status, record.repetition).color }">{{ getMasteryLevel(record.status, record.repetition).label }}</span>
             </div>
-
-            <!-- Loader / Load More -->
-            <div v-if="page < totalPages" class="py-4 text-center">
-                <button @click="loadMore" class="text-primary font-bold text-sm hover:underline" :disabled="loading">
-                    {{ loading ? '加载中...' : '加载更多' }}
-                </button>
+            <div class="mastery-bar">
+              <div class="mastery-fill" :style="{ width: getMasteryLevel(record.status, record.repetition).percent + '%', background: getMasteryLevel(record.status, record.repetition).color }"></div>
             </div>
-        </div>
+          </div>
+        </article>
+      </div>
+
+      <div v-if="loading" class="loading">加载中...</div>
+      <div v-if="!hasMore && displayWords.length > 0" class="no-more">已经到底了</div>
     </div>
+  </div>
 </template>
+
+<style scoped>
+.vocab-page {
+  min-height: 100vh;
+  background: #f6f1e8;
+  padding: calc(env(safe-area-inset-top, 0px) + 88px) 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+}
+.back-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+}
+.back-icon { font-size: 22px; font-weight: 600; }
+.header-content { flex: 1; }
+.header-title { font-size: 28px; font-weight: 700; color: #111111; }
+.header-sub { font-size: 14px; color: #7b758b; font-weight: 600; }
+.header-icon {
+  width: 44px; height: 44px; border-radius: 14px; background: #a0d8f1; display:flex; align-items:center; justify-content:center; font-size: 22px;
+}
+.search-box {
+  background: #fff;
+  border-radius: 22px;
+  min-height: 60px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.search-input { flex: 1; border: none; outline: none; background: transparent; font-size: 18px; font-weight: 600; color: #111; }
+.search-input::placeholder { color: #bbb; }
+.stats-section {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.stat-card { border-radius: 22px; padding: 18px; }
+.stat-card.mint { background: #a8f0c6; }
+.stat-card.sky { background: #a0d8f1; }
+.stat-value { font-size: 34px; font-weight: 700; color: #111; }
+.stat-label { font-size: 14px; color: #2d2b28; font-weight: 600; }
+.word-list { flex: 1; overflow-y: auto; }
+.word-cards { display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+.word-card { background: #fff; border-radius: 24px; padding: 18px; border: 1px solid #efe8de; box-shadow: 0 4px 10px rgba(26,26,26,.03); }
+.word-card:nth-child(3n + 2) { background: #fffaf6; }
+.word-card:nth-child(3n) { background: #fffdfb; }
+.word-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.word-main { flex: 1; }
+.word-text { font-size: 30px; font-weight: 700; color: #111; margin-bottom: 8px; font-family: var(--font-serif, Georgia, serif); }
+.word-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.word-tag, .word-pos { padding: 4px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+.word-tag.bg-mint { background: #a8f0c6; }
+.word-tag.bg-sky { background: #a0d8f1; }
+.word-tag.bg-lemon { background: #f9e975; }
+.word-tag.bg-pink { background: #ffb5d0; }
+.word-pos { background: #f7f3ee; color: #918b95; }
+.sound-btn { width: 38px; height: 38px; border-radius: 999px; border: none; background: #f5f5f5; font-size: 16px; }
+.word-meaning { font-size: 17px; color: #6b6b6b; line-height: 1.5; margin-bottom: 16px; }
+.mastery-section { display: flex; flex-direction: column; gap: 8px; }
+.mastery-header { display: flex; justify-content: space-between; align-items: center; }
+.mastery-label { font-size: 13px; font-weight: 700; color: #918b95; }
+.mastery-level { font-size: 13px; font-weight: 700; }
+.mastery-bar { height: 10px; background: #f1ece5; border-radius: 999px; overflow: hidden; }
+.mastery-fill { height: 100%; border-radius: 999px; }
+.empty-state { padding: 72px 20px; text-align: center; color: #918b95; }
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+.empty-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 6px; }
+.empty-sub { font-size: 14px; line-height: 1.6; }
+.loading, .no-more { padding: 20px 0; text-align: center; font-size: 14px; color: #918b95; font-weight: 600; }
+</style>

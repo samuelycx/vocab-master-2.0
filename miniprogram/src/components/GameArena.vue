@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, ref, onUnmounted } from 'vue';
+import { computed, watch, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { GameState } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { useI18n } from '../i18n.js';
@@ -48,23 +48,6 @@ watch(() => session.currentWord, (newWord) => {
 
 const progressLabel = computed(() => `第 ${session.currentIndex + 1} / ${session.queue.length} 题`);
 
-const pickPhonetic = (word) => {
-  if (!word) return '';
-  const direct = word.phonetic || word.pronunciation || word.phoneticAm || word.phoneticBr || word.usphone || word.ukphone;
-  if (direct && String(direct).trim()) return String(direct).trim();
-
-  if (Array.isArray(word.phonetics)) {
-    const item = word.phonetics.find((p) => p && typeof p.text === 'string' && p.text.trim());
-    if (item && item.text) return String(item.text).trim();
-  }
-  return '';
-};
-
-const phoneticText = computed(() => {
-  const p = pickPhonetic(session.currentWord);
-  return p && String(p).trim() ? String(p).trim() : t('arena_no_phonetic');
-});
-
 const handleAnswer = (option) => {
   if (session.isAnswered) return;
   GameEngine.submitAnswer(option);
@@ -102,6 +85,15 @@ watch(() => session.isAnswered, (answered) => {
   }
 });
 
+onMounted(() => {
+  nextTick(() => {
+    if (!session.currentWord?.word) return;
+    if (session.currentIndex !== 0) return;
+    if (session.isAnswered) return;
+    GameEngine.playAudio(session.currentWord.word, { dedupeWindowMs: 800 });
+  });
+});
+
 onUnmounted(() => {
   GameEngine.stopAudio();
 });
@@ -127,7 +119,6 @@ onUnmounted(() => {
         <!-- 正面：单词 -->
         <view class="card-front">
           <text class="word-text">{{ session.currentWord?.word }}</text>
-          <text class="word-phonetic">{{ phoneticText }}</text>
           <text class="example-text">{{ session.currentExample?.masked || t('arena_no_example') }}</text>
         </view>
         
@@ -157,7 +148,7 @@ onUnmounted(() => {
           :class="getOptionClass(option)"
           @click="handleAnswer(option)"
         >
-          <text class="option-text">{{ option }}</text>
+          <text class="option-text">{{ String.fromCharCode(65 + index) }} {{ option }}</text>
         </view>
       </view>
       <view class="options-row">
@@ -168,7 +159,7 @@ onUnmounted(() => {
           :class="getOptionClass(option)"
           @click="handleAnswer(option)"
         >
-          <text class="option-text">{{ option }}</text>
+          <text class="option-text">{{ String.fromCharCode(65 + index + 2) }} {{ option }}</text>
         </view>
       </view>
     </view>
@@ -181,7 +172,7 @@ onUnmounted(() => {
 .game-arena {
   min-height: 100vh;
   background: #f6f1e8;
-  padding: calc(env(safe-area-inset-top, 0px) + 108.1rpx) 41.9rpx 34.9rpx;
+  padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 34.9rpx;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -193,7 +184,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 97.7rpx;
+  height: 104.7rpx;
 }
 
 .back-btn {
@@ -215,7 +206,7 @@ onUnmounted(() => {
 .progress-text {
   font-size: 24.4rpx;
   color: #6b7280;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .life-text {
@@ -231,17 +222,18 @@ onUnmounted(() => {
 
 /* 单词卡片容器 */
 .card-container {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   perspective: 1000px;
+  margin-top: 10.5rpx;
 }
 
 /* 3D 翻转卡片 */
 .word-card {
   width: 100%;
-  height: 627.9rpx;
+  height: 592rpx;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -278,24 +270,18 @@ onUnmounted(() => {
 }
 
 .word-text {
-  font-size: 64rpx;
-  font-weight: 700;
+  font-size: 59.3rpx;
+  font-weight: 500;
   font-family: Georgia, "Times New Roman", serif;
   color: #1a1a1a;
   margin-bottom: 16rpx;
 }
 
-.word-phonetic {
-  font-size: 24.4rpx;
-  color: #7a7a7a;
-  margin-bottom: 20rpx;
-}
-
 .example-text {
-  font-size: 24.4rpx;
+  font-size: 26.2rpx;
   color: #6b6b6b;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* 卡片背面 */
@@ -306,7 +292,7 @@ onUnmounted(() => {
 
 .meaning-text {
   font-size: 52rpx;
-  font-weight: 800;
+  font-weight: 600;
   color: #5A459D;
   text-align: center;
   margin-bottom: 40rpx;
@@ -326,8 +312,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 14rpx;
-  height: 400rpx;
-  justify-content: center;
+  height: 382rpx;
+  justify-content: flex-start;
 }
 
 .options-row {
@@ -343,15 +329,16 @@ onUnmounted(() => {
   padding: 0 24rpx;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  justify-content: center;
   box-shadow: none;
 }
 
 .option-text {
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 27.9rpx;
+  font-weight: 500;
   color: #1a1a1a;
   line-height: 1.3;
+  text-align: center;
 }
 
 /* 答题状态样式 */

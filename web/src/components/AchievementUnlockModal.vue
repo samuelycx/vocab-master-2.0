@@ -1,7 +1,6 @@
-
 <script setup>
-import { onMounted } from 'vue';
-import confetti from 'canvas-confetti';
+import { computed, onMounted } from 'vue';
+import { getAchievementIconById } from '../utils/achievement-icons.js';
 
 const props = defineProps({
     achievement: Object, // { name, description, icon }
@@ -9,30 +8,30 @@ const props = defineProps({
 });
 
 onMounted(() => {
-    // Burst from center
-    confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-    });
+    document.body.style.overflow = 'hidden';
 });
+
+const badgeIcon = computed(() => getAchievementIconById(props.achievement?.id || 'default'));
+
+const close = () => {
+    document.body.style.overflow = '';
+    props.onClose?.();
+};
 </script>
 
 <template>
-    <div class="fixed inset-0 bg-black/80 backdrop-blur z-[60] flex items-center justify-center p-6" @click.self="onClose">
-        <div class="relative bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl overflow-hidden animate-slide-up">
-            
-            <div class="relative z-10 flex flex-col items-center">
-                <div class="w-24 h-24 bg-yellow-100 rounded-3xl flex items-center justify-center text-5xl shadow-inner mb-6 animate-pulse-slow">
-                    {{ achievement?.icon || '🏆' }}
+    <div class="modal-overlay" @click.self="close">
+        <div class="modal-card">
+            <div class="modal-content">
+                <div class="badge-wrap">
+                    <img class="badge-image" :src="badgeIcon" :alt="achievement?.name || 'achievement badge'" />
                 </div>
-                
-                <h2 class="text-2xl font-black text-slate-800 mb-2">解锁新成就!</h2>
-                
-                <div class="text-slate-800 font-bold text-xl mb-1">{{ achievement?.name }}</div>
-                <p class="text-slate-400 text-sm mb-8 px-4 leading-relaxed">{{ achievement?.description }}</p>
 
-                <button @click="onClose" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-transform">
+                <div class="title">解锁新成就</div>
+                <div class="achievement-name">{{ achievement?.name }}</div>
+                <p class="achievement-desc">{{ achievement?.description }}</p>
+
+                <button class="cta-btn" @click="close">
                     太棒了!
                 </button>
             </div>
@@ -41,12 +40,88 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.animate-slide-up {
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 360px;
+    border-radius: 32px;
+    background: #ffffff;
+    padding: 32px 24px;
+    box-shadow: 0 24px 48px rgba(17, 17, 17, 0.18);
     animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-pulse-slow {
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.badge-wrap {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    background: #fef3c7;
+    box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
     animation: pulse 3s infinite;
+}
+
+.badge-image {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.achievement-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.achievement-desc {
+    margin: 0 0 24px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #94a3b8;
+}
+
+.cta-btn {
+    width: 100%;
+    min-height: 56px;
+    border: none;
+    border-radius: 18px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.cta-btn:active {
+    transform: scale(0.97);
 }
 
 @keyframes slideUp {

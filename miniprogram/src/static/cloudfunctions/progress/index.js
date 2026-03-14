@@ -194,6 +194,28 @@ function readArrayField(value) {
     return []
 }
 
+function pickMeanings(word) {
+    return readArrayField(
+        word?.meanings
+        || word?.meaning
+        || word?.definition
+        || word?.translation
+        || word?.translations
+        || word?.cn
+        || word?.zh
+    )
+}
+
+function pickExamples(word) {
+    return readArrayField(
+        word?.examples
+        || word?.example
+        || word?.example_sentence
+        || word?.exampleSentence
+        || word?.sentence
+    )
+}
+
 function cleanMeaningText(text) {
     return String(text || '')
         .replace(/^\s*(n\.|v\.|vi\.|vt\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.)\s*/i, '')
@@ -204,8 +226,8 @@ function cleanMeaningText(text) {
 
 function normalizeWordForRead(word) {
     if (!word) return { text: 'Unknown', meanings: [] }
-    const meanings = readArrayField(word.meanings).map(cleanMeaningText).filter(Boolean)
-    const examples = readArrayField(word.examples)
+    const meanings = pickMeanings(word).map(cleanMeaningText).filter(Boolean)
+    const examples = pickExamples(word)
         .map(v => String(v || '').replace(/示意[:：]?\s*/gi, '').trim())
         .filter(Boolean)
     const phoneticDirect = word.phonetic || word.pronunciation || word.phoneticAm || word.phoneticBr || word.usphone || word.ukphone
@@ -213,6 +235,7 @@ function normalizeWordForRead(word) {
     const phoneticFromList = (phonetics.find(item => item && typeof item.text === 'string' && item.text.trim()) || {}).text
     return {
         ...word,
+        text: String(word.text || word.word || word.name || '').trim() || 'Unknown',
         meanings,
         examples,
         phonetic: String(phoneticDirect || phoneticFromList || '').trim(),
@@ -543,7 +566,7 @@ async function getReviews(openid, { limit = 20 } = {}) {
     }, {})
 
     const result = progressList
-        .map(item => wordMap[item.wordId])
+        .map(item => normalizeWordForRead(wordMap[item.wordId]))
         .filter(Boolean)
 
     return { success: true, data: result }

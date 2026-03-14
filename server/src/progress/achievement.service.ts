@@ -1,6 +1,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ACHIEVEMENT_DEFINITIONS, ACHIEVEMENT_DEFINITION_MAP } from './achievement-definitions';
 
 export interface Rank {
     level: number;
@@ -136,6 +137,8 @@ export class AchievementService {
         }
 
         if (newEarned.length > 0) {
+            await this.ensureAchievementDefinitions(newEarned);
+
             await this.prisma.userAchievement.createMany({
                 data: newEarned.map(aid => ({
                     userId,
@@ -153,7 +156,38 @@ export class AchievementService {
     }
 
     async getAllAchievements() {
-        return this.prisma.achievement.findMany();
+        await this.ensureAchievementDefinitions(ACHIEVEMENT_DEFINITIONS.map(item => item.id));
+        const definitions = ACHIEVEMENT_DEFINITIONS;
+        const allowedIds = new Set(definitions.map((item) => item.id));
+        const records = await this.prisma.achievement.findMany({
+            where: {
+                id: {
+                    in: definitions.map((item) => item.id),
+                },
+            },
+        });
+        const recordMap = new Map(records.map((item) => [item.id, item]));
+
+        return definitions
+            .map((item) => recordMap.get(item.id))
+            .filter((item): item is NonNullable<typeof item> => {
+                if (!item) return false;
+                return allowedIds.has(item.id);
+            });
+    }
+
+    async ensureFirstUseAchievement(userId: string) {
+        await this.ensureAchievementDefinitions(['growth_first_use']);
+
+        const existing = await this.prisma.userAchievement.findFirst({
+            where: { userId, achievementId: 'growth_first_use' },
+        });
+
+        if (!existing) {
+            await this.prisma.userAchievement.create({
+                data: { userId, achievementId: 'growth_first_use' },
+            });
+        }
     }
 
     getRankByVocab(vocabCount: number): Rank {
@@ -166,5 +200,25 @@ export class AchievementService {
             }
         }
         return currentRank;
+    }
+
+    private async ensureAchievementDefinitions(ids: string[]) {
+        const definitions = ids
+            .map(id => ACHIEVEMENT_DEFINITION_MAP.get(id))
+            .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+        await Promise.all(definitions.map(def =>
+            this.prisma.achievement.upsert({
+                where: { id: def.id },
+                update: {
+                    key: def.key,
+                    name: def.name,
+                    description: def.description,
+                    category: def.category,
+                    icon: def.icon,
+                },
+                create: def,
+            })
+        ));
     }
 }

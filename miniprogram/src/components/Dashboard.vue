@@ -22,7 +22,7 @@ const getAvatarUrl = (avatar) => {
 
 const stats = computed(() => {
   const totalCorrect = Number(user.totalCorrect) || 0;
-  const totalLearned = Number(user.totalLearned ?? Math.floor(totalCorrect * 0.7)) || 0;
+  const totalLearned = Number(user.totalLearned) || 0;
   return {
     totalCorrect,
     totalLearned,
@@ -83,6 +83,11 @@ const achievementSlots = computed(() => {
   const ids = ['default', ...unlockedAchievementIds.value.slice(0, maxSlots - 1)];
   return Array.from({ length: maxSlots }, (_, idx) => ids[idx] || '');
 });
+const achievementCountText = computed(() =>
+  state.settings.language === 'en-US'
+    ? `${unlockedAchievementIds.value.length} unlocked`
+    : `${unlockedAchievementIds.value.length} 已点亮`
+);
 const achievementRows = computed(() => [
   achievementSlots.value.slice(0, 6),
   achievementSlots.value.slice(6, 12)
@@ -177,7 +182,7 @@ onMounted(loadDashboard);
         <view class="focus-summary">
           <text class="focus-summary-kicker">{{ t('dashboard_focus_progress') }}</text>
           <text class="focus-summary-value">{{ stats.todayLearned }} / {{ DAILY_GOAL }}</text>
-          <text class="focus-summary-sub" space="nbsp">学完本轮后\n解锁奖励</text>
+          <text class="focus-summary-sub">{{ focusSummarySubtitle }}</text>
           <view class="focus-summary-track">
             <view class="focus-summary-fill" :style="{ width: progressPercent + '%' }"></view>
           </view>
@@ -218,7 +223,7 @@ onMounted(loadDashboard);
     <view class="achievement-rail animate-fade-in delay-400" @click="gotoAchievement">
       <view class="achievement-copy">
         <text class="achievement-title">{{ t('dashboard_achievement') }}</text>
-        <text class="achievement-count">{{ t('dashboard_achievement_lit', { count: unlockedAchievementIds.length }) }}</text>
+        <text class="achievement-count">{{ achievementCountText }}</text>
       </view>
       <view class="achievement-track-grid">
         <view v-for="(row, rowIndex) in achievementRows" :key="rowIndex" class="achievement-row">
@@ -246,7 +251,7 @@ onMounted(loadDashboard);
 .dashboard {
   min-height: 100%;
   box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top, 0px) + 190rpx) 41.9rpx 27.9rpx;
+  padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 27.9rpx;
   background: #f6f1e8;
   display: flex;
   flex-direction: column;
@@ -270,10 +275,10 @@ onMounted(loadDashboard);
 
 .focus-orb {
   position: absolute;
-  top: -76.7rpx;
-  right: 14rpx;
-  width: 296.6rpx;
-  height: 296.6rpx;
+  top: -59.3rpx;
+  right: 22.4rpx;
+  width: 278.6rpx;
+  height: 278.6rpx;
   border-radius: 50%;
   background: #ff8a5b;
   pointer-events: none;
@@ -281,10 +286,10 @@ onMounted(loadDashboard);
 
 .focus-glow {
   position: absolute;
-  top: 209.3rpx;
-  right: 62.8rpx;
-  width: 153.5rpx;
-  height: 153.5rpx;
+  top: 226.7rpx;
+  right: 83.7rpx;
+  width: 139.5rpx;
+  height: 139.5rpx;
   border-radius: 50%;
   background: #ffd8c3;
   pointer-events: none;
@@ -292,8 +297,8 @@ onMounted(loadDashboard);
 
 .focus-avatar {
   position: absolute;
-  top: 31.4rpx;
-  right: 62.8rpx;
+  top: 38.4rpx;
+  right: 76.7rpx;
   z-index: 5;
   width: 111.6rpx;
   height: 111.6rpx;
@@ -356,19 +361,19 @@ onMounted(loadDashboard);
   position: absolute;
   left: 34.9rpx;
   top: 111.6rpx;
-  width: 359.3rpx;
+  width: 347.2rpx;
   display: block;
   color: #1a1a1a;
   font-size: 59.3rpx;
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .focus-subtitle {
   position: absolute;
   left: 34.9rpx;
   top: 307rpx;
-  width: 359.3rpx;
+  width: 364.9rpx;
   display: block;
   margin-top: 0;
   color: #3d3d3d;
@@ -413,7 +418,7 @@ onMounted(loadDashboard);
 .primary-cta-text {
   color: #ffffff;
   font-size: 31.4rpx;
-  font-weight: 800;
+  font-weight: 600;
   font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
@@ -444,10 +449,10 @@ onMounted(loadDashboard);
 
 .focus-summary {
   position: absolute;
-  left: 394.2rpx;
-  top: 230.2rpx;
-  width: 237.2rpx;
-  height: 247.7rpx;
+  left: 404.7rpx;
+  top: 244.2rpx;
+  width: 223.3rpx;
+  height: 232.6rpx;
   padding: 20.9rpx;
   border-radius: 41.9rpx;
   background: #1a1a1a;
@@ -467,15 +472,17 @@ onMounted(loadDashboard);
   color: #fff9f1;
   font-size: 48.8rpx;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-family: "SF Pro", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .focus-summary-sub {
   color: #d8d2c8;
-  font-size: 17.4rpx;
-  line-height: 1.2;
+  font-size: 20.9rpx;
+  line-height: 1.3;
+  letter-spacing: -0.2rpx;
+  white-space: normal;
 }
 
 .focus-summary-track {
@@ -512,6 +519,9 @@ onMounted(loadDashboard);
   display: flex;
   flex-direction: column;
   gap: 17.4rpx;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .review-card {
@@ -548,9 +558,10 @@ onMounted(loadDashboard);
 .info-title {
   color: #1a1a1a;
   font-size: 52.3rpx;
-  font-weight: 800;
+  font-weight: 500;
   line-height: 1.12;
   font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  text-align: center;
 }
 
 .info-sub {
@@ -595,7 +606,7 @@ onMounted(loadDashboard);
 .social-pill-text {
   color: #1a1a1a;
   font-size: 45.3rpx;
-  font-weight: 800;
+  font-weight: 500;
   font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
@@ -611,25 +622,27 @@ onMounted(loadDashboard);
 }
 
 .achievement-copy {
-  width: 87.2rpx;
-  min-width: 87.2rpx;
+  width: 125.6rpx;
+  min-width: 125.6rpx;
   display: flex;
   flex-direction: column;
-  gap: 7rpx;
+  gap: 10.5rpx;
 }
 
 .achievement-title {
   color: #1a1a1a;
   font-size: 31.4rpx;
-  font-weight: 800;
+  font-weight: 500;
   line-height: 1.1;
   font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   white-space: nowrap;
 }
 
 .achievement-count {
-  color: #6b6b6b;
-  font-size: 17.4rpx;
+  color: #4f4a43;
+  font-size: 24.4rpx;
+  font-weight: 700;
+  line-height: 1.1;
   font-family: "PingFang SC", "Inter", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
@@ -638,7 +651,7 @@ onMounted(loadDashboard);
   min-width: 383.7rpx;
   height: 153.5rpx;
   border-radius: 31.4rpx;
-  background: #f3ebe2;
+  background: #f7f0e7;
   padding: 17.4rpx;
   display: flex;
   flex-direction: column;
@@ -686,6 +699,7 @@ onMounted(loadDashboard);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
 }
 
 .achievement-arrow {

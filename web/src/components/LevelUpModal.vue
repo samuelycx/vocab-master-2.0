@@ -1,7 +1,5 @@
-
 <script setup>
 import { onMounted } from 'vue';
-import confetti from 'canvas-confetti';
 
 const props = defineProps({
     level: Number,
@@ -11,56 +9,37 @@ const props = defineProps({
 });
 
 onMounted(() => {
-    // Fire confetti from bottom corners
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-        confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0, y: 0.8 },
-            colors: ['#6366f1', '#8b5cf6', '#f43f5e']
-        });
-        confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1, y: 0.8 },
-            colors: ['#6366f1', '#8b5cf6', '#f43f5e'] 
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
-    }());
+    document.body.style.overflow = 'hidden';
 });
+
+const close = () => {
+    document.body.style.overflow = '';
+    props.onClose?.();
+};
 </script>
 
 <template>
-    <div class="fixed inset-0 bg-black/80 backdrop-blur z-[60] flex items-center justify-center p-6" @click.self="onClose">
-        <div class="relative bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl overflow-hidden animate-pop-in">
-            <!-- Confetti / Background Decorations -->
-            <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div class="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(251,191,36,0.2)_30deg,transparent_60deg)] animate-spin-slow"></div>
+    <div class="modal-overlay" @click.self="close">
+        <div class="modal-card">
+            <div class="modal-bg">
+                <div class="modal-bg-disc"></div>
             </div>
 
-            <div class="relative z-10">
-                <div class="text-6xl mb-4 animate-bounce-custom">
-                    {{ rankIcon || '🎉' }}
-                </div>
-                
-                <h2 class="text-3xl font-black text-slate-800 mb-2">升级了!</h2>
-                <div class="text-orange-500 font-bold uppercase tracking-widest text-sm mb-6">解锁新头衔</div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8 transform rotate-1 hover:rotate-0 transition-transform duration-300">
-                    <div class="text-slate-400 text-xs uppercase font-bold mb-1">当前头衔</div>
-                    <div class="text-2xl font-black text-slate-800">{{ rankTitle || '未知' }}</div>
-                    <div class="text-primary font-bold mt-2">等级 {{ level }}</div>
+            <div class="modal-content">
+                <div class="hero-icon">
+                    {{ rankIcon || '✅' }}
                 </div>
 
-                <button @click="onClose" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition-transform">
+                <div class="title">升级了</div>
+                <div class="subtitle">新头衔已解锁</div>
+
+                <div class="info-card">
+                    <div class="info-label">当前头衔</div>
+                    <div class="info-title">{{ rankTitle || '未知' }}</div>
+                    <div class="info-level">Lv.{{ level }}</div>
+                </div>
+
+                <button class="cta-btn" @click="close">
                     继续冒险
                 </button>
             </div>
@@ -69,16 +48,124 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.animate-pop-in {
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
 }
 
-.animate-spin-slow {
+.modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    border-radius: 32px;
+    background: #ffffff;
+    padding: 32px 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(17, 17, 17, 0.18);
+    animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.modal-bg-disc {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(251, 191, 36, 0.2) 30deg, transparent 60deg);
     animation: spin 10s linear infinite;
 }
 
-.animate-bounce-custom {
+.modal-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.hero-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
     animation: bounce 2s infinite;
+}
+
+.title {
+    font-size: 32px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #f97316;
+    margin-bottom: 24px;
+}
+
+.info-card {
+    width: 100%;
+    border-radius: 24px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    padding: 24px;
+    margin-bottom: 24px;
+    transform: rotate(1deg);
+}
+
+.info-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.info-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.info-level {
+    font-size: 18px;
+    font-weight: 800;
+    color: #6f58d9;
+}
+
+.cta-btn {
+    width: 100%;
+    min-height: 56px;
+    border: none;
+    border-radius: 18px;
+    background: #6f58d9;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    box-shadow: 0 14px 28px rgba(111, 88, 217, 0.26);
+}
+
+.cta-btn:active {
+    transform: scale(0.97);
 }
 
 @keyframes popIn {

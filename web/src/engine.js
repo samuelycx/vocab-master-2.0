@@ -44,11 +44,10 @@ export const GameEngine = {
         this._setupSession(formattedWords, formattedWords, 'learn');
     },
 
-    async startReview(userId) {
-        const rawWords = await API.getReviews(userId);
+    async startReview() {
+        const rawWords = await API.getReviews();
         if (!rawWords || rawWords.length === 0) {
-            alert('No words to review yet! Keep learning.');
-            return;
+            return false;
         }
 
         const formattedWords = rawWords.map(w => ({
@@ -58,10 +57,11 @@ export const GameEngine = {
         }));
 
         this._setupSession(formattedWords, formattedWords, 'review');
+        return true;
     },
 
-    async startMistake(userId) {
-        const rawWords = await API.getMistakes(userId);
+    async startMistake() {
+        const rawWords = await API.getMistakes();
         if (!rawWords || rawWords.length === 0) {
             alert('Great! No mistakes to review.');
             return;
@@ -103,7 +103,7 @@ export const GameEngine = {
         if (this.botInterval) clearInterval(this.botInterval);
         // Set state to searching
         GameState.game.pk.isSearching = true;
-        SocketManager.joinQueue(GameState.user.id, GameState.user.username, GameState.user.avatar);
+        SocketManager.joinQueue();
         Actions.setView('pk'); // or pk_lobby? PKArena handles lobby state.
         // If we set view to 'pk', PKArena mounts.
         // PKArena defaults to lobby.
@@ -265,7 +265,7 @@ export const GameEngine = {
 
             // Sync Progress with Gamification
             if (GameState.user.id) {
-                API.syncProgress(GameState.user.id, this.session.currentWord.id, 'MASTERED', xp, coins)
+                API.syncProgress(this.session.currentWord.id, 'MASTERED', xp, coins, this.session.mode === 'review' ? 'review' : 'learn')
                     .then(res => {
                         if (res && res.user) {
                             Actions.setUser(res.user);
@@ -300,7 +300,7 @@ export const GameEngine = {
 
             // Sync Mistake even if 0 XP/Coins to track mistake count in DB
             if (GameState.user.id) {
-                API.syncProgress(GameState.user.id, this.session.currentWord.id, 'LEARNING', 0, 0)
+                API.syncProgress(this.session.currentWord.id, 'LEARNING', 0, 0, this.session.mode === 'review' ? 'review' : 'learn')
                     .then(res => {
                         if (res && res.user) {
                             Actions.setUser(res.user);

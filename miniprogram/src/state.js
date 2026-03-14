@@ -11,6 +11,7 @@ const initialState = {
         coins: 100,
         avatar: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
         isProfileSet: true,
+        openid: null,
         isLoggedIn: false
     },
     game: {
@@ -170,9 +171,12 @@ export const Actions = {
     },
     setUser(userData) {
         Object.assign(state.user, userData);
-        if (userData && (userData.openid || userData.id)) {
-            state.user.isLoggedIn = true;
+        if (userData && Object.prototype.hasOwnProperty.call(userData, 'isLoggedIn')) {
+            state.user.isLoggedIn = Boolean(userData.isLoggedIn);
         }
+    },
+    clearUser() {
+        Object.assign(state.user, initialState.user);
     },
     setLogin(isLoggedIn) {
         state.user.isLoggedIn = Boolean(isLoggedIn);

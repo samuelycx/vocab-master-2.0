@@ -11,6 +11,10 @@ const initialState = {
         coins: 100,
         avatar: '🎓'
     },
+    auth: {
+        token: localStorage.getItem('vocab_token'),
+        status: 'anonymous',
+    },
     game: {
         view: 'dashboard', // welcome, dashboard, settings, arena, result, social, category_selection
         combo: 0,
@@ -55,6 +59,7 @@ let parsed = saved ? JSON.parse(saved) : initialState;
 if (!parsed.overlay) parsed.overlay = { ...initialState.overlay };
 if (!parsed.system) parsed.system = { ...initialState.system };
 if (!parsed.settings) parsed.settings = { ...initialState.settings };
+if (!parsed.auth) parsed.auth = { ...initialState.auth };
 
 if (!parsed.game) parsed.game = { ...initialState.game };
 
@@ -71,7 +76,7 @@ if (!parsed.game.social) {
 const state = reactive(parsed);
 
 // RESET VIEW to prevent stuck state
-state.game.view = 'dashboard';
+state.game.view = 'auth';
 
 // Simple debounce utility
 function debounce(func, delay) {
@@ -150,6 +155,17 @@ export const Actions = {
         // Better to assign properties
         Object.assign(state.user, userData);
     },
+    setAuthToken(token) {
+        state.auth.token = token || null;
+    },
+    setAuthStatus(status) {
+        state.auth.status = status;
+    },
+    clearAuth() {
+        state.auth.token = null;
+        state.auth.status = 'anonymous';
+        Object.assign(state.user, initialState.user);
+    },
     addCoins(amount) {
         state.user.coins += amount;
     },
@@ -203,6 +219,7 @@ export const Actions = {
     reset() {
         // Restore user to initial state
         Object.assign(state.user, initialState.user);
+        Object.assign(state.auth, { ...initialState.auth, token: null, status: 'anonymous' });
 
         // Restore game state
         Object.assign(state.game, initialState.game);

@@ -5,12 +5,9 @@
     <view class="word-header">
       <view class="word-info">
         <text class="word-text">{{ word.word }}</text>
-        <view class="phonetic-row">
-          <text class="phonetic">/{{ word.phonetic }}/</text>
-          <button class="audio-btn" @click="playAudio">
-            <text class="audio-icon">SND</text>
-          </button>
-        </view>
+        <button class="audio-btn" @click="playAudio">
+          <text class="audio-icon">SND</text>
+        </button>
       </view>
       <view v-if="word.tag" class="word-tag">
         <text class="tag-text">{{ word.tag }}</text>
@@ -102,18 +99,6 @@ const viewDetail = () => {
   color: #2badee;
   display: block;
   margin-bottom: 0.25rem;
-}
-
-.phonetic-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.phonetic {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-family: monospace;
 }
 
 .audio-btn {

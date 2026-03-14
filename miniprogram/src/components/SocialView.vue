@@ -13,6 +13,14 @@ const feed = ref([]);
 const { t } = useI18n();
 const uiIcons = UI_ICONS;
 const myId = computed(() => user.id || user._id || user.openid || '');
+const displayRank = computed(() => {
+    const rank = Number(user.rank);
+    return Number.isFinite(rank) && rank > 0 ? String(rank) : '--';
+});
+const displayRankLabel = computed(() => {
+    const rank = Number(user.rank);
+    return Number.isFinite(rank) && rank > 0 ? t('social_rank_unit') : (GameState.settings?.language === 'en-US' ? 'Unranked' : '未上榜');
+});
 
 onMounted(async () => {
     await Promise.all([loadLeaderboard(), loadFeed()]);
@@ -92,8 +100,8 @@ const formatTime = (timestamp) => {
             </view>
             
             <view class="rank-position">
-                <text class="rank-number">{{ user.rank || '?' }}</text>
-                <text class="rank-label">{{ t('social_rank_unit') }}</text>
+                <text class="rank-number">{{ displayRank }}</text>
+                <text class="rank-label">{{ displayRankLabel }}</text>
             </view>
         </view>
 
@@ -197,29 +205,29 @@ const formatTime = (timestamp) => {
 <style scoped>
 .social-page {
   min-height: 100vh;
-  background: #F7F7F9;
-  padding: calc(var(--header-height, 88px) + 16rpx) 28rpx 28rpx;
+  background: #F6F1E8;
+  padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 34.9rpx;
   display: flex;
   flex-direction: column;
+  gap: 24.4rpx;
 }
 
 /* Header */
 .header {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  margin-bottom: 28rpx;
+  gap: 20.9rpx;
+  height: 104.7rpx;
 }
 
 .back-btn {
-  width: 72rpx;
-  height: 72rpx;
-  background: white;
-  border-radius: 50%;
+  width: 76.7rpx;
+  height: 76.7rpx;
+  background: #ffffff;
+  border-radius: 38.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .back-btn:active {
@@ -227,9 +235,9 @@ const formatTime = (timestamp) => {
 }
 
 .back-icon {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #333;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #111111;
 }
 
 .header-content {
@@ -237,56 +245,55 @@ const formatTime = (timestamp) => {
 }
 
 .header-title {
-  font-size: 40rpx;
-  font-weight: 900;
-  color: #1a1a1a;
+  font-size: 48.8rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
 }
 
 .header-sub {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 24.4rpx;
+  color: #7B758B;
   font-weight: 600;
 }
 
 .header-icon {
-  width: 72rpx;
-  height: 72rpx;
-  background: linear-gradient(135deg, #F9E975 0%, #E5D450 100%);
-  border-radius: 20rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
+  background: #F9E975;
+  border-radius: 20.9rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(249, 233, 117, 0.4);
 }
 .header-icon-image {
-  width: 42rpx;
-  height: 42rpx;
+  width: 41.9rpx;
+  height: 41.9rpx;
 }
 
 /* My Rank Card */
 .my-rank-card {
-  background: linear-gradient(135deg, #5A459D 0%, #7B66C5 100%);
-  border-radius: 32rpx;
-  padding: 40rpx;
+  background: #FFF9F1;
+  border-radius: 38.4rpx;
+  padding: 0 27.9rpx;
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  margin-bottom: 28rpx;
-  box-shadow: 0 12rpx 32rpx rgba(90, 69, 157, 0.3);
+  gap: 20.9rpx;
+  height: 164rpx;
+  justify-content: space-between;
 }
 
 .rank-avatar {
-  width: 100rpx;
-  height: 100rpx;
-  background: white;
-  border-radius: 50%;
+  width: 90.7rpx;
+  height: 90.7rpx;
+  background: #ffffff;
+  border-radius: 45.3rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 44rpx;
-  font-weight: 800;
-  color: #5A459D;
+  font-size: 34.9rpx;
+  font-weight: 600;
+  color: #111111;
 }
 
 .rank-info {
@@ -294,11 +301,10 @@ const formatTime = (timestamp) => {
 }
 
 .rank-name {
-  font-size: 36rpx;
-  font-weight: 800;
-  color: white;
+  font-size: 34.9rpx;
+  font-weight: 500;
+  color: #111111;
   display: block;
-  margin-bottom: 8rpx;
 }
 
 .rank-stats {
@@ -307,15 +313,15 @@ const formatTime = (timestamp) => {
 }
 
 .rank-level {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 24.4rpx;
+  color: #6B7280;
   font-weight: 600;
 }
 
 .rank-xp {
-  font-size: 24rpx;
-  color: #F9E975;
-  font-weight: 700;
+  font-size: 24.4rpx;
+  color: #6B7280;
+  font-weight: 600;
 }
 
 .rank-position {
@@ -323,33 +329,34 @@ const formatTime = (timestamp) => {
 }
 
 .rank-number {
-  font-size: 64rpx;
-  font-weight: 900;
-  color: white;
+  font-size: 55.8rpx;
+  font-weight: 500;
+  color: #111111;
   display: block;
   line-height: 1;
 }
 
 .rank-label {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 24.4rpx;
+  color: #6B7280;
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  gap: 16rpx;
-  margin-bottom: 24rpx;
+  gap: 14rpx;
+  height: 76.7rpx;
 }
 
 .tab {
   flex: 1;
-  padding: 20rpx;
-  background: white;
-  border-radius: 20rpx;
+  background: #ffffff;
+  border-radius: 31.4rpx;
   text-align: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab:active {
@@ -357,13 +364,13 @@ const formatTime = (timestamp) => {
 }
 
 .tab.active {
-  background: #5A459D;
+  background: #6F58D9;
 }
 
 .tab-text {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #333;
+  font-size: 31.4rpx;
+  font-weight: 500;
+  color: #1a1a1a;
 }
 
 .tab.active .tab-text {
@@ -380,23 +387,21 @@ const formatTime = (timestamp) => {
 .rank-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding-bottom: 40rpx;
+  gap: 17.4rpx;
+  padding-bottom: 34.9rpx;
 }
 
 .rank-item {
-  background: white;
-  border-radius: 24rpx;
-  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 38.4rpx;
+  padding: 27.9rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  gap: 20.9rpx;
 }
 
 .rank-item.is-me {
-  background: linear-gradient(135deg, #A8F0C6 0%, #95F0C6 100%);
-  box-shadow: 0 8rpx 24rpx rgba(168, 240, 198, 0.3);
+  background: #DCD3FF;
 }
 
 .rank-badge {
@@ -414,16 +419,16 @@ const formatTime = (timestamp) => {
 }
 
 .rank-avatar-small {
-  width: 72rpx;
-  height: 72rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
   background: #f0f0f0;
-  border-radius: 50%;
+  border-radius: 38.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #666;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #6b7280;
 }
 
 .rank-user-info {
@@ -431,9 +436,9 @@ const formatTime = (timestamp) => {
 }
 
 .rank-username {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
   margin-bottom: 4rpx;
 }
@@ -448,8 +453,8 @@ const formatTime = (timestamp) => {
 }
 
 .rank-level {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 24.4rpx;
+  color: #6b7280;
 }
 
 .rank-score {
@@ -457,9 +462,9 @@ const formatTime = (timestamp) => {
 }
 
 .score-value {
-  font-size: 36rpx;
-  font-weight: 900;
-  color: #5A459D;
+  font-size: 34.9rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
 }
 
@@ -472,17 +477,16 @@ const formatTime = (timestamp) => {
 .feed-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding-bottom: 40rpx;
+  gap: 17.4rpx;
+  padding-bottom: 34.9rpx;
 }
 
 .feed-item {
-  background: white;
-  border-radius: 24rpx;
-  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 38.4rpx;
+  padding: 27.9rpx;
   display: flex;
-  gap: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  gap: 20.9rpx;
 }
 
 .feed-avatar {

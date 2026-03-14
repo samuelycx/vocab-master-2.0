@@ -19,10 +19,11 @@ export class ProgressService {
                     wordId: dto.wordId
                 }
             }
-        }) || { interval: 0, repetition: 0, easeFactor: 2.5, mistakeCount: 0 }; // Default if new
+        }) || { interval: 0, repetition: 0, easeFactor: 2.5, mistakeCount: 0, reviewStage: 0 }; // Default if new
 
         // Calculate SRS
         const isCorrect = dto.status === 'MASTERED' || (dto.status === 'LEARNING' && (dto.xpGained || 0) > 0);
+        const isReview = dto.mode === 'review';
         // Note: The frontend sends STATUS based on its own logic. 
         // A better approach: define 'quality' based on if it was a "correct answer" event.
         // Assuming dto.xpGained > 0 implies correct.
@@ -34,6 +35,8 @@ export class ProgressService {
 
         const quality = ((dto.xpGained || 0) > 0 || (dto.coinsGained || 0) > 0) ? 5 : 0;
         const srsData = this.calculateNextReview(existingRecord, quality);
+        const now = new Date();
+        const fixedReviewData = this.calculateNextReviewFixed(existingRecord, isCorrect, isReview, now);
 
         // Update Mistake Count
         const newMistakeCount = (existingRecord.mistakeCount || 0) + (quality === 0 ? 1 : 0);
@@ -48,21 +51,23 @@ export class ProgressService {
             },
             update: {
                 status: dto.status,
-                nextReview: srsData.nextReview,
+                nextReview: isReview ? fixedReviewData.nextReview : (isCorrect ? srsData.nextReview : fixedReviewData.nextReview),
                 interval: srsData.interval,
                 repetition: srsData.repetition,
                 easeFactor: srsData.easeFactor,
-                mistakeCount: newMistakeCount
+                mistakeCount: newMistakeCount,
+                reviewStage: isReview || !isCorrect ? fixedReviewData.reviewStage : (existingRecord.reviewStage || 0)
             },
             create: {
                 userId: dto.userId,
                 wordId: dto.wordId,
                 status: dto.status,
-                nextReview: srsData.nextReview,
+                nextReview: isReview ? fixedReviewData.nextReview : (isCorrect ? srsData.nextReview : fixedReviewData.nextReview),
                 interval: srsData.interval,
                 repetition: srsData.repetition,
                 easeFactor: srsData.easeFactor,
-                mistakeCount: newMistakeCount
+                mistakeCount: newMistakeCount,
+                reviewStage: isReview || !isCorrect ? fixedReviewData.reviewStage : (existingRecord.reviewStage || 0)
             }
         });
 
@@ -116,7 +121,7 @@ export class ProgressService {
             return {
                 record,
                 user: {
-                    ...updatedUser,
+                    ...this.toSafeUser(updatedUser),
                     rankTitle: targetRank.title,
                     rankIcon: targetRank.icon
                 },
@@ -129,10 +134,19 @@ export class ProgressService {
     }
 
     async getUserStats(userId: string) {
-        const user = await this.prisma.user.findUnique({
+        let user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { achievements: { include: { achievement: true } } }
         });
+
+        if (user && (!Array.isArray(user.achievements) || user.achievements.length === 0)) {
+            await this.achievementService.ensureFirstUseAchievement(userId);
+            user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                include: { achievements: { include: { achievement: true } } }
+            });
+        }
+
         const records = await this.prisma.studyRecord.findMany({
             where: { userId },
             include: { word: true }
@@ -141,18 +155,22 @@ export class ProgressService {
         // Calculate progress per category
         const categories = ['GENERAL', 'TOEFL', 'GRE', 'BUSINESS'];
         const categoryStats: Record<string, { learned: number, mastered: number, total: number }> = {};
+        const normalizeCategory = (value: unknown) => {
+            const text = String(value || '').trim().toUpperCase();
+            return categories.includes(text) ? text : 'GENERAL';
+        };
 
         for (const cat of categories) {
-            const catRecords = records.filter(r => r.word.category === cat);
+            const catRecords = records.filter((r) => normalizeCategory(r.word?.category) === cat);
             const totalInCat = await this.prisma.word.count({ where: { category: cat } });
             categoryStats[cat] = {
                 learned: catRecords.length,
-                mastered: catRecords.filter(r => r.status === 'MASTERED').length,
+                mastered: catRecords.filter(r => r.status === 'MASTERED' || (r.reviewStage || 0) >= 3).length,
                 total: totalInCat
             };
         }
 
-        const masteredCount = records.filter(r => r.status === 'MASTERED').length;
+        const masteredCount = records.filter(r => r.status === 'MASTERED' || (r.reviewStage || 0) >= 3).length;
         const currentRank = this.achievementService.getRankByVocab(masteredCount);
 
         return {
@@ -160,7 +178,7 @@ export class ProgressService {
             mastered: masteredCount,
             categoryStats,
             user: user ? {
-                ...user,
+                ...this.toSafeUser(user),
                 rankTitle: currentRank.title,
                 rankIcon: currentRank.icon
             } : null
@@ -229,6 +247,17 @@ export class ProgressService {
 
     // --- SRS Logic ---
 
+    private readonly fixedReviewSteps = [
+        { minutes: 10 },
+        { days: 1 },
+        { days: 3 },
+        { days: 7 },
+        { days: 15 },
+        { days: 30 },
+        { days: 60 },
+        { days: 120 },
+    ];
+
     // Calculate next review based on SM-2 algorithm (simplified)
     private calculateNextReview(currentRecord: any, quality: number): { interval: number, repetition: number, easeFactor: number, nextReview: Date } {
         let interval = currentRecord.interval || 0;
@@ -260,20 +289,89 @@ export class ProgressService {
         return { interval, repetition, easeFactor, nextReview };
     }
 
+    private calculateNextReviewFixed(
+        currentRecord: any,
+        isCorrect: boolean,
+        isReview: boolean,
+        now: Date = new Date()
+    ): { reviewStage: number, nextReview: Date } {
+        const currentStage = currentRecord.reviewStage || 0;
+        const maxStage = this.fixedReviewSteps.length - 1;
+
+        if (!isCorrect) {
+            const resetReview = new Date(now.getTime() + 10 * 60 * 1000);
+            return { reviewStage: 0, nextReview: resetReview };
+        }
+
+        if (!isReview) {
+            return { reviewStage: currentStage, nextReview: new Date(now) };
+        }
+
+        const stepIndex = Math.min(currentStage, maxStage);
+        const step = this.fixedReviewSteps[stepIndex];
+        const nextReview = new Date(now);
+
+        if (step.minutes) {
+            nextReview.setTime(nextReview.getTime() + step.minutes * 60 * 1000);
+        } else if (step.days) {
+            nextReview.setDate(nextReview.getDate() + step.days);
+        }
+
+        const nextStage = Math.min(currentStage + 1, maxStage);
+        return { reviewStage: nextStage, nextReview };
+    }
+
+    private toSafeUser(user: any) {
+        if (!user) return user;
+        const { passwordHash, sessionToken, sessionExpiresAt, ...safeUser } = user;
+        return safeUser;
+    }
+
     async getReviews(userId: string) {
         const now = new Date();
         const reviews = await this.prisma.studyRecord.findMany({
             where: {
                 userId,
-                nextReview: { lte: now },
-                status: { not: 'NEW' } // Don't review new words that haven't been learned? Or do? 
-                // Usually "Learning" or "Mastered" words are up for review.
+                OR: [
+                    { mistakeCount: { gt: 0 } },
+                    { nextReview: { lte: now } }
+                ]
             },
             include: { word: true },
             orderBy: { nextReview: 'asc' },
-            take: 20 // Limit batch size
+            take: 20
         });
         return reviews;
+    }
+
+    async getReviewPoolCount(userId: string) {
+        const now = new Date();
+        return this.prisma.studyRecord.count({
+            where: {
+                userId,
+                OR: [
+                    { mistakeCount: { gt: 0 } },
+                    { nextReview: { lte: now } }
+                ]
+            }
+        });
+    }
+
+    async getReviewSessionWords(userId: string, limit = 30) {
+        const now = new Date();
+        const records = await this.prisma.studyRecord.findMany({
+            where: {
+                userId,
+                OR: [
+                    { mistakeCount: { gt: 0 } },
+                    { nextReview: { lte: now } }
+                ]
+            },
+            include: { word: true },
+        });
+
+        const shuffled = records.sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, limit);
     }
 
     async getMistakes(userId: string) {

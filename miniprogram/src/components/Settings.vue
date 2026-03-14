@@ -72,7 +72,11 @@ const toggleSound = () => {
     Actions.updateSettings('soundEnabled', !settings.soundEnabled);
 };
 
-const isLoggedIn = () => Boolean(GameState.user?.isLoggedIn || GameState.user?.openid || GameState.user?.id);
+const isLoggedIn = () => Boolean(GameState.user?.isLoggedIn);
+const hasLocalUser = () => {
+    const name = String(GameState.user?.username || '').trim();
+    return Boolean(GameState.user?.openid || GameState.user?.id || (name && name !== 'Guest'));
+};
 
 const login = async () => {
     if (isLoggedIn()) {
@@ -84,10 +88,22 @@ const login = async () => {
         if (res && res.success && res.data) {
             Actions.setUser(res.data);
             Actions.setLogin(true);
+            uni.removeStorageSync('vocab_skip_auto_login');
             uni.setStorageSync('vocab_user', JSON.stringify(res.data));
             uni.showToast({ title: '登录成功', icon: 'success' });
         } else {
-            uni.showToast({ title: res?.msg || '登录失败', icon: 'none' });
+            Actions.setLogin(false);
+            if (res?.code === 'DEVICE_MISMATCH') {
+                Actions.clearUser();
+                uni.setStorageSync('vocab_skip_auto_login', 'true');
+                uni.showModal({
+                    title: '登录失败',
+                    content: res?.msg || '此账号已在其他设备绑定',
+                    showCancel: false
+                });
+            } else {
+                uni.showToast({ title: res?.msg || '登录失败', icon: 'none' });
+            }
         }
     } catch (e) {
         uni.showToast({ title: e?.message || '登录失败', icon: 'none' });
@@ -117,6 +133,7 @@ const handleReset = async () => {
 const logout = () => {
     Actions.reset();
     Actions.setLogin(false);
+    uni.setStorageSync('vocab_skip_auto_login', 'true');
     uni.removeStorageSync('vocab_user');
     uni.reLaunch({ url: '/pages/index/index' });
 };
@@ -306,7 +323,7 @@ onMounted(async () => {
 
         <!-- Bottom Buttons -->
         <view class="bottom-actions">
-            <view v-if="isLoggedIn()" class="action-btn logout" @click="logout">
+            <view v-if="hasLocalUser()" class="action-btn logout" @click="logout">
                 <text>{{ t('settings_logout') }}</text>
             </view>
             <view v-else class="action-btn logout" @click="login">

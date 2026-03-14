@@ -1,13 +1,15 @@
-import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe, Headers } from '@nestjs/common';
 import { WordService } from './word.service';
+import { AuthService } from '../auth/auth.service';
 
 import { ProgressService } from '../progress/progress.service';
 
-@Controller('word')
+@Controller(['word', 'words'])
 export class WordController {
     constructor(
         private readonly wordService: WordService,
-        private readonly progressService: ProgressService
+        private readonly progressService: ProgressService,
+        private readonly authService: AuthService,
     ) { }
 
     @Get('session')
@@ -15,16 +17,23 @@ export class WordController {
         @Query('count', new DefaultValuePipe(10), ParseIntPipe) count: number,
         @Query('category') category: string
     ) {
-        return this.wordService.getWordsForSession(count, category);
+        const words = await this.wordService.getWordsForSession(count, category);
+        return {
+            success: true,
+            data: {
+                words,
+                total: words.length,
+            },
+        };
     }
 
     @Get('review')
     async getReviewWords(
-        @Query('userId') userId: string
+        @Headers('authorization') authorization: string
     ) {
-        if (!userId) return [];
+        const user = await this.authService.requireUserFromAuthorization(authorization);
         // Get reviews from progress service
-        const reviewRecords = await this.progressService.getReviews(userId);
+        const reviewRecords = await this.progressService.getReviewSessionWords(user.id, 30);
         // Map to Word objects (frontend expects words)
         return reviewRecords.map(r => ({
             ...r.word,
@@ -38,10 +47,10 @@ export class WordController {
 
     @Get('mistakes')
     async getMistakeWords(
-        @Query('userId') userId: string
+        @Headers('authorization') authorization: string
     ) {
-        if (!userId) return [];
-        const records = await this.progressService.getMistakes(userId);
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        const records = await this.progressService.getMistakes(user.id);
         return records.map(r => ({
             ...r.word,
             _mistakeCount: r.mistakeCount
@@ -49,12 +58,12 @@ export class WordController {
     }
     @Get('learned')
     async getLearnedWords(
-        @Query('userId') userId: string,
+        @Headers('authorization') authorization: string,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
         @Query('search') search: string
     ) {
-        if (!userId) return { data: [], total: 0, page: 1, lastPage: 1 };
-        return this.progressService.getLearnedWords(userId, page, limit, search);
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.progressService.getLearnedWords(user.id, page, limit, search);
     }
 }

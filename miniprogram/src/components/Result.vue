@@ -31,14 +31,14 @@ const learnAgain = () => {
             <view class="back-btn" @click="goHome">
                 <text class="back-icon">←</text>
             </view>
-            <text class="header-title">学习结果</text>
+            <text class="header-title">{{ t('result_title') }}</text>
             <view class="header-spacer"></view>
         </view>
 
         <view class="hero-card">
             <text class="hero-icon">🎉</text>
-            <text class="hero-title">干得漂亮！</text>
-            <text class="hero-sub">今天又进步了一点</text>
+            <text class="hero-title">{{ t('result_well_done') }}</text>
+            <text class="hero-sub">{{ t('result_subtitle') }}</text>
         </view>
 
         <view class="reward-row">
@@ -53,7 +53,7 @@ const learnAgain = () => {
         </view>
 
         <view class="stats-card">
-            <text class="stats-title">本轮统计</text>
+            <text class="stats-title">{{ t('result_stats_title') }}</text>
             <view class="stat-row">
                 <text class="stat-label">{{ t('result_correct') }}</text>
                 <text class="stat-value">{{ lastSession.correct }} / {{ lastSession.total }}</text>
@@ -66,10 +66,10 @@ const learnAgain = () => {
 
         <view class="actions-row">
             <view class="btn-primary" @click="learnAgain">
-                <text>再学一次</text>
+                <text>{{ t('result_learn_again') }}</text>
             </view>
             <view class="btn-secondary" @click="goHome">
-                <text>返回首页</text>
+                <text>{{ t('result_back_home') }}</text>
             </view>
         </view>
     </view>
@@ -79,7 +79,7 @@ const learnAgain = () => {
 .result-page {
     min-height: 100vh;
     background: #f6f1e8;
-    padding: 108.1rpx 41.9rpx 41.9rpx;
+    padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 41.9rpx;
     display: flex;
     flex-direction: column;
     gap: 27.9rpx;
@@ -93,10 +93,10 @@ const learnAgain = () => {
 }
 
 .back-btn {
-    width: 73.3rpx;
-    height: 73.3rpx;
+    width: 76.7rpx;
+    height: 76.7rpx;
     background: #ffffff;
-    border-radius: 36.6rpx;
+    border-radius: 38.4rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -104,19 +104,19 @@ const learnAgain = () => {
 
 .back-icon {
     font-size: 31.4rpx;
-    font-weight: 800;
-    color: #111827;
+    font-weight: 600;
+    color: #111111;
 }
 
 .header-title {
     font-size: 34.9rpx;
-    font-weight: 800;
+    font-weight: 600;
     color: #1a1a1a;
 }
 
 .header-spacer {
-    width: 73.3rpx;
-    height: 73.3rpx;
+    width: 76.7rpx;
+    height: 76.7rpx;
 }
 
 .hero-card {
@@ -136,7 +136,7 @@ const learnAgain = () => {
 
 .hero-title {
     font-size: 55.8rpx;
-    font-weight: 800;
+    font-weight: 600;
     color: #1a1a1a;
 }
 
@@ -227,7 +227,7 @@ const learnAgain = () => {
     align-items: center;
     justify-content: center;
     font-size: 31.4rpx;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .btn-primary {

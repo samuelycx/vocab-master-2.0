@@ -37,10 +37,32 @@ function pickPhonetic(word) {
     return hit && hit.text ? String(hit.text).trim() : ''
 }
 
+function pickMeanings(word) {
+    return toArrayField(
+        word?.meanings
+        || word?.meaning
+        || word?.definition
+        || word?.translation
+        || word?.translations
+        || word?.cn
+        || word?.zh
+    )
+}
+
+function pickExamples(word) {
+    return toArrayField(
+        word?.examples
+        || word?.example
+        || word?.example_sentence
+        || word?.exampleSentence
+        || word?.sentence
+    )
+}
+
 function normalizeWord(word) {
-    const text = String(word?.text || '').trim()
-    const meanings = toArrayField(word?.meanings)
-    const examples = toArrayField(word?.examples)
+    const text = String(word?.text || word?.word || word?.name || '').trim()
+    const meanings = pickMeanings(word)
+    const examples = pickExamples(word)
     const phonetic = pickPhonetic(word)
     return {
         ...word,
@@ -116,13 +138,12 @@ async function searchWords({ query } = {}) {
             return { success: true, data: [] }
         }
 
+        const regex = db.RegExp({
+            regexp: escapeRegExp(normalizedQuery),
+            options: 'i',
+        })
         const res = await db.collection('words')
-            .where({
-                text: db.RegExp({
-                    regexp: escapeRegExp(normalizedQuery),
-                    options: 'i',
-                })
-            })
+            .where(_.or([{ text: regex }, { word: regex }]))
             .limit(50)
             .get()
 

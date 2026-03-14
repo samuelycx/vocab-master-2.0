@@ -136,22 +136,6 @@ const safeParseMeanings = (meanings) => {
     return list.join('；');
 };
 
-const getPhoneticText = (word) => {
-    const p = word?.phonetic
-        || word?.pronunciation
-        || word?.phoneticAm
-        || word?.phoneticBr
-        || word?.usphone
-        || word?.ukphone
-        || (Array.isArray(word?.phonetics)
-            ? (word.phonetics.find(item => item && typeof item.text === 'string' && item.text.trim()) || {}).text
-            : '');
-    if (!p || !String(p).trim()) return '';
-    const text = String(p).trim();
-    if (text.startsWith('/') && text.endsWith('/')) return text;
-    return `/${text}/`;
-};
-
 const getMasteryLevel = (status, repetition) => {
     if (status === 'MASTERED') return { color: '#A8F0C6', label: t('vocab_mastery_expert'), percent: 100 };
     const r = repetition || 0;
@@ -227,7 +211,6 @@ const getMasteryLevel = (status, repetition) => {
                     <view class="word-header">
                         <view class="word-main">
                             <text class="word-text">{{ record.word.text || record.word.word }}</text>
-                            <text v-if="getPhoneticText(record.word)" class="word-phonetic">{{ getPhoneticText(record.word) }}</text>
                             <view class="word-tags">
                                 <view class="word-tag" :class="getStatusColor(record.status, record.repetition)">
                                     {{ getStatusLabel(record.status, record.repetition) }}
@@ -284,39 +267,39 @@ const getMasteryLevel = (status, repetition) => {
 <style scoped>
 .vocab-page {
   min-height: 100vh;
-  background: #F7F7F9;
-  padding: calc(var(--header-height, 88px) + 16rpx) 28rpx 28rpx;
+  background: #F6F1E8;
+  padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 34.9rpx;
   display: flex;
   flex-direction: column;
+  gap: 24.4rpx;
 }
 
 /* Header */
 .header {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  margin-bottom: 28rpx;
+  gap: 20.9rpx;
+  height: 118.6rpx;
 }
 
 .back-btn {
-  width: 72rpx;
-  height: 72rpx;
-  background: white;
-  border-radius: 50%;
+  width: 76.7rpx;
+  height: 76.7rpx;
+  background: #ffffff;
+  border-radius: 38.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .back-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .back-icon {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #333;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #111111;
 }
 
 .header-content {
@@ -324,46 +307,45 @@ const getMasteryLevel = (status, repetition) => {
 }
 
 .header-title {
-  font-size: 40rpx;
-  font-weight: 900;
-  color: #1a1a1a;
+  font-size: 48.8rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
 }
 
 .header-sub {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 24.4rpx;
+  color: #7B758B;
   font-weight: 600;
 }
 
 .header-icon {
-  width: 72rpx;
-  height: 72rpx;
-  background: linear-gradient(135deg, #A0D8F1 0%, #7BC8E8 100%);
-  border-radius: 20rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
+  background: #A0D8F1;
+  border-radius: 20.9rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(160, 216, 241, 0.4);
 }
 .header-icon-image {
-  width: 42rpx;
-  height: 42rpx;
+  width: 41.9rpx;
+  height: 41.9rpx;
 }
 
 /* Search */
 .search-section {
-  margin-bottom: 24rpx;
+  margin-bottom: 24.4rpx;
 }
 
 .search-box {
-  background: white;
-  border-radius: 24rpx;
-  padding: 20rpx 24rpx;
+  background: #ffffff;
+  border-radius: 34.9rpx;
+  height: 104.7rpx;
+  padding: 0 27.9rpx;
   display: flex;
   align-items: center;
   gap: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
 .search-icon-image {
@@ -373,9 +355,9 @@ const getMasteryLevel = (status, repetition) => {
 
 .search-input {
   flex: 1;
-  font-size: 30rpx;
+  font-size: 31.4rpx;
   font-weight: 600;
-  color: #333;
+  color: #111111;
   border: none;
   background: transparent;
 }
@@ -388,14 +370,13 @@ const getMasteryLevel = (status, repetition) => {
 .stats-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16rpx;
-  margin-bottom: 28rpx;
+  gap: 20.9rpx;
+  margin-bottom: 24.4rpx;
 }
 
 .stat-card {
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border-radius: 34.9rpx;
+  padding: 27.9rpx;
 }
 
 .stat-card.mint {
@@ -407,17 +388,17 @@ const getMasteryLevel = (status, repetition) => {
 }
 
 .stat-value {
-  font-size: 56rpx;
-  font-weight: 900;
-  color: #1a1a1a;
+  font-size: 55.8rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  font-weight: 600;
-  color: #333;
+  font-size: 24.4rpx;
+  font-weight: 500;
+  color: #2d2b28;
 }
 
 /* Word List */
@@ -429,16 +410,25 @@ const getMasteryLevel = (status, repetition) => {
 .word-cards {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
-  padding-bottom: 40rpx;
+  gap: 20.9rpx;
+  padding-bottom: 34.9rpx;
 }
 
 /* Word Card */
 .word-card {
-  background: white;
-  border-radius: 28rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border-radius: 38.4rpx;
+  padding: 27.9rpx;
+  border: 2rpx solid #efe8de;
+  box-shadow: 0 8rpx 20rpx rgba(26, 26, 26, 0.03);
+}
+
+.word-card:nth-child(3n + 2) {
+  background: #fffaf6;
+}
+
+.word-card:nth-child(3n) {
+  background: #fffdfb;
 }
 
 .word-header {
@@ -453,19 +443,12 @@ const getMasteryLevel = (status, repetition) => {
 }
 
 .word-text {
-  font-size: 40rpx;
-  font-weight: 900;
-  color: #1a1a1a;
+  font-size: 45.3rpx;
+  font-weight: 600;
+  color: #111111;
   display: block;
   margin-bottom: 12rpx;
   font-family: var(--font-serif, Georgia, serif);
-}
-
-.word-phonetic {
-  font-size: 24rpx;
-  color: #8b95a7;
-  margin-bottom: 10rpx;
-  display: block;
 }
 
 .word-tags {
@@ -477,7 +460,7 @@ const getMasteryLevel = (status, repetition) => {
   padding: 8rpx 16rpx;
   border-radius: 12rpx;
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .word-tag.bg-mint {
@@ -502,11 +485,11 @@ const getMasteryLevel = (status, repetition) => {
 
 .word-pos {
   padding: 8rpx 16rpx;
-  background: #f0f0f0;
+  background: #f7f3ee;
   border-radius: 12rpx;
   font-size: 22rpx;
-  font-weight: 600;
-  color: #999;
+  font-weight: 500;
+  color: #918b95;
 }
 
 .sound-btn {
@@ -530,7 +513,7 @@ const getMasteryLevel = (status, repetition) => {
 
 .word-meaning {
   font-size: 28rpx;
-  color: #666;
+  color: #6b6b6b;
   line-height: 1.5;
   margin-bottom: 24rpx;
 }
@@ -538,7 +521,7 @@ const getMasteryLevel = (status, repetition) => {
 /* Mastery */
 .mastery-section {
   padding-top: 20rpx;
-  border-top: 2rpx solid #f0f0f0;
+  border-top: 2rpx solid #f5eee3;
 }
 
 .mastery-header {
@@ -550,8 +533,8 @@ const getMasteryLevel = (status, repetition) => {
 
 .mastery-label {
   font-size: 24rpx;
-  font-weight: 600;
-  color: #999;
+  font-weight: 500;
+  color: #948a7a;
 }
 
 .mastery-level {
@@ -561,7 +544,7 @@ const getMasteryLevel = (status, repetition) => {
 
 .mastery-bar {
   height: 10rpx;
-  background: #f0f0f0;
+  background: #f2ede6;
   border-radius: 10rpx;
   overflow: hidden;
 }

@@ -12,8 +12,19 @@ const user = GameState.user;
 const isSearching = ref(false);
 const isInLobby = ref(true);
 const joinCode = ref('');
+const isFlipped = ref(false);
 const { t } = useI18n();
 const uiIcons = UI_ICONS;
+const formatTimeLeft = computed(() => {
+    const totalSeconds = Math.max(Number(session.timeLeft) || 0, 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+});
+const footerRewardText = computed(() => {
+    if (!session.isAnswered) return t('pk_reward_pending');
+    return t('pk_reward_xp', { xp: session.lastAwardXP || 0 });
+});
 
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
@@ -29,16 +40,29 @@ const getAvatarUrl = (avatar) => {
     return DEFAULT_AVATAR;
 };
 
-const getPhoneticText = (word) => {
-    if (!word) return '';
-    const direct = word.phonetic || word.pronunciation || word.phoneticAm || word.phoneticBr || word.usphone || word.ukphone;
-    if (direct && String(direct).trim()) return String(direct).trim();
-    if (Array.isArray(word.phonetics)) {
-        const item = word.phonetics.find((p) => p && typeof p.text === 'string' && p.text.trim());
-        if (item && item.text) return String(item.text).trim();
+watch(() => session.currentWord, (newWord) => {
+    if (!newWord) return;
+
+    if (newWord.examples && newWord.examples.length > 0) {
+        const ex = newWord.examples[Math.floor(Math.random() * newWord.examples.length)];
+        const escaped = String(newWord.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escaped, 'gi');
+        session.currentExample = {
+            original: ex,
+            masked: ex.replace(regex, '______')
+        };
+    } else {
+        session.currentExample = null;
     }
-    return '';
-};
+
+    isFlipped.value = false;
+}, { immediate: true });
+
+watch(() => session.isAnswered, (answered) => {
+    if (answered) {
+        isFlipped.value = true;
+    }
+});
 
 const startPK = (mode) => {
     GameState.game.pk.mode = mode;
@@ -66,6 +90,7 @@ const startPK = (mode) => {
 
 const quitPK = () => {
     if (GameEngine.botInterval) clearInterval(GameEngine.botInterval);
+    GameEngine.quitSession();
     SocketManager.leaveQueue();
     isSearching.value = false;
     isInLobby.value = true;
@@ -117,10 +142,6 @@ onUnmounted(() => {
 
         <!-- Lobby -->
         <view v-if="isInLobby" class="lobby">
-            <view class="lobby-icon animate-bounce">
-                <image class="lobby-icon-image" :src="uiIcons.pk" mode="aspectFit" />
-            </view>
-            
             <text class="lobby-title">{{ t('pk_lobby_title') }}</text>
             
             <text class="lobby-sub">{{ t('pk_lobby_sub') }}</text>
@@ -192,41 +213,44 @@ onUnmounted(() => {
                 </view>
             </view>
 
-            <view class="pkb-question">
-                <text class="pkb-word">{{ session.currentWord?.word }}</text>
-                <text class="pkb-phonetic">{{ getPhoneticText(session.currentWord) || t('arena_no_phonetic') }}</text>
-                <text class="pkb-hint">选择最准确的中文释义</text>
+            <view class="pkb-card-wrap">
+                <view class="pkb-card" :class="{ flipped: isFlipped }">
+                    <view class="pkb-card-face pkb-card-front">
+                        <text class="pkb-word">{{ session.currentWord?.word }}</text>
+                        <text class="pkb-example">{{ session.currentExample?.masked || t('arena_no_example') }}</text>
+                    </view>
+
+                    <view class="pkb-card-face pkb-card-back">
+                        <view class="pkb-result-label">{{ t('arena_label_result') }}</view>
+                        <view class="pkb-result-icon">{{ session.isCorrect ? '✓' : '✗' }}</view>
+                        <text class="pkb-result-text">{{ session.isCorrect ? t('arena_correct') : t('arena_wrong') }}</text>
+                        <text class="pkb-meaning">{{ session.currentWord?.meanings?.[0] || session.correctOption }}</text>
+                        <view class="pkb-divider"></view>
+                        <view v-if="session.isCorrect" class="pkb-rewards">
+                            <text class="pkb-reward">+{{ session.lastAwardXP }} XP</text>
+                            <text class="pkb-reward">{{ t('pk_reward_coin', { coins: session.lastAwardCoins }) }}</text>
+                        </view>
+                        <text v-else class="pkb-result-hint">{{ t('arena_wrong_hint') }}</text>
+                    </view>
+                </view>
             </view>
 
-            <view class="pkb-ops">
+            <view v-if="!isFlipped && !session.isAnswered" class="pkb-ops">
                 <view class="pkb-row">
-                    <view class="pkb-op-btn" v-for="(option, idx) in session.options.slice(0,2)" :key="idx" @click="handleAnswer(option)">
+                    <view class="pkb-op-btn" :class="getOptionClass(option)" v-for="(option, idx) in session.options.slice(0,2)" :key="idx" @click="handleAnswer(option)">
                         <text class="pkb-op-text">{{ String.fromCharCode(65 + idx) }} {{ option }}</text>
                     </view>
                 </view>
                 <view class="pkb-row">
-                    <view class="pkb-op-btn" v-for="(option, idx) in session.options.slice(2,4)" :key="idx + 2" @click="handleAnswer(option)">
+                    <view class="pkb-op-btn" :class="getOptionClass(option)" v-for="(option, idx) in session.options.slice(2,4)" :key="idx + 2" @click="handleAnswer(option)">
                         <text class="pkb-op-text">{{ String.fromCharCode(65 + idx + 2) }} {{ option }}</text>
                     </view>
                 </view>
             </view>
 
             <view class="pkb-foot">
-                <text class="pkb-foot-left">剩余 00:18</text>
-                <text class="pkb-foot-right">本题 +10 XP</text>
-            </view>
-
-            <view v-if="session.isAnswered" class="feedback-overlay">
-                <view class="feedback-box" :class="{ correct: session.isCorrect, wrong: !session.isCorrect }">
-                    <image class="feedback-icon-image" :src="session.isCorrect ? uiIcons.ok : uiIcons.pk" mode="aspectFit" />
-
-                    <text class="feedback-text">{{ session.isCorrect ? t('pk_great') : t('pk_keep_going') }}</text>
-                    
-                    <view v-if="session.isCorrect" class="feedback-rewards">
-                        <text class="reward">+{{ session.lastAwardXP || 10 }} XP</text>
-                        <text class="reward">+{{ session.lastAwardCoins || 1 }} COIN</text>
-                    </view>
-                </view>
+                <text class="pkb-foot-left">{{ t('pk_time_left', { time: formatTimeLeft }) }}</text>
+                <text class="pkb-foot-right">{{ footerRewardText }}</text>
             </view>
         </view>
 
@@ -266,10 +290,11 @@ onUnmounted(() => {
 <style scoped>
 .pk-page {
   min-height: 100vh;
-  background: #f7f3ec;
-  padding: calc(var(--header-height, 88px) + 16rpx) 28rpx 28rpx;
+  background: #f6f1e8;
+  padding: calc(env(safe-area-inset-top, 0px) + 176rpx) 41.9rpx 34.9rpx;
   display: flex;
   flex-direction: column;
+  gap: 24.4rpx;
 }
 
 /* Header */
@@ -277,15 +302,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32rpx;
+  height: 97.7rpx;
 }
 
 .back-btn {
-  width: 72rpx;
-  height: 72rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
   background: #ffffff;
-  border: 1px solid #ebe4da;
-  border-radius: 50%;
+  border-radius: 38.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,19 +320,19 @@ onUnmounted(() => {
 }
 
 .back-icon {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #111827;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #111111;
 }
 
 .pk-title {
-  font-size: 36rpx;
-  font-weight: 900;
-  color: #111827;
+  font-size: 45.3rpx;
+  font-weight: 600;
+  color: #111111;
 }
 
 .placeholder {
-  width: 72rpx;
+  width: 76.7rpx;
 }
 
 /* Lobby */
@@ -317,58 +341,42 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40rpx;
-}
-
-.lobby-icon {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 28rpx;
-  background: #ffffff;
-  border: 1px solid #ebe4da;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32rpx;
-}
-.lobby-icon-image {
-  width: 76rpx;
-  height: 76rpx;
+  justify-content: flex-start;
+  padding: 58rpx 0 0;
 }
 
 .lobby-title {
-  font-size: 44rpx;
-  font-weight: 900;
-  color: #111827;
-  margin-bottom: 16rpx;
+  font-size: 38.4rpx;
+  font-weight: 500;
+  color: #111111;
+  margin-bottom: 10.5rpx;
 }
 
 .lobby-sub {
-  font-size: 26rpx;
+  font-size: 22.4rpx;
   color: #6b7280;
-  margin-bottom: 60rpx;
+  margin-bottom: 24.4rpx;
 }
 
 .mode-cards {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 20.9rpx;
 }
 
 .mode-card {
   background: white;
-  border-radius: 28rpx;
-  padding: 32rpx;
+  border-radius: 38.4rpx;
+  padding: 27.9rpx;
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.15);
+  gap: 20.9rpx;
+  height: 129.1rpx;
 }
 
 .mode-card.ranked {
-  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+  background: #1a1a1a;
 }
 
 .mode-card:active {
@@ -376,17 +384,17 @@ onUnmounted(() => {
 }
 
 .mode-icon {
-  width: 80rpx;
-  height: 80rpx;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20rpx;
+  width: 76.7rpx;
+  height: 76.7rpx;
+  background: #2b2b2b;
+  border-radius: 24.4rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .mode-icon-image {
-  width: 44rpx;
-  height: 44rpx;
+  width: 41.9rpx;
+  height: 41.9rpx;
 }
 
 .mode-info {
@@ -394,11 +402,11 @@ onUnmounted(() => {
 }
 
 .mode-name {
-  font-size: 34rpx;
-  font-weight: 800;
-  color: #1a1a1a;
+  font-size: 31.4rpx;
+  font-weight: 500;
+  color: #111111;
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .mode-card.ranked .mode-name {
@@ -406,8 +414,8 @@ onUnmounted(() => {
 }
 
 .mode-desc {
-  font-size: 26rpx;
-  color: #999;
+  font-size: 24.4rpx;
+  color: #6b7280;
 }
 
 .mode-card.ranked .mode-desc {
@@ -415,9 +423,9 @@ onUnmounted(() => {
 }
 
 .mode-arrow {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #999;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #6b7280;
 }
 
 .mode-card.ranked .mode-arrow {
@@ -431,7 +439,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
+  padding: 0;
 }
 
 .search-ring {
@@ -474,12 +482,16 @@ onUnmounted(() => {
 }
 
 .cancel-btn {
-  padding: 24rpx 60rpx;
-  background: #111827;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  font-weight: 700;
-  color: #f9fafb;
+  width: 100%;
+  height: 129.1rpx;
+  background: #6E58D9;
+  border-radius: 31.4rpx;
+  font-size: 31.4rpx;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancel-btn:active {
@@ -625,7 +637,7 @@ onUnmounted(() => {
 
 .word-text {
   font-size: 64rpx;
-  font-weight: 900;
+  font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 20rpx;
   font-family: var(--font-serif, Georgia, serif);
@@ -730,70 +742,234 @@ onUnmounted(() => {
   color: #ef4444;
 }
 
-/* Feedback */
-.feedback-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+/* PK Battle (Pencil 9VPcT) */
+.pk-battle {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
+  flex-direction: column;
+  gap: 14rpx;
 }
 
-.feedback-box {
-  background: white;
-  border-radius: 40rpx;
-  padding: 60rpx;
+.pkb-top {
+  height: 90.7rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.pkb-me,
+.pkb-op {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20rpx;
-  box-shadow: 0 32rpx 80rpx rgba(0, 0, 0, 0.3);
-  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 3.5rpx;
 }
 
-.feedback-box.correct {
-  background: linear-gradient(135deg, #A8F0C6 0%, #7EE0A8 100%);
+.pkb-avatar {
+  width: 76.7rpx;
+  height: 76.7rpx;
+  border-radius: 38.4rpx;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #111111;
 }
 
-.feedback-box.wrong {
-  background: linear-gradient(135deg, #FFFBF5 0%, #F5F0E8 100%);
+.pkb-score {
+  font-size: 34.9rpx;
+  font-weight: 500;
+  color: #111111;
 }
 
-@keyframes popIn {
-  0% { transform: scale(0.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+.pkb-vs {
+  font-size: 31.4rpx;
+  font-weight: 500;
+  color: #6b7280;
 }
 
-.feedback-icon-image {
-  width: 68rpx;
-  height: 68rpx;
+.pkb-bars {
+  display: flex;
+  gap: 14rpx;
+  height: 20.9rpx;
+  margin-top: -3.5rpx;
 }
 
-.feedback-text {
-  font-size: 44rpx;
-  font-weight: 900;
-  color: white;
+.pkb-bar {
+  flex: 1;
+  height: 20.9rpx;
+  border-radius: 999rpx;
+  background: #EDE7DD;
+  overflow: hidden;
 }
 
-.feedback-box.wrong .feedback-text {
+.pkb-bar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+}
+
+.pkb-bar-fill.left {
+  background: #A8F0C6;
+}
+
+.pkb-bar-fill.right {
+  background: #FFB5D0;
+}
+
+.pkb-card-wrap {
+  height: 592rpx;
+  perspective: 1000px;
+}
+
+.pkb-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pkb-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.pkb-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 48.8rpx;
+  background: #FCECC7;
+  padding: 27.9rpx;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pkb-card-front {
+  gap: 18rpx;
+}
+
+.pkb-card-back {
+  transform: rotateY(180deg);
+  background: #FFF9F1;
+}
+
+.pkb-word {
+  font-size: 59.3rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  font-family: var(--font-serif, Georgia, serif);
+  text-align: center;
+}
+
+.pkb-example {
+  font-size: 24.4rpx;
+  color: #6b6b6b;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pkb-result-label {
+  font-size: 20.9rpx;
+  color: #9ca3af;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.pkb-result-icon {
+  font-size: 52rpx;
+  color: #111111;
+  line-height: 1;
+  margin-bottom: 12rpx;
+}
+
+.pkb-result-text {
+  font-size: 41.9rpx;
+  font-weight: 500;
+  color: #111111;
+  margin-bottom: 18rpx;
+}
+
+.pkb-meaning {
+  font-size: 55.8rpx;
+  font-weight: 600;
   color: #5A459D;
+  text-align: center;
+  line-height: 1.25;
 }
 
-.feedback-rewards {
+.pkb-divider {
+  width: 80rpx;
+  height: 4rpx;
+  background: linear-gradient(90deg, transparent, #5A459D, transparent);
+  border-radius: 2rpx;
+  margin: 36rpx 0;
+}
+
+.pkb-rewards {
   display: flex;
   gap: 20rpx;
-  margin-top: 10rpx;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.reward {
-  background: rgba(255, 255, 255, 0.3);
-  padding: 16rpx 32rpx;
+.pkb-reward {
+  background: linear-gradient(135deg, #efe9ff 0%, #e1d7ff 100%);
+  border: 2rpx solid rgba(90, 69, 157, 0.18);
+  box-shadow: 0 6rpx 14rpx rgba(90, 69, 157, 0.12);
+  padding: 14rpx 26rpx;
   border-radius: 20rpx;
   font-size: 28rpx;
   font-weight: 700;
-  color: white;
+  color: #3f2f75;
+}
+
+.pkb-result-hint {
+  font-size: 24.4rpx;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.pkb-ops {
+  height: 400rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  justify-content: center;
+}
+
+.pkb-row {
+  display: flex;
+  gap: 14rpx;
+}
+
+.pkb-op-btn {
+  flex: 1;
+  height: 170rpx;
+  background: #ffffff;
+  border-radius: 38.4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24rpx;
+}
+
+.pkb-op-text {
+  font-size: 27.9rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.pkb-foot {
+  height: 97.7rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6b7280;
+  font-size: 24.4rpx;
 }
 
 /* Result */
@@ -872,7 +1048,7 @@ onUnmounted(() => {
 
 .result-title {
   font-size: 56rpx;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 4rpx;
   color: #5A459D;
 }
@@ -921,7 +1097,7 @@ onUnmounted(() => {
   background: #1a1a1a;
   color: white;
   font-size: 32rpx;
-  font-weight: 800;
+  font-weight: 600;
   border-radius: 24rpx;
   text-align: center;
 }

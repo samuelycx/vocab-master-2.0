@@ -4,4 +4,5 @@ export class UpdateProgressDto {
     status: string; // 'NEW', 'LEARNING', 'MASTERED'
     xpGained?: number;
     coinsGained?: number;
+    mode?: 'learn' | 'review';
 }

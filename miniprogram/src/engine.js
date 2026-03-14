@@ -36,9 +36,11 @@ export const GameEngine = {
     timerHandle: null,
     botInterval: null,
     autoPlayHandle: null,
+    advanceHandle: null,
     audioContext: null,
     lastAudioKey: '',
     lastAudioAt: 0,
+    sessionRunId: 0,
 
     async startSession(count = DEFAULT_LEARN_COUNT) {
         if (AUDIO_DEBUG) {
@@ -70,6 +72,7 @@ export const GameEngine = {
         }));
 
         this._setupSession(formattedWords, formattedWords, 'learn');
+        Actions.setView('arena');
     },
 
     async startReview(userId) {
@@ -91,6 +94,7 @@ export const GameEngine = {
         }));
 
         this._setupSession(formattedWords, formattedWords, 'review');
+        Actions.setView('arena');
         return true;
     },
 
@@ -113,6 +117,7 @@ export const GameEngine = {
         }));
 
         this._setupSession(formattedWords, formattedWords, 'mistake');
+        Actions.setView('arena');
         return true;
     },
 
@@ -179,8 +184,11 @@ export const GameEngine = {
             });
         }
         Actions.resetCombo();
+        this.sessionRunId += 1;
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         this.autoPlayHandle = null;
+        if (this.advanceHandle) clearTimeout(this.advanceHandle);
+        this.advanceHandle = null;
         this.lastAudioKey = '';
         this.lastAudioAt = 0;
 
@@ -218,11 +226,8 @@ export const GameEngine = {
         this.session.mode = mode;
         this._resetSessionStats();
         this.session.currentIndex = 0;
-        this.loadNextQuestion();
 
-        if (mode !== 'pk') {
-            Actions.setView('arena');
-        }
+        this.loadNextQuestion();
     },
 
     loadNextQuestion() {
@@ -261,14 +266,18 @@ export const GameEngine = {
     scheduleAutoPlay(text) {
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         if (!text) return;
+        const runId = this.sessionRunId;
+        const delayMs = this.session.currentIndex === 0 ? 0 : 120;
         this.autoPlayHandle = setTimeout(() => {
+            if (runId !== this.sessionRunId) return;
             if (AUDIO_DEBUG) {
                 console.log('[AudioDebug] autoPlay fire', { text, at: Date.now() });
             }
             this.playAudio(text, { dedupeWindowMs: 800 });
-        }, 120);
+            this.autoPlayHandle = null;
+        }, delayMs);
         if (AUDIO_DEBUG) {
-            console.log('[AudioDebug] autoPlay scheduled', { text, delayMs: 120, at: Date.now() });
+            console.log('[AudioDebug] autoPlay scheduled', { text, delayMs, at: Date.now(), runId });
         }
     },
 
@@ -403,13 +412,15 @@ export const GameEngine = {
         }
 
         // Auto advance delay (longer for flipped feedback readability)
-        setTimeout(() => {
+        if (this.advanceHandle) clearTimeout(this.advanceHandle);
+        this.advanceHandle = setTimeout(() => {
             if (this.session.currentIndex < this.session.queue.length - 1) {
                 this.session.currentIndex++;
                 this.loadNextQuestion();
             } else {
                 this.finishSession();
             }
+            this.advanceHandle = null;
         }, this.session.isCorrect ? CORRECT_DELAY_MS : WRONG_DELAY_MS);
     },
 
@@ -444,10 +455,13 @@ export const GameEngine = {
     },
 
     finishSession() {
+        this.sessionRunId += 1;
         if (this.timerHandle) clearInterval(this.timerHandle);
         this.timerHandle = null;
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         this.autoPlayHandle = null;
+        if (this.advanceHandle) clearTimeout(this.advanceHandle);
+        this.advanceHandle = null;
         this._destroyAudio(this.audioContext);
         Actions.setLastSession({
             xp: this.session.sessionXP,
@@ -459,10 +473,13 @@ export const GameEngine = {
     },
 
     quitSession() {
+        this.sessionRunId += 1;
         if (this.timerHandle) clearInterval(this.timerHandle);
         this.timerHandle = null;
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         this.autoPlayHandle = null;
+        if (this.advanceHandle) clearTimeout(this.advanceHandle);
+        this.advanceHandle = null;
         this._destroyAudio(this.audioContext);
         Actions.setView('dashboard');
     },
@@ -570,8 +587,11 @@ export const GameEngine = {
     }
     ,
     stopAudio() {
+        this.sessionRunId += 1;
         if (this.autoPlayHandle) clearTimeout(this.autoPlayHandle);
         this.autoPlayHandle = null;
+        if (this.advanceHandle) clearTimeout(this.advanceHandle);
+        this.advanceHandle = null;
         this._destroyAudio(this.audioContext);
     }
 };

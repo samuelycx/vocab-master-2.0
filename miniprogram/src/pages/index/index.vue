@@ -33,11 +33,8 @@ onMounted(async () => {
       });
     }
 
-    if (GameState.user.openid || GameState.user.id) {
-      Actions.setLogin(true);
-    }
-
-    if (GameState.user.isLoggedIn) {
+    const skipAutoLogin = uni.getStorageSync('vocab_skip_auto_login') === 'true';
+    if (!skipAutoLogin) {
       try {
         const res = await API.login();
         if (LOGIN_DEBUG) {
@@ -60,10 +57,22 @@ onMounted(async () => {
               isProfileSet: GameState.user.isProfileSet
             });
           }
-        } else if (res && res.success === false && res.msg) {
-          uni.showToast({ title: res.msg, icon: 'none' });
+        } else if (res && res.success === false) {
+          Actions.setLogin(false);
+          if (res.code === 'DEVICE_MISMATCH') {
+            Actions.clearUser();
+            uni.setStorageSync('vocab_skip_auto_login', 'true');
+            uni.showModal({
+              title: '登录失败',
+              content: res.msg || '此账号已在其他设备绑定',
+              showCancel: false
+            });
+          } else if (res.msg) {
+            uni.showToast({ title: res.msg, icon: 'none' });
+          }
         }
       } catch (err) {
+        Actions.setLogin(false);
         console.error('Auto-login failed', err);
       }
     }

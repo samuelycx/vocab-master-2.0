@@ -14,6 +14,8 @@ const start = async () => {
         
         if (res && res.success && res.data) {
             Actions.setUser(res.data);
+            Actions.setLogin(true);
+            uni.removeStorageSync('vocab_skip_auto_login');
             uni.setStorageSync('vocab_user', JSON.stringify(res.data));
         }
         

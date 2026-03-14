@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Server, Socket } from 'socket.io';
+import { AuthService } from '../auth/auth.service';
 
 interface Player {
     socketId: string;
@@ -26,22 +27,27 @@ export class PkService {
     // Map socketId to gameId for quick options
     private playerGameMap: Map<string, string> = new Map();
 
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private authService: AuthService,
+    ) { }
 
     setServer(server: Server) {
         this.server = server;
     }
 
-    async joinQueue(client: Socket, user: { id: string, username: string, avatar: string }) {
+    async joinQueue(client: Socket, user: { id?: string, username?: string, avatar?: string, token?: string }) {
+        const resolvedUser = await this.resolvePlayerIdentity(client, user);
+        if (!resolvedUser) return;
         // Prevent double join
-        if (this.queue.find(p => p.userId === user.id)) return;
+        if (this.queue.find(p => p.userId === resolvedUser.id)) return;
         if (this.playerGameMap.has(client.id)) return;
 
         const player: Player = {
             socketId: client.id,
-            userId: user.id,
-            username: user.username,
-            avatar: user.avatar,
+            userId: resolvedUser.id,
+            username: resolvedUser.username,
+            avatar: resolvedUser.avatar,
             score: 0
         };
 
@@ -51,13 +57,42 @@ export class PkService {
         this.checkQueue();
     }
 
-    async createPrivateMatch(client: Socket, user: { id: string, username: string, avatar: string }) {
+    private async resolvePlayerIdentity(client: Socket, user: { id?: string, username?: string, avatar?: string, token?: string }) {
+        const explicitToken = String(user?.token || '').trim();
+        const authToken = explicitToken || String(client.handshake?.auth?.token || '').trim();
+        const authHeader = String(client.handshake?.headers?.authorization || '').trim();
+
+        if (authToken || authHeader) {
+            const authorization = authHeader || `Bearer ${authToken}`;
+            const currentUser = await this.authService.requireUserFromAuthorization(authorization);
+            return {
+                id: currentUser.id,
+                username: currentUser.username,
+                avatar: currentUser.avatar,
+            };
+        }
+
+        if (!user?.id || !user?.username) return null;
+        return {
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar || '🎓',
+        };
+    }
+
+    async createPrivateMatch(
+        client: Socket,
+        user: { id?: string, username?: string, avatar?: string, token?: string },
+    ) {
+        const resolvedUser = await this.resolvePlayerIdentity(client, user);
+        if (!resolvedUser) return null;
+
         const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const player: Player = {
             socketId: client.id,
-            userId: user.id,
-            username: user.username,
-            avatar: user.avatar,
+            userId: resolvedUser.id,
+            username: resolvedUser.username,
+            avatar: resolvedUser.avatar,
             score: 0
         };
 
@@ -75,7 +110,17 @@ export class PkService {
         return inviteCode;
     }
 
-    async joinPrivateMatch(client: Socket, user: { id: string, username: string, avatar: string }, inviteCode: string) {
+    async joinPrivateMatch(
+        client: Socket,
+        user: { id?: string, username?: string, avatar?: string, token?: string },
+        inviteCode: string,
+    ) {
+        const resolvedUser = await this.resolvePlayerIdentity(client, user);
+        if (!resolvedUser) {
+            client.emit('error', { message: 'Unauthorized player' });
+            return;
+        }
+
         const gameId = `private_${inviteCode.toUpperCase()}`;
         const game = this.games.get(gameId);
 
@@ -91,9 +136,9 @@ export class PkService {
 
         const player: Player = {
             socketId: client.id,
-            userId: user.id,
-            username: user.username,
-            avatar: user.avatar,
+            userId: resolvedUser.id,
+            username: resolvedUser.username,
+            avatar: resolvedUser.avatar,
             score: 0
         };
 

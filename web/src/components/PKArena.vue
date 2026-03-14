@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, onUnmounted, ref } from 'vue';
+import { computed, watch, ref, onUnmounted } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { SocketManager } from '../socket.js';
@@ -8,279 +8,335 @@ const session = GameEngine.session;
 const pk = computed(() => GameState.game.pk);
 const user = GameState.user;
 const isSearching = ref(false);
-const isInLobby = ref(true); // Default to lobby when mounting
-const joinCode = ref('');
+const isInLobby = ref(true);
+const isFlipped = ref(false);
 
-const startPK = (mode) => {
-    GameState.game.pk.mode = mode;
-    if (mode === 'bot') {
-        isInLobby.value = false;
-        GameEngine.startPKSession();
-    } else if (mode === 'online') {
-        isInLobby.value = false;
-        isSearching.value = true;
-        SocketManager.joinQueue(user.id, user.username, user.avatar);
-    } else if (mode === 'private') {
-        SocketManager.createPrivateMatch(user);
-    }
-};
-
-const joinPrivate = () => {
-    if (!joinCode.value) return;
-    isInLobby.value = false;
-    isSearching.value = true;
-    SocketManager.joinPrivateMatch(user, joinCode.value);
-};
-
-// Watch for match start
-watch(() => pk.value.isActive, (active) => {
-    if (active) {
-        isInLobby.value = false;
-        isSearching.value = false;
-    }
+const formatTimeLeft = computed(() => {
+  const totalSeconds = Math.max(Number(session.timeLeft) || 0, 0);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 });
 
-// Auto-play audio
+const footerRewardText = computed(() => {
+  if (!session.isAnswered) return '答对获得 XP';
+  return `+${session.lastAwardXP || 0} XP`;
+});
+
 watch(() => session.currentWord, (newWord) => {
-    if (newWord) {
-        GameEngine.playAudio(newWord.word);
-        
-        // Random example masking similar to GameArena
-        if (newWord.examples && newWord.examples.length > 0) {
-            const ex = newWord.examples[Math.floor(Math.random() * newWord.examples.length)];
-            const regex = new RegExp(newWord.word, 'gi');
-            session.currentExample = {
-                original: ex,
-                masked: ex.replace(regex, '______')
-            };
-        } else {
-            session.currentExample = null;
-        }
-    }
+  if (!newWord) return;
+  if (newWord.examples && newWord.examples.length > 0) {
+    const ex = newWord.examples[Math.floor(Math.random() * newWord.examples.length)];
+    const escaped = String(newWord.word || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'gi');
+    session.currentExample = {
+      original: ex,
+      masked: ex.replace(regex, '______')
+    };
+  } else {
+    session.currentExample = null;
+  }
+  isFlipped.value = false;
+  if (pk.value.isActive && !session.isAnswered && session.currentWord?.word) {
+    setTimeout(() => {
+      if (!session.isAnswered) {
+        GameEngine.playAudio(session.currentWord.word);
+      }
+    }, 120);
+  }
 }, { immediate: true });
 
-const handleAnswer = (option) => {
-    GameEngine.submitAnswer(option);
-};
+watch(() => session.isAnswered, (answered) => {
+  if (answered) isFlipped.value = true;
+});
 
-const getOptionClass = (option) => {
-    if (!session.isAnswered) {
-        return 'bg-surface text-color hover:bg-indigo-50 hover:border-indigo-200 transition-all';
+watch(() => pk.value.isActive, (active) => {
+  if (active) {
+    isInLobby.value = false;
+    isSearching.value = false;
+  }
+}, { immediate: true });
+
+const startPK = (mode) => {
+  GameState.game.pk.mode = mode;
+  if (mode === 'bot') {
+    isInLobby.value = false;
+    GameEngine.startPKSession();
+    return;
+  }
+  if (mode === 'online') {
+    isInLobby.value = false;
+    isSearching.value = true;
+    try {
+      SocketManager.joinQueue();
+    } catch (err) {
+      console.error('Failed to join queue:', err);
+      isSearching.value = false;
+      alert('连接对战服务失败');
     }
-
-    // 1. Correct Option (Always Green)
-    if (option === session.correctOption) {
-        return 'bg-green-500 text-white border-green-600 shadow-[0_4px_0_0_#15803d] translate-y-1 z-20';
-    }
-
-    // 2. User Selected Wrong Option (Red)
-    if (option === session.selectedOption && option !== session.correctOption) {
-        return 'bg-rose-500 text-white border-rose-600 shadow-[0_4px_0_0_#be123c] translate-y-1 z-20';
-    }
-
-    // 3. Other distractors (Faded)
-    return 'bg-white dark:bg-slate-800 text-slate-300 dark:text-slate-600 pointer-events-none opacity-50';
+  }
 };
 
 const quitPK = () => {
-    // Clear bot interval just in case
-    if (GameEngine.botInterval) clearInterval(GameEngine.botInterval);
-    SocketManager.disconnect();
-    isSearching.value = false;
-    isInLobby.value = true; // Return to lobby first? Or dashboard?
-    Actions.setView('dashboard');
+  if (GameEngine.botInterval) clearInterval(GameEngine.botInterval);
+  GameEngine.quitSession();
+  SocketManager.disconnect();
+  isSearching.value = false;
+  isInLobby.value = true;
+  Actions.setView('dashboard');
 };
 
 const playAgain = () => {
-    isInLobby.value = true; // Go back to lobby to choose mode
-    // Or restart same mode? Let's go to lobby.
+  GameState.game.pk.winner = null;
+  GameState.game.pk.endReason = null;
+  isInLobby.value = true;
+  isSearching.value = false;
 };
 
+const handleAnswer = (option) => {
+  GameEngine.submitAnswer(option);
+};
+
+const getOptionClass = (option) => {
+  if (!session.isAnswered) return 'option-default';
+  if (option === session.correctOption) return 'option-correct';
+  if (option === session.selectedOption && option !== session.correctOption) return 'option-wrong';
+  return 'option-faded';
+};
+
+const WIN_SCORE = 200;
+
 onUnmounted(() => {
-    if (GameEngine.botInterval) clearInterval(GameEngine.botInterval);
+  SocketManager.disconnect();
 });
-
-// Max score for progress bars
-const WIN_SCORE = 200; 
-
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col w-full h-full relative overflow-hidden bg-background transition-colors">
-        
-        <!-- PK Header / HUD -->
-        <div class="p-4 md:p-6 pb-2 z-20">
-            <div class="flex justify-between items-end gap-4 max-w-4xl mx-auto mb-2">
-                <!-- User Side -->
-                <div class="flex-1 flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-full bg-surface border border-slate-100 dark:border-white/5 flex items-center justify-center text-xl shadow-inner">
-                            {{ user.avatar }}
-                        </div>
-                        <div class="font-black text-text-main truncate text-sm md:text-base">
-                            {{ user.username }}
-                        </div>
-                    </div>
-                    <!-- User Bar -->
-                    <div class="h-4 w-full bg-secondary rounded-full overflow-hidden border border-transparent relative">
-                        <div 
-                            class="h-full bg-primary transition-all duration-500 ease-out relative" 
-                            :style="{ width: `${Math.min((pk.userScore / WIN_SCORE) * 100, 100)}%` }"
-                        >
-                            <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
-                        </div>
-                    </div>
-                    <div class="text-right font-black text-primary text-sm">{{ pk.userScore }}</div>
-                </div>
+  <div class="pk-page">
+    <header class="pk-header">
+      <button class="back-btn" @click="quitPK"><span class="back-icon">←</span></button>
+      <div class="pk-title">PK 竞技场</div>
+      <div class="placeholder"></div>
+    </header>
 
-                <!-- VS Badge -->
-                <div class="mb-6 shrink-0">
-                    <div class="w-12 h-12 rounded-full bg-slate-800 text-white font-black flex items-center justify-center text-xl shadow-lg border-4 border-white dark:border-slate-800 italic transform -rotate-12">
-                        VS
-                    </div>
-                </div>
+    <section v-if="isInLobby" class="lobby">
+      <div class="lobby-title">选择挑战模式</div>
+      <div class="lobby-sub">匹配真人，或先和 AI 练练手</div>
 
-                <!-- Opponent Side (Bot or Human) -->
-                <div class="flex-1 flex flex-col gap-2 items-end">
-                    <div class="flex items-center gap-2 flex-row-reverse">
-                        <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-xl shadow-inner border border-white dark:border-slate-600">
-                            {{ pk.opponent?.avatar || '👤' }}
-                        </div>
-                        <div class="font-black text-text-main truncate text-sm md:text-base">
-                            {{ pk.opponent?.name || '等待中...' }}
-                        </div>
-                    </div>
-                    <!-- Opponent Bar -->
-                    <div class="h-4 w-full bg-secondary rounded-full overflow-hidden border border-transparent relative">
-                        <div 
-                            class="h-full bg-rose-500 transition-all duration-500 ease-out relative" 
-                            :style="{ width: `${Math.min(((pk.opponent?.score || 0) / WIN_SCORE) * 100, 100)}%` }"
-                        ></div>
-                    </div>
-                    <div class="text-left font-black text-rose-500 text-sm">{{ pk.opponent?.score || 0 }}</div>
-                </div>
-            </div>
+      <div class="mode-cards">
+        <button class="mode-card ranked" @click="startPK('online')">
+          <div class="mode-icon">🏆</div>
+          <div class="mode-info">
+            <div class="mode-name">排位对战</div>
+            <div class="mode-desc">与真实玩家实时对决</div>
+          </div>
+          <div class="mode-arrow">→</div>
+        </button>
+
+        <button class="mode-card practice" @click="startPK('bot')">
+          <div class="mode-icon practice-icon">🤖</div>
+          <div class="mode-info">
+            <div class="mode-name">人机练习</div>
+            <div class="mode-desc">先和 Vocab Bot 热身一轮</div>
+          </div>
+          <div class="mode-arrow">→</div>
+        </button>
+      </div>
+    </section>
+
+    <section v-else-if="isSearching" class="searching">
+      <div class="search-ring"><div class="search-icon">⟳</div></div>
+      <div class="search-title">正在匹配对手</div>
+      <div class="search-sub">请稍等，我们正在寻找水平接近的玩家</div>
+      <button class="cancel-btn" @click="quitPK">取消匹配</button>
+    </section>
+
+    <section v-else-if="pk.isActive" class="pk-battle">
+      <div class="score-board">
+        <div class="player me">
+          <div class="player-avatar">{{ user.username?.[0] || '我' }}</div>
+          <div class="player-meta">
+            <div class="player-name">{{ user.username || '我' }}</div>
+            <div class="player-score">{{ pk.userScore }}</div>
+          </div>
         </div>
-
-        <!-- Game Content -->
-        <div class="flex-1 flex flex-col p-4 md:p-6 max-w-3xl mx-auto w-full justify-center relative z-10">
-            
-            <!-- Result Overlay -->
-            <div v-if="pk.winner" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm animate-fade-in p-8 text-center rounded-3xl">
-                <div class="text-8xl mb-6 animate-bounce">
-                    {{ pk.winner === 'user' ? '🏆' : '💀' }}
-                </div>
-                <h2 class="text-4xl md:text-6xl font-black mb-4 uppercase tracking-tighter" :class="pk.winner === 'user' ? 'text-indigo-500' : 'text-slate-500'">
-                    {{ pk.winner === 'user' ? '胜利!' : '失败' }}
-                </h2>
-                <p class="text-slate-500 dark:text-slate-400 text-xl font-bold mb-10 max-w-md">
-                    <span v-if="pk.endReason === 'disconnect'" class="block text-rose-500 mb-2">
-                        {{ pk.winner === 'user' ? '对手已断开连接' : '连接已断开' }}
-                    </span>
-                    {{ pk.winner === 'user' ? '恭喜! 你击败了挑战者!' : '挑战失败，别灰心，再试一次!' }}
-                </p>
-                <div class="flex flex-col gap-4 w-full max-w-xs">
-                    <button @click="playAgain" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 active:scale-95 transition-transform">
-                        再去一次
-                    </button>
-                    <button @click="quitPK" class="w-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-4 rounded-xl active:scale-95 transition-transform">
-                        回到主页
-                    </button>
-                </div>
-            </div>
-
-            <!-- Lobby / Mode Selection -->
-            <div v-if="isInLobby" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background p-8 text-center transition-colors">
-                 <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600 mb-2">PK 竞技场</h1>
-                 <p class="text-slate-500 dark:text-slate-400 text-xl font-bold mb-12">选择你的挑战模式</p>
-                 
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                     <!-- Practice Mode -->
-                     <button @click="startPK('bot')" class="group relative overflow-hidden bg-surface rounded-[2rem] p-8 hover:border-primary border border-transparent shadow-sm transition-all text-left">
-                         <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                         <div class="text-6xl mb-4">🤖</div>
-                         <h3 class="text-2xl font-black text-text-main mb-2">人机练习</h3>
-                         <p class="text-text-muted font-bold">与 Vocab Bot 切磋技艺</p>
-                     </button>
-                     
-                     <!-- Ranked Mode -->
-                     <button @click="startPK('online')" class="group relative overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 p-8 rounded-[2rem] text-white transition-all shadow-xl hover:shadow-rose-500/30 hover:-translate-y-1 text-left">
-                         <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                         <div class="text-6xl mb-4 text-white drop-shadow-md">🏆</div>
-                         <h3 class="text-2xl font-black mb-2">排位对战</h3>
-                         <p class="text-rose-100 font-bold">与真实玩家实时对决</p>
-                     </button>
-                 </div>
-                 
-                 <button @click="quitPK" class="mt-12 text-slate-400 font-bold hover:text-slate-600 dark:hover:text-slate-300">返回主页</button>
-            </div>
-
-            <!-- Searching Overlay -->
-            <div v-else-if="isSearching" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-sm p-8 text-center rounded-3xl">
-                <div class="w-24 h-24 mb-6 border-4 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
-                <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-2">寻找对手中...</h2>
-                <button @click="quitPK" class="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-bold">取消</button>
-            </div>
-
-            <!-- Normal Gameplay Interface (Hidden if winner) -->
-            <div v-else class="w-full h-full flex flex-col justify-center">
-                 <!-- Word Card -->
-                <div class="bg-surface rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 p-6 md:p-10 mb-6 md:mb-10 text-center relative animate-float w-full">
-                    <h2 class="text-3xl md:text-5xl font-black text-text-main mb-2 break-words">{{ session.currentWord?.word }}</h2>
-                    <div class="flex items-center justify-center gap-3">
-                        <span v-if="session.currentWord?.partOfSpeech" class="text-text-muted font-bold text-base md:text-lg italic">{{ session.currentWord?.partOfSpeech }}</span>
-                        <div class="text-text-muted font-mono text-base md:text-lg bg-secondary inline-block px-3 py-1 rounded-lg">
-                            {{ session.currentWord?.phonetic || '/.../' }}
-                        </div>
-                    </div>
-
-                    <!-- Example Context -->
-                    <div v-if="session.currentExample" class="mt-4 md:mt-8 mb-2">
-                        <p class="text-text-muted text-base md:text-xl font-medium italic transition-all duration-300 leading-relaxed">
-                            "{{ (session.isAnswered || session.isCorrect) ? session.currentExample.original : session.currentExample.masked }}"
-                        </p>
-                    </div>
-
-                    <!-- Volume Icon -->
-                    <button class="absolute top-2 right-2 md:top-4 md:right-4 text-text-muted hover:text-primary active:scale-95 transition-colors p-3" @click="GameEngine.playAudio(session.currentWord?.word)">
-                        <i class="fas fa-volume-up text-xl md:text-2xl"></i>
-                    </button>
-                    
-                    <!-- Feedback Overlay -->
-                     <transition enter-active-class="animate-success">
-                        <div v-if="session.isAnswered && session.isCorrect" class="absolute inset-0 flex items-center justify-center pointer-events-none rounded-3xl overflow-hidden z-10">
-                             <div class="text-6xl md:text-9xl text-green-500 opacity-20"><i class="fas fa-check"></i></div>
-                        </div>
-                     </transition>
-                     <transition enter-active-class="animate-shake">
-                        <div v-if="session.isAnswered && !session.isCorrect" class="absolute inset-0 flex items-center justify-center pointer-events-none rounded-3xl overflow-hidden z-10">
-                             <div class="text-6xl md:text-9xl text-rose-500 opacity-20"><i class="fas fa-times"></i></div>
-                        </div>
-                     </transition>
-                </div>
-
-                <!-- Options Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button 
-                        v-for="(option, idx) in session.options" 
-                        :key="idx"
-                        @click="handleAnswer(option)"
-                        class="p-6 rounded-2xl font-bold text-lg shadow-sm border-2 transition-all active:scale-95 text-left relative overflow-hidden group flex items-center gap-3"
-                        :class="getOptionClass(option)"
-                        :disabled="session.isAnswered"
-                    >
-                         <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-secondary flex items-center justify-center text-xs md:text-sm text-primary font-bold group-hover:bg-primary group-hover:text-surface transition-colors shrink-0">
-                            {{ String.fromCharCode(65 + idx) }}
-                        </div>
-                        <div class="relative z-10 flex-1">{{ option }}</div>
-                    </button>
-                </div>
-            </div>
-            
-            <button @click="quitPK" v-if="!pk.winner" class="mt-8 text-slate-400 dark:text-slate-500 text-sm font-bold hover:text-rose-500 transition-colors">
-                退出对战
-            </button>
-
+        <div class="vs-badge">VS</div>
+        <div class="player opponent">
+          <div class="player-meta align-right">
+            <div class="player-name">{{ pk.opponent?.name || 'AI' }}</div>
+            <div class="player-score">{{ pk.opponent?.score || 0 }}</div>
+          </div>
+          <div class="player-avatar opponent-avatar">{{ pk.opponent?.name?.[0] || 'A' }}</div>
         </div>
+      </div>
+
+      <div class="battle-bars">
+        <div class="battle-bar"><div class="battle-fill left" :style="{ width: Math.min((pk.userScore / WIN_SCORE) * 100, 100) + '%' }"></div></div>
+        <div class="battle-bar"><div class="battle-fill right" :style="{ width: Math.min(((pk.opponent?.score || 0) / WIN_SCORE) * 100, 100) + '%' }"></div></div>
+      </div>
+
+      <div class="pkb-card-wrap">
+        <div class="pkb-card" :class="{ flipped: isFlipped }">
+          <div class="pkb-card-face pkb-card-front">
+            <div class="pkb-word">{{ session.currentWord?.word }}</div>
+            <div class="pkb-example">{{ session.currentExample?.masked || '暂无例句' }}</div>
+          </div>
+
+          <div class="pkb-card-face pkb-card-back">
+            <div class="pkb-result-label">答题结果</div>
+            <div class="pkb-result-icon">{{ session.isCorrect ? '✓' : '✗' }}</div>
+            <div class="pkb-result-text">{{ session.isCorrect ? '回答正确' : '回答错误' }}</div>
+            <div class="pkb-meaning">{{ session.currentWord?.meanings?.[0] || session.correctOption }}</div>
+            <div class="pkb-divider"></div>
+            <div v-if="session.isCorrect" class="pkb-rewards">
+              <span class="pkb-reward">+{{ session.lastAwardXP || 0 }} XP</span>
+              <span class="pkb-reward">+{{ session.lastAwardCoins || 0 }} Coin</span>
+            </div>
+            <div v-else class="pkb-result-hint">记住正确释义，下一题追回来。</div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="!isFlipped && !session.isAnswered" class="pkb-ops">
+        <div class="pkb-row">
+          <button
+            v-for="(option, idx) in session.options.slice(0, 2)"
+            :key="idx"
+            class="pkb-op-btn"
+            :class="getOptionClass(option)"
+            @click="handleAnswer(option)"
+          >
+            <span class="pkb-op-index">{{ String.fromCharCode(65 + idx) }}</span>
+            <span class="pkb-op-text">{{ option }}</span>
+          </button>
+        </div>
+        <div class="pkb-row">
+          <button
+            v-for="(option, idx) in session.options.slice(2, 4)"
+            :key="idx + 2"
+            class="pkb-op-btn"
+            :class="getOptionClass(option)"
+            @click="handleAnswer(option)"
+          >
+            <span class="pkb-op-index">{{ String.fromCharCode(67 + idx) }}</span>
+            <span class="pkb-op-text">{{ option }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pkb-foot">
+        <span class="pkb-foot-left">剩余 {{ formatTimeLeft }}</span>
+        <span class="pkb-foot-right">{{ footerRewardText }}</span>
+      </div>
+    </section>
+
+    <div v-if="pk.winner" class="result-overlay">
+      <div class="confetti-container">
+        <span v-for="i in 20" :key="i" class="confetti" :style="{ left: Math.random() * 100 + '%', animationDelay: Math.random() * 2 + 's' }"></span>
+      </div>
+      <div class="result-card" :class="{ winner: pk.winner === 'user' }">
+        <div class="result-icon">{{ pk.winner === 'user' ? '🏆' : '⚔️' }}</div>
+        <div class="result-title">{{ pk.winner === 'user' ? '你赢了' : '本轮惜败' }}</div>
+        <div class="result-score">{{ pk.userScore }} - {{ pk.opponent?.score || 0 }}</div>
+        <div class="result-desc">{{ pk.winner === 'user' ? '这场对局打得很稳，继续保持。' : '差一点就翻盘了，再来一局。' }}</div>
+        <div class="result-actions">
+          <button class="btn-primary" @click="playAgain">再来一局</button>
+          <button class="btn-secondary" @click="quitPK">回到首页</button>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
+
+<style scoped>
+.pk-page {
+  min-height: 100vh;
+  background: #f6f1e8;
+  padding: calc(env(safe-area-inset-top, 0px) + 88px) 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+.pk-header { display: flex; align-items: center; justify-content: space-between; min-height: 56px; }
+.back-btn, .placeholder { width: 44px; height: 44px; }
+.back-btn { border: none; border-radius: 999px; background: #fff; }
+.back-icon { font-size: 22px; font-weight: 600; }
+.pk-title { font-size: 28px; font-weight: 700; color: #111; }
+.lobby { flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 24px; }
+.lobby-title { font-size: 24px; font-weight: 700; color: #111; text-align: center; }
+.lobby-sub { font-size: 14px; color: #6b7280; text-align: center; margin-bottom: 8px; }
+.mode-cards { display: flex; flex-direction: column; gap: 12px; }
+.mode-card { border: none; border-radius: 28px; padding: 18px; display: flex; align-items: center; gap: 12px; min-height: 94px; text-align: left; box-shadow: 0 14px 26px rgba(17,17,17,.06); }
+.mode-card.ranked { background: #1a1a1a; color: #fff; }
+.mode-card.practice { background: #fff; color: #111; }
+.mode-icon { width: 52px; height: 52px; border-radius: 18px; background: rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size: 24px; }
+.practice-icon { background: #f5f5f5; }
+.mode-info { flex: 1; }
+.mode-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.mode-desc { font-size: 14px; opacity: .7; }
+.mode-arrow { font-size: 22px; font-weight: 700; }
+.searching { flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.search-ring { width: 120px; height: 120px; border: 5px solid rgba(255,255,255,.12); border-top-color: white; border-radius: 999px; display:flex; align-items:center; justify-content:center; animation: spin 1.4s linear infinite; margin-bottom: 20px; }
+.search-icon { font-size: 34px; }
+.search-title { font-size: 26px; font-weight: 800; color: #111827; margin-bottom: 8px; }
+.search-sub { font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 24px; }
+.cancel-btn { width: 100%; max-width: 320px; min-height: 58px; border-radius: 24px; border:none; background:#6e58d9; color:white; font-size:18px; font-weight:700; }
+.pk-battle { flex: 1; display:flex; flex-direction:column; gap: 12px; }
+.score-board { display:flex; align-items:center; justify-content:space-between; gap: 12px; background:#fff; border:1px solid #ebe4da; border-radius: 18px; padding: 14px; box-shadow: 0 12px 24px rgba(17,17,17,.04); }
+.player { flex: 1; display:flex; align-items:center; gap: 10px; }
+.player.opponent { justify-content: flex-end; }
+.player-meta { display:flex; flex-direction:column; gap: 2px; }
+.align-right { text-align: right; }
+.player-avatar { width: 42px; height: 42px; border-radius: 999px; background:#dcd3ff; display:flex; align-items:center; justify-content:center; font-size: 18px; font-weight: 700; color:#111; }
+.opponent-avatar { background:#fcecc7; }
+.player-name { font-size: 15px; font-weight: 700; color:#111; }
+.player-score { font-size: 22px; font-weight: 800; color:#111; }
+.vs-badge { width: 44px; height: 44px; border-radius: 999px; background:#111; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; }
+.battle-bars { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.battle-bar { height: 12px; background:#e8e1d7; border-radius: 999px; overflow:hidden; }
+.battle-fill { height: 100%; border-radius: 999px; }
+.battle-fill.left { background:#6f58d9; }
+.battle-fill.right { background:#ff8a5b; }
+.pkb-card-wrap { perspective: 1200px; }
+.pkb-card { position: relative; min-height: 320px; transform-style: preserve-3d; transition: transform .55s ease; }
+.pkb-card.flipped { transform: rotateY(180deg); }
+.pkb-card-face { position:absolute; inset:0; border-radius: 32px; backface-visibility: hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 24px; text-align:center; }
+.pkb-card-front { background:#f6e8c5; box-shadow: 0 18px 34px rgba(17,17,17,.06); }
+.pkb-card-back { background:#fff; transform: rotateY(180deg); box-shadow: 0 18px 34px rgba(17,17,17,.06); }
+.pkb-word { font-size: 54px; font-weight: 700; color:#111; font-family: var(--font-serif, Georgia, serif); margin-bottom: 20px; }
+.pkb-example { font-size: 18px; line-height: 1.6; color:#616161; }
+.pkb-result-label { font-size: 14px; color:#8d8694; font-weight: 700; margin-bottom: 12px; }
+.pkb-result-icon { font-size: 44px; margin-bottom: 8px; }
+.pkb-result-text { font-size: 28px; font-weight: 800; color:#111; margin-bottom: 8px; }
+.pkb-meaning { font-size: 18px; color:#5c5867; margin-bottom: 16px; }
+.pkb-divider { width: 100%; height: 1px; background:#efe8de; margin-bottom: 16px; }
+.pkb-rewards { display:flex; gap: 10px; flex-wrap: wrap; justify-content:center; }
+.pkb-reward { padding: 6px 10px; border-radius: 999px; background:#f4efe7; font-size: 14px; font-weight: 700; color:#111; }
+.pkb-result-hint { font-size: 14px; color:#918b95; }
+.pkb-ops { display:flex; flex-direction:column; gap: 12px; }
+.pkb-row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pkb-op-btn { min-height: 92px; border-radius: 24px; border: none; padding: 16px; display:flex; align-items:flex-start; gap: 10px; text-align:left; box-shadow: 0 12px 20px rgba(17,17,17,.04); }
+.pkb-op-index { width: 30px; height: 30px; border-radius: 10px; background:#f5f3ef; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:#6f58d9; flex-shrink:0; }
+.pkb-op-text { font-size: 17px; font-weight: 700; color:#111; line-height: 1.4; }
+.option-default { background:#fff; }
+.option-correct { background:#a8f0c6; }
+.option-wrong { background:#ffb5d0; }
+.option-faded { background:#ede7dd; opacity:.72; }
+.pkb-foot { margin-top: auto; display:flex; justify-content:space-between; align-items:center; padding: 14px 18px; border-radius: 18px; background:#111; color:#fff; font-size: 14px; font-weight: 700; }
+.result-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(13, 13, 13, .18); backdrop-filter: blur(6px); display:flex; align-items:center; justify-content:center; padding: 20px; }
+.result-card { width: 100%; max-width: 360px; border-radius: 28px; background:#fff; padding: 24px; display:flex; flex-direction:column; align-items:center; text-align:center; gap: 12px; position:relative; z-index: 2; }
+.result-card.winner { background:#fff9f1; }
+.result-icon { font-size: 44px; }
+.result-title { font-size: 30px; font-weight: 800; color:#111; }
+.result-score { font-size: 34px; font-weight: 800; color:#6f58d9; }
+.result-desc { font-size: 15px; line-height: 1.6; color:#5c5867; }
+.result-actions { width: 100%; display:flex; flex-direction:column; gap: 10px; }
+.btn-primary, .btn-secondary { width: 100%; min-height: 54px; border-radius: 20px; border:none; font-size:18px; font-weight:700; }
+.btn-primary { background:#6f58d9; color:white; }
+.btn-secondary { background:#efe7dd; color:#111; }
+.confetti-container { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.confetti { position:absolute; top:-20px; width: 10px; height: 18px; background:#a8f0c6; animation: fall 2.2s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fall { from { transform: translateY(-30px) rotate(0deg); opacity: 1; } to { transform: translateY(100vh) rotate(240deg); opacity: 0; } }
+</style>

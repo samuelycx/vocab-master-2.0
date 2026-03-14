@@ -17,9 +17,11 @@ class SocketManagerClass {
             ? 'http://localhost:3000/pk'
             : '/pk');
 
+        const token = localStorage.getItem('vocab_token');
         this.socket = io(url, {
             transports: ['websocket'],
-            autoConnect: true
+            autoConnect: true,
+            auth: token ? { token } : {},
         });
 
         this.socket.on("connect", () => {
@@ -58,9 +60,10 @@ class SocketManagerClass {
         });
     }
 
-    joinQueue(id, username, avatar) {
+    joinQueue() {
         if (!this.socket) this.connect();
-        this.socket.emit("join_queue", { id, username, avatar });
+        const token = localStorage.getItem('vocab_token');
+        this.socket.emit("join_queue", { token });
     }
 
     leaveQueue() {
@@ -72,6 +75,24 @@ class SocketManagerClass {
             // For now, disconnect or ignore.
             this.socket.disconnect();
         }
+    }
+
+    disconnect() {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+    }
+
+    createPrivateMatch() {
+        if (!this.socket) this.connect();
+        const token = localStorage.getItem('vocab_token');
+        this.socket.emit("create_private", { token });
+    }
+
+    joinPrivateMatch(inviteCode) {
+        if (!this.socket) this.connect();
+        const token = localStorage.getItem('vocab_token');
+        this.socket.emit("join_private", { token, inviteCode });
     }
 
     updateScore(score, gameId) {
