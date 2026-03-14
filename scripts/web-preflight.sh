@@ -7,8 +7,8 @@ echo "== Web Preflight =="
 echo "Root: $ROOT_DIR"
 
 echo
-echo "== Client tests =="
-cd "$ROOT_DIR/client"
+echo "== Web tests =="
+cd "$ROOT_DIR/web"
 npm test -- \
   src/App.spec.js \
   src/auth-session.spec.js \
@@ -23,7 +23,7 @@ npm test -- \
   src/socket.spec.js
 
 echo
-echo "== Client build =="
+echo "== Web build =="
 npm run build
 
 echo
@@ -40,4 +40,3 @@ env PATH=/usr/local/bin:$PATH npm run build
 
 echo
 echo "== Preflight complete =="
-

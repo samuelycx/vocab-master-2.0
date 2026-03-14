@@ -23,7 +23,7 @@ cd server
 # 创建默认 .env 文件 (如果不存在)
 if [ ! -f .env ]; then
   echo "📄 Creating default .env file..."
-  echo 'DATABASE_URL="file:./dev.db"' > .env
+  echo 'DATABASE_URL="file:./prisma/prod.db"' > .env
 fi
 
 npm install
@@ -50,12 +50,12 @@ fi
 cd "$(dirname "$0")/.."
 
 # 使用 pm2 启动/重启 (显式指定工作目录)
-pm2 stop "vocab-master" 2>/dev/null || true
-pm2 start server/dist/src/main.js --name "vocab-master" --cwd "$(pwd)"
+pm2 delete "vocab-master-web" 2>/dev/null || true
+pm2 start server/ecosystem.config.cjs --only "vocab-master-web"
 
 echo "--------------------------------------------------"
 echo "✅ Deployment Complete! (部署完成)"
 echo "🚀 Application is running in the background via PM2."
-echo "📍 Access your app at: http://your-server-ip:3000"
-echo "💡 Use 'pm2 logs vocab-master' to see logs if you face issues."
+echo "📍 Access your app at: http://your-server-ip:3001"
+echo "💡 Use 'pm2 logs vocab-master-web' to see logs if you face issues."
 echo "--------------------------------------------------"
