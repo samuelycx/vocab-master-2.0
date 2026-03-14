@@ -9,7 +9,7 @@ sleep 2
 
 # 2. 删除编译输出
 echo "2. 删除编译输出..."
-cd /Users/samuelying/程序/02-项目/vocab-master-2.0/client-uni
+cd /Users/samuelying/程序/02-项目/vocab-master-2.0/miniprogram
 rm -rf dist/dev/mp-weixin
 rm -rf dist/build/mp-weixin
 rm -rf node_modules/.cache
@@ -28,6 +28,6 @@ echo ""
 echo "现在请在微信开发者工具中："
 echo "1. 关闭项目"
 echo "2. 重新打开项目"
-echo "3. 导入目录：/Users/samuelying/程序/02-项目/vocab-master-2.0/client-uni/dist/dev/mp-weixin"
+echo "3. 导入目录：/Users/samuelying/程序/02-项目/vocab-master-2.0/miniprogram/dist/dev/mp-weixin"
 echo "4. 点击 '工具' -> '清缓存' -> '清除全部'"
 echo "5. 刷新模拟器 (Cmd + R)"

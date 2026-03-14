@@ -17,13 +17,13 @@ Set the default number of words per learning session to 30 across the mini‑pro
 Introduce a single shared constant `DEFAULT_LEARN_COUNT = 30` and use it wherever the default count or daily goal is currently hardcoded as 10. This ensures consistency and future changes require only a single edit.
 
 ## Affected Files (expected)
-- `client-uni/src/constants.js` (new)
-- `client-uni/src/api.js`
-- `client-uni/src/engine.js`
-- `client-uni/src/components/Dashboard.vue`
-- `client-uni/src/components/Dashboard.v2-control-center.vue`
-- `client-uni/src/components/Result.vue`
-- `client-uni/src/components/Dashboard.v1-stitch.vue`
+- `miniprogram/src/constants.js` (new)
+- `miniprogram/src/api.js`
+- `miniprogram/src/engine.js`
+- `miniprogram/src/components/Dashboard.vue`
+- `miniprogram/src/components/Dashboard.v2-control-center.vue`
+- `miniprogram/src/components/Result.vue`
+- `miniprogram/src/components/Dashboard.v1-stitch.vue`
 
 ## Data Flow
 - `DEFAULT_LEARN_COUNT` is imported by API/engine and UI components.

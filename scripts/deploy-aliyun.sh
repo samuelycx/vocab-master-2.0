@@ -11,7 +11,7 @@ git pull origin main
 
 # 2. Build Frontend
 echo "🎨 Building Frontend..."
-cd client
+cd web
 npm install
 npm run build
 cd ..

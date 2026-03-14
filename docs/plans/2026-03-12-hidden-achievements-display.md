@@ -13,7 +13,7 @@
 ### Task 1: Add hidden achievements filter
 
 **Files:**
-- Modify: `/Users/samuelying/程序/02-项目/vocab-master-2.0/client-uni/src/components/AchievementWall.vue`
+- Modify: `/Users/samuelying/程序/02-项目/vocab-master-2.0/miniprogram/src/components/AchievementWall.vue`
 
 **Step 1: Write the failing test**
 
@@ -38,7 +38,7 @@ Skip.
 **Step 5: Commit**
 
 ```bash
-git add client-uni/src/components/AchievementWall.vue
+git add miniprogram/src/components/AchievementWall.vue
 git commit -m "feat: hide special achievements until unlocked"
 ```
 
@@ -51,7 +51,7 @@ git commit -m "feat: hide special achievements until unlocked"
 
 Run:
 ```bash
-cd /Users/samuelying/程序/02-项目/vocab-master-2.0/client-uni
+cd /Users/samuelying/程序/02-项目/vocab-master-2.0/miniprogram
 env PATH=/usr/local/bin:$PATH npm run -s build:mp-weixin
 ```
 Expected: Build complete.

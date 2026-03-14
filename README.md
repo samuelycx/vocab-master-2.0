@@ -39,7 +39,7 @@ A modern, gamified vocabulary learning application built with **NestJS**, **Vue 
     npm install
     
     # Intall Frontend
-    cd ../client
+    cd ../web
     npm install
     ```
 
@@ -66,7 +66,7 @@ A modern, gamified vocabulary learning application built with **NestJS**, **Vue 
 
 2.  **Start the Frontend**:
     ```bash
-    cd client
+    cd web
     npm run dev
     ```
     Frontend will typically run on `http://localhost:5173`.

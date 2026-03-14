@@ -4,7 +4,7 @@
 将小程序 Dashboard 页面与 Pencil 文件中的 `Dashboard Concept V2 - Next` 进行像素级对齐，作为唯一真值来源。范围仅限 Dashboard 单页。
 
 ## 范围
-- 仅修改 `client-uni/src/components/Dashboard.vue`
+- 仅修改 `miniprogram/src/components/Dashboard.vue`
 - 不修改其他页面、不改业务逻辑
 
 ## 设计规范（真值来源：Pencil）

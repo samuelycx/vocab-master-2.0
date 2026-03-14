@@ -15,7 +15,7 @@ Hide two special achievements (spec_night, spec_morning) when they are not unloc
 Apply a front-end filter in `AchievementWall.vue` to exclude the two hidden achievements when they are locked. Once unlocked, they should appear normally in the SPECIAL category.
 
 ## Affected Files
-- `client-uni/src/components/AchievementWall.vue`
+- `miniprogram/src/components/AchievementWall.vue`
 
 ## Data Flow
 - Compute `visibleAchievements` from `GameState.system.achievements`.
