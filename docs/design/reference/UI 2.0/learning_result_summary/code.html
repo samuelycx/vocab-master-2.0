@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Learning Result Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2badee",
+                        "primary-content": "#ffffff",
+                        "primary-light": "#d5effb",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c35",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(43, 173, 238, 0.15)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Confetti Pattern for Background */
+        .bg-confetti {
+            background-image: radial-gradient(#2badee 1px, transparent 1px), radial-gradient(#2badee 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            opacity: 0.1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display antialiased flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Decorative Background Elements -->
+<div class="absolute inset-0 bg-confetti pointer-events-none"></div>
+<div class="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+<!-- Main Container (Mobile Form Factor) -->
+<main class="w-full max-w-md h-full flex flex-col p-6 relative z-10">
+<!-- Header Section -->
+<header class="text-center mt-8 mb-8 animate-fade-in-down">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 ring-4 ring-primary/5">
+<span class="material-icons-round text-4xl">emoji_events</span>
+</div>
+<h1 class="font-serif text-4xl md:text-5xl font-bold text-gray-900 dark:text-white italic tracking-tight mb-2">Excellent!</h1>
+<p class="text-gray-500 dark:text-gray-400 font-medium">Session Complete</p>
+</header>
+<!-- Result Card -->
+<div class="flex-1 flex flex-col justify-center">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft p-8 border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
+<!-- Decorative Top Gradient inside card -->
+<div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-blue-400 to-primary"></div>
+<!-- Level Progress Section -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex flex-col">
+<span class="text-xs uppercase tracking-wider font-bold text-gray-400">Current Level</span>
+<span class="text-2xl font-bold text-gray-900 dark:text-white">Level 5</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 shadow-lg flex items-center justify-center text-white font-bold text-lg ring-4 ring-white dark:ring-surface-dark">
+                        5
+                    </div>
+</div>
+<!-- Progress Bar -->
+<div class="mb-8">
+<div class="flex justify-between text-sm mb-2 font-medium">
+<span class="text-primary">Master</span>
+<span class="text-gray-400">Next: Lvl 6</span>
+</div>
+<div class="h-3 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[75%] shadow-[0_0_10px_rgba(43,173,238,0.5)]"></div>
+</div>
+<p class="text-xs text-right mt-2 text-gray-400">350 XP to next level</p>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 gap-4">
+<!-- XP Stat -->
+<div class="bg-background-light dark:bg-background-dark p-4 rounded-xl flex flex-col items-center justify-center border border-transparent hover:border-primary/20 transition-colors">
+<div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2">
+<span class="material-icons-round text-sm">bolt</span>
+</div>
+<span class="text-2xl font-bold text-gray-900 dark:text-white">+150</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">XP Gained</span>
+</div>
+<!-- Coins Stat -->
+<div class="bg-background-light dark:bg-background-dark p-4 rounded-xl flex flex-col items-center justify-center border border-transparent hover:border-yellow-400/20 transition-colors">
+<div class="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center mb-2">
+<span class="material-icons-round text-sm">monetization_on</span>
+</div>
+<span class="text-2xl font-bold text-gray-900 dark:text-white">+25</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Coins</span>
+</div>
+<!-- Words Stat (Full Width) -->
+<div class="col-span-2 bg-background-light dark:bg-background-dark p-4 rounded-xl flex items-center justify-between px-6 border border-transparent hover:border-primary/20 transition-colors">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+<span class="material-icons-round text-sm">check_circle</span>
+</div>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Words Reviewed</span>
+</div>
+<span class="text-2xl font-bold text-gray-900 dark:text-white">12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-8 mb-6 space-y-4">
+<button class="w-full py-4 px-6 bg-primary hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-primary/30 transform active:scale-95 transition-all duration-200 font-bold text-lg flex items-center justify-center space-x-2 group">
+<span>Continue Learning</span>
+<span class="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="w-full py-4 px-6 bg-transparent text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary rounded-xl font-medium text-base transition-colors duration-200 flex items-center justify-center space-x-2">
+<span class="material-icons-round text-lg">history</span>
+<span>Review Mistakes</span>
+</button>
+</div>
+</main>
+<!-- Decorative Side Orbs -->
+<div class="fixed -left-20 top-1/4 w-40 h-40 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="fixed -right-20 bottom-1/4 w-60 h-60 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
+</body></html>
