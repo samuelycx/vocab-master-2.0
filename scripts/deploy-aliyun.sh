@@ -5,9 +5,13 @@
 
 echo "🚀 Starting Deployment..."
 
-# 1. Pull latest code
+# 1. Pull latest code (if repo exists)
 echo "📦 Pulling latest changes from GitHub..."
-git pull origin main
+if [ -d .git ]; then
+  git pull origin main
+else
+  echo "ℹ️  No .git directory found, skipping git pull."
+fi
 
 # 2. Build Frontend
 echo "🎨 Building Frontend..."
