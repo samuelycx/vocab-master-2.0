@@ -5,15 +5,46 @@ export function buildReleaseMetadata({
   target,
   scope,
   releasedAt,
-  sourceOfTruth = 'origin/main'
+  sourceOfTruth = 'origin/main',
+  releasePath,
+  currentPath
 } = {}) {
-  return {
+  const metadata = {
     commit: normalizeText(commit),
     target: normalizeText(target),
     scope: normalizeText(scope),
     releasedAt: normalizeText(releasedAt),
     sourceOfTruth: normalizeText(sourceOfTruth) || 'origin/main'
   };
+
+  const normalizedReleasePath = normalizeText(releasePath);
+  if (normalizedReleasePath) {
+    metadata.releasePath = normalizedReleasePath;
+  }
+
+  const normalizedCurrentPath = normalizeText(currentPath);
+  if (normalizedCurrentPath) {
+    metadata.currentPath = normalizedCurrentPath;
+  }
+
+  return metadata;
+}
+
+function pushError(errors, field, code) {
+  errors.push({
+    field,
+    code
+  });
+}
+
+function validateServerReleaseEvidence(metadata, errors) {
+  if (!metadata.releasePath) {
+    pushError(errors, 'releasePath', 'INVALID_RELEASE_PATH');
+  }
+
+  if (!metadata.currentPath) {
+    pushError(errors, 'currentPath', 'INVALID_CURRENT_PATH');
+  }
 }
 
 export function validateReleaseMetadata(input = {}) {
@@ -21,38 +52,27 @@ export function validateReleaseMetadata(input = {}) {
   const errors = [];
 
   if (!metadata.commit) {
-    errors.push({
-      field: 'commit',
-      code: 'INVALID_COMMIT'
-    });
+    pushError(errors, 'commit', 'INVALID_COMMIT');
   }
 
   if (!metadata.target) {
-    errors.push({
-      field: 'target',
-      code: 'INVALID_TARGET'
-    });
+    pushError(errors, 'target', 'INVALID_TARGET');
   }
 
   if (!metadata.scope) {
-    errors.push({
-      field: 'scope',
-      code: 'INVALID_SCOPE'
-    });
+    pushError(errors, 'scope', 'INVALID_SCOPE');
   }
 
   if (!metadata.releasedAt) {
-    errors.push({
-      field: 'releasedAt',
-      code: 'INVALID_RELEASED_AT'
-    });
+    pushError(errors, 'releasedAt', 'INVALID_RELEASED_AT');
   }
 
   if (!metadata.sourceOfTruth) {
-    errors.push({
-      field: 'sourceOfTruth',
-      code: 'INVALID_SOURCE_OF_TRUTH'
-    });
+    pushError(errors, 'sourceOfTruth', 'INVALID_SOURCE_OF_TRUTH');
+  }
+
+  if (metadata.target === 'server') {
+    validateServerReleaseEvidence(metadata, errors);
   }
 
   return {

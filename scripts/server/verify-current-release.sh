@@ -38,6 +38,17 @@ fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   echo "manifest_path=$MANIFEST_PATH"
+  node --input-type=module - "$MANIFEST_PATH" <<'EOF'
+import { readFileSync } from 'node:fs';
+
+const manifestPath = process.argv[2];
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+
+for (const field of ['commit', 'releasedAt', 'scope', 'releasePath', 'currentPath']) {
+  const value = manifest[field];
+  console.log(`manifest_${field}=${value === undefined ? 'missing' : value}`);
+}
+EOF
 else
   echo "manifest_path=missing"
 fi

@@ -64,4 +64,24 @@ bash scripts/deploy-aliyun.sh --dry-run --sha HEAD --release-root /tmp/vocab-mas
 4. Link `current/` to the new release.
 5. Load shared runtime config from `shared/env/server.env`.
 6. Build web/server from `current/` and restart PM2 from `current/server/ecosystem.config.cjs`.
-7. Keep SQLite, uploads and logs under `shared/prisma`, `shared/uploads`, `shared/logs`.
+7. Write `current/release-manifest.json` and `shared/release-history/<timestamp>-<sha>.json`.
+8. Keep SQLite, uploads and logs under `shared/prisma`, `shared/uploads`, `shared/logs`.
+
+## Release evidence
+
+After a successful deploy, verify:
+
+- `current/REVISION`
+- `current/release-manifest.json`
+- `shared/release-history/<timestamp>-<sha>.json`
+
+Schema reference:
+
+- `docs/release/SERVER_RELEASE_MANIFEST_SCHEMA.md`
+
+## Rollback by SHA
+
+1. Run `bash scripts/server/verify-current-release.sh /var/www/vocab-master`
+2. Pick a previous SHA from `shared/release-history/`
+3. Redeploy it with `bash scripts/server/deploy-from-git.sh /var/www/vocab-master --sha <sha>`
+4. Re-run `verify-current-release.sh` to confirm `manifest_commit`, `manifest_releasePath`, `manifest_currentPath`
