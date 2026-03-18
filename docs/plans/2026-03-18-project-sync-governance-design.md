@@ -12,9 +12,9 @@ tags:
   - server
   - web
   - miniprogram
-status: proposed
+status: active
 created: 2026-03-18
-updated: 2026-03-18
+updated: 2026-03-19
 ---
 
 # 2026-03-18 项目全位置同步治理设计（中文）
@@ -24,7 +24,41 @@ updated: 2026-03-18
 > `本地 main -> GitHub origin/main -> 各部署目标`。
 > 目标覆盖 `server`、`web`、服务器运行态，以及 `miniprogram` 的云开发发布链路，避免以后再次出现“本地是最新、GitHub 是最新、服务器却停在旧版本”的状态漂移。
 
-## 一、当前事实
+> [!success]
+> 2026-03-19 回填：本设计的服务器侧 Phase 1 / 2 已落地完成。
+> 当前已验证：
+> - 本地 `main`、`origin/main`、服务器 `current/REVISION` 已对齐到 `97afd3e5bed2ea02794bcec7c7566b55c9268b04`
+> - 服务器已切换到 `repo / releases / shared / current` 结构，运行态已外置
+> - GitHub Actions `Deploy Server From Main` 已成功把同一 SHA 部署到 `101.34.65.203`
+> - 小程序仓库侧 release manifest / runbook 已就位，但云端上传与验收仍需在微信开发者工具中完成
+
+## 零、回填进展（2026-03-19）
+
+### 已完成的部分
+
+- 服务器首次 Git 化迁移已完成，当前 release root 为 `/var/www/vocab-master`
+- 服务器目录已重构为：
+  - `repo/`
+  - `releases/`
+  - `shared/`
+  - `current -> releases/<sha>`
+- 运行态已外置：
+  - SQLite：`shared/prisma/dev.db`
+  - 上传：`shared/uploads/avatars`
+  - 日志：`shared/logs`
+- GitHub Actions 工作流 `.github/workflows/deploy-server-from-main.yml` 已接入并完成一次真实发布
+- 当前已验证公网与内网接口：
+  - `http://127.0.0.1:3001/api/config`
+  - `http://127.0.0.1:3001/api/leaderboard`
+  - `http://101.34.65.203:3001/api/leaderboard`
+
+### 仍待完成的部分
+
+- `scripts/sync/collect-project-sync-status.sh` 目前仍只输出本地 / GitHub 状态，服务器与小程序云端仍需手工核对
+- 小程序云端发布仍然依赖微信开发者工具与云函数部署，不在 CLI 内自动完成
+- “统一同步审计”还差把服务器 / 小程序云端状态收口成一条脚本输出
+
+## 一、设计时事实（2026-03-18）
 
 ### 1. 已确认的现状
 
@@ -339,6 +373,7 @@ updated: 2026-03-18
 - 现有部署防回归清单：[[DEPLOY-CHECKLIST]]
 - 现有 `server + web` 发布说明：[[2026-03-18-server-web-release-notes-cn]]
 - 现有小程序一期云端验收：[[MINIPROGRAM_PHASE1_CLOUD_CHECKLIST]]
+- 当前闭环回填与小程序启动说明：[[2026-03-19-sync-closure-and-miniprogram-kickoff-cn]]
 - 本设计是它们的上层治理文档，用于定义“以后所有位置如何同步”。
 
 ## 十、推荐下一步
