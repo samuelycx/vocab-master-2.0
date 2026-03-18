@@ -9,9 +9,9 @@ tags:
   - cloud
   - auth
   - leaderboard
-status: proposed
+status: active
 created: 2026-03-18
-updated: 2026-03-18
+updated: 2026-03-19
 ---
 
 # 2026-03-18 小程序专项设计（中文）
@@ -31,6 +31,11 @@ updated: 2026-03-18
 
 > [!info]
 > 一期目标不是把小程序“做成和 Web 一模一样”，而是先让小程序自己的核心用户链路在云开发语境下稳定、可验证、可继续迭代。
+
+> [!success]
+> 2026-03-19 边界补充：`miniprogram` 的微信身份登录被正式定义为长期分化项。
+> 也就是说，小程序允许以 `openid / 微信上下文` 作为主身份来源，而 `web/server` 不要求同步实现同一套登录入口。
+> 需要持续对齐的是业务语义，不是平台身份方式。详见：[[2026-03-19-miniprogram-wechat-identity-boundary-design]]
 
 ## 当前事实
 

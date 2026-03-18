@@ -24,7 +24,7 @@ updated: 2026-03-19
 
 | 任务 | 当前状态 | 说明 |
 | --- | --- | --- |
-| 任务 1：小程序独立项目化与能力对齐 | 一期代码完成 | 设计、实现计划、契约测试、release manifest 已落库；云端发布与验收待执行 |
+| 任务 1：小程序独立项目化与能力对齐 | 一期代码完成 | 设计、实现计划、契约测试、release manifest 已落库；微信身份边界已定义，云端发布与验收待执行 |
 | 任务 2：词库乱码审计后的数据修复 | 工具链完成 | 审计/修复脚本、runbook、单测已完成；是否对正式数据源 apply 待单独执行 |
 | 任务 3：排行榜虚拟账号清理 | 工具链完成 | 候选导出、manifest、apply 脚本与 runbook 已完成；线上清理待人工复核后执行 |
 | 任务 4：TTS 方案升级与凭据治理 | 仓库治理完成 | 仓库侧脚本和凭据 runbook 已完成；真实云端凭据轮换待环境 owner 执行 |
@@ -49,6 +49,7 @@ updated: 2026-03-19
 > - `[[2026-03-18-miniprogram-special-design]]`
 > - `[[2026-03-18-miniprogram-special-implementation]]`
 > - `[[2026-03-19-sync-closure-and-miniprogram-kickoff-cn]]`
+> - `[[2026-03-19-miniprogram-wechat-identity-boundary-design]]`
 > - `miniprogram` 相关 16 个契约测试与 `npm run release:verify`
 
 ### 范围
@@ -59,14 +60,17 @@ updated: 2026-03-19
 ### 执行动作
 - [x] 盘点 `miniprogram` 当前可运行链路与云环境依赖
 - [x] 列出与 `web` 不一致的功能边界和接口语义
+- [x] 明确“微信身份登录属于小程序长期分化项，而非 Web 待同步缺口”
 - [x] 输出小程序独立设计、implementation plan 与 release/runbook 文档
 - [x] 为用户快照、资料保存、排行榜契约补齐可执行测试
 - [ ] 在微信开发者工具完成一期云函数部署与体验版验收
+- [ ] 单独验证“微信身份登录闭环”在已发布小程序中真实可用
 - [ ] 把本次云端发布的 `commit / scope / 验收结论` 记录到发布说明中
 
 ### 验收标准
 - 有一份可执行的 `miniprogram` 范围说明
 - 有一份接口/契约差异说明
+- 有一份身份边界定义，明确哪些差异属于长期允许分化
 - 有一份云端发布与验收记录
 - 明确二期是否进入 PK 鉴权与房间所有权重构
 

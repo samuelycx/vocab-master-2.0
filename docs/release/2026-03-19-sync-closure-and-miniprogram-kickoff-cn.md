@@ -72,7 +72,7 @@ updated: 2026-03-19
 
 - 以后回答“服务器同步了吗？”时，应该先看 Git SHA 和 release manifest，而不是看目录时间戳
 - 服务器端已经进入规范化治理阶段，后续重点不再是“先把服务器补齐”，而是“把小程序也纳入同一证据模型”
-- 当前真正剩下的跨位置差异，主要在 `miniprogram` 云端这一跳
+- 当前真正剩下的跨位置差异，主要在 `miniprogram` 云端这一跳，以及小程序专属的微信身份体系边界
 
 ## 三、小程序专项当前基线
 
@@ -81,6 +81,7 @@ updated: 2026-03-19
 - 设计与实现计划：
   - [[2026-03-18-miniprogram-special-design]]
   - [[2026-03-18-miniprogram-special-implementation]]
+  - [[2026-03-19-miniprogram-wechat-identity-boundary-design]]
 - 发布说明 / runbook：
   - [[2026-03-18-miniprogram-phase1-release-notes-cn]]
   - [[MINIPROGRAM_GIT_RELEASE_RUNBOOK]]
@@ -118,6 +119,7 @@ updated: 2026-03-19
 - 微信开发者工具中的正式上传 / 体验版上传
 - 上述云函数的“上传并部署：云端安装依赖”
 - 依据 `[[MINIPROGRAM_PHASE1_CLOUD_CHECKLIST]]` 的真机 / 体验版验收
+- 微信身份登录闭环是否真实可用的专项验收
 - 把最终云端发布的 `commit / scope / 验收结论` 回填到 release 记录
 
 > [!warning]
@@ -139,6 +141,7 @@ updated: 2026-03-19
 
 - 不在本轮云端验收里顺手重做 PK 鉴权模型
 - 不把小程序强行改成复用 `server` REST API
+- 不再把“微信登录没有 Web 对应实现”视为同步缺口
 - 不在验收前清理 `src_backup_*` 历史目录
 - 不把二期范围和一期云端发布混成一次大改
 
