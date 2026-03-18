@@ -1,3 +1,7 @@
+const path = require('path');
+
+const defaultDbUrl = `file:${path.join(__dirname, 'prisma', 'dev.db')}`;
+
 module.exports = {
   apps: [
     {
@@ -12,7 +16,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        DATABASE_URL: 'file:./prisma/prod.db',
+        DATABASE_URL: process.env.DATABASE_URL || defaultDbUrl,
       },
     },
   ],

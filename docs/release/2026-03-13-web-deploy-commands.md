@@ -49,9 +49,12 @@ cp .env.example .env
 
 编辑 `server/.env`：
 ```env
-DATABASE_URL="file:./prisma/prod.db"
+DATABASE_URL="file:/var/www/vocab-master/server/prisma/dev.db"
 PORT=3000
 ```
+
+如果未显式设置 `DATABASE_URL`，`server/ecosystem.config.cjs` 也会回退到同一份
+`/var/www/vocab-master/server/prisma/dev.db`，避免 PM2 与部署脚本落到不同数据库文件。
 
 ## 构建前端
 ```bash

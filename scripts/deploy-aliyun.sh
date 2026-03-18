@@ -27,7 +27,7 @@ cd server
 # 创建默认 .env 文件 (如果不存在)
 if [ ! -f .env ]; then
   echo "📄 Creating default .env file..."
-  echo 'DATABASE_URL="file:./prisma/prod.db"' > .env
+  echo 'DATABASE_URL="file:/var/www/vocab-master/server/prisma/dev.db"' > .env
 fi
 
 npm install

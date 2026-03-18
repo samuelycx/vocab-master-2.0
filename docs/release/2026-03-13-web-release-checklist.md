@@ -31,8 +31,8 @@
 ## 上线前必须确认
 1. 服务器已安装 Node.js 18+ 与 npm
 2. 服务器已安装 PM2 或 systemd（二选一）
-3. `server/.env` 已配置 `DATABASE_URL`
-4. SQLite 数据库文件目录有写权限
+3. `server/.env` 已配置 `DATABASE_URL="file:/var/www/vocab-master/server/prisma/dev.db"`
+4. SQLite 数据库文件目录（`server/prisma/dev.db`）有写权限
 5. 服务器已开放站点端口（例如 3000）或已配置 Nginx 反代
 6. 如需 HTTPS，域名证书已准备好
 
