@@ -15,7 +15,10 @@ server/test/*.db
 server/test/*.db-journal
 server/uploads/
 .obsidian/workspace.json
-tts/
+/tts/
+__pycache__/
+/artifacts/
+/server/artifacts/
 需求文档.md
 
 .worktrees/
