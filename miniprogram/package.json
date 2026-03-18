@@ -35,6 +35,8 @@
     "build:quickapp-webview": "uni build -p quickapp-webview",
     "build:quickapp-webview-huawei": "uni build -p quickapp-webview-huawei",
     "build:quickapp-webview-union": "uni build -p quickapp-webview-union",
+    "release:manifest": "node ../scripts/miniprogram/write-release-manifest.mjs --scope full --output release-manifest.json",
+    "release:verify": "node ../scripts/miniprogram/write-release-manifest.mjs --dry-run --scope full --output release-manifest.json",
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {

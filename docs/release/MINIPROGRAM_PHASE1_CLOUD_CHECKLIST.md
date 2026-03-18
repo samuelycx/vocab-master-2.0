@@ -35,6 +35,13 @@
 - 在真机调试或体验版中完成一次登录、开始 PK、完成 PK、退出 PK 的完整流程。
 - 关注控制台 `watch`、云调用和存储资源加载日志，确认不存在持续性报错。
 
+## Git 版本证据检查
+
+- 发布前先在 `miniprogram/` 目录执行 `npm run release:verify`。
+- 发布前生成 `release-manifest.json`，并确认其中的 `commit` 来自目标 `origin/main` SHA。
+- 记录本次发布 `scope`（`miniprogram` / `cloudfunctions` / `full`）以及 `cloudFunctions` 列表。
+- 发布后把 `release-manifest.json` 中的 `commit` 和验收结论一并登记到发版记录中。
+
 ## 发布前签收建议
 
 - 至少由 1 名开发和 1 名测试分别在开发者工具与真机上完成上述检查。

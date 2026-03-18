@@ -1,0 +1,13 @@
+{
+  "commit": "GENERATE_BEFORE_RELEASE",
+  "scope": "full",
+  "releasedAt": "GENERATE_BEFORE_RELEASE",
+  "sourceOfTruth": "origin/main",
+  "cloudFunctions": [
+    "admin",
+    "auth",
+    "initDatabase",
+    "progress",
+    "words"
+  ]
+}
