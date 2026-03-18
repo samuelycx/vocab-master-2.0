@@ -29,23 +29,25 @@
 3. 云侧手工验收资料补齐
    - 新增云函数 / 云存储 / 开发者工具检查清单，方便发版前后人工复核。
 
+4. 本地发版前链路补齐
+   - `miniprogram/package-lock.json` 已按当前 `package.json` 刷新，不再保留旧 `socket.io-client` / `weapp.socket.io` 锁定项。
+   - `npm run release:verify`、`npm run release:manifest` 与 `npm run build:mp-weixin` 已在本地主线重新验证通过，仓库侧现在只剩云端上传与验收。
+
 ## 未纳入范围
 
 以下内容明确不属于一期：
 - PK 用户身份字段统一、鉴权口径重构、服务端签名或房主校验增强；
 - 共享文件中的接口层、首页状态编排、PK 页面交互重构；
 - 历史备份目录（如 `src_backup_*`）的彻底清理与归档；
-- `package-lock.json`、构建产物或 CI 安装流程的统一刷新；
 - 二期才会评估的云函数幂等、断线恢复、异常房间补偿与监控告警。
 
 ## 风险提示
 
-- 依赖声明已清理，但锁文件与历史备份代码仍可能保留旧 websocket 痕迹，需由主线程统一处理；
+- 依赖声明与锁文件已清理，但历史备份目录仍可能保留旧 websocket 痕迹，需继续作为存档代码看待；
 - 当前 PK 仍依赖客户端写入 `pk_rooms` 文档，若后续要增强安全性，需要配套调整云函数/数据库权限；
 - 一期没有改变核心匹配行为，因此任何涉及对战体验优化的改动都应单列为后续任务验证。
 
 ## 建议的后续动作
 
-- 主线程统一刷新 `miniprogram/package-lock.json`，确保依赖树与 `package.json` 对齐；
 - 评估是否删除或迁移 `miniprogram/src_backup_20260212_161734/socket.js` 等历史备份中的旧 socket 代码；
 - 在二期设计中单独定义 PK 鉴权、房间所有权和异常退出的一致性策略。
