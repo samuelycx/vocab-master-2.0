@@ -1,0 +1,79 @@
+name: Deploy Server From Main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-server-main
+  cancel-in-progress: false
+
+jobs:
+  deploy-server:
+    runs-on: ubuntu-latest
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+      SERVER_RELEASE_ROOT: ${{ secrets.SERVER_RELEASE_ROOT }}
+      SERVER_ORIGIN_PATH: ${{ secrets.SERVER_ORIGIN_PATH }}
+      SERVER_BOOTSTRAP_PATH: ${{ secrets.SERVER_BOOTSTRAP_PATH }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate required secrets
+        run: |
+          set -euo pipefail
+          : "${SERVER_HOST:?missing SERVER_HOST}"
+          : "${SERVER_USER:?missing SERVER_USER}"
+          : "${SERVER_SSH_KEY:?missing SERVER_SSH_KEY}"
+          : "${SERVER_KNOWN_HOSTS:?missing SERVER_KNOWN_HOSTS}"
+
+      - name: Prepare deployment bundle
+        run: |
+          set -euo pipefail
+          BUNDLE_PATH="/tmp/vocab-master-${GITHUB_SHA}.bundle"
+          git bundle create "$BUNDLE_PATH" main
+          echo "BUNDLE_PATH=$BUNDLE_PATH" >> "$GITHUB_ENV"
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Upload bundle and receiver script
+        run: |
+          set -euo pipefail
+          PORT="${SERVER_PORT:-22}"
+          scp -P "$PORT" \
+            "$BUNDLE_PATH" \
+            scripts/server/receive-github-bundle.sh \
+            "${SERVER_USER}@${SERVER_HOST}:/tmp/"
+
+      - name: Trigger remote deploy
+        run: |
+          set -euo pipefail
+          PORT="${SERVER_PORT:-22}"
+          RELEASE_ROOT="${SERVER_RELEASE_ROOT:-/var/www/vocab-master}"
+          ORIGIN_PATH="${SERVER_ORIGIN_PATH:-/root/vocab-master-origin-main.git}"
+          BOOTSTRAP_PATH="${SERVER_BOOTSTRAP_PATH:-/root/vocab-master-bootstrap-main}"
+          BUNDLE_REMOTE="/tmp/$(basename "$BUNDLE_PATH")"
+
+          ssh -p "$PORT" "${SERVER_USER}@${SERVER_HOST}" \
+            "chmod +x /tmp/receive-github-bundle.sh && \
+             bash /tmp/receive-github-bundle.sh \
+               --bundle '$BUNDLE_REMOTE' \
+               --sha '$GITHUB_SHA' \
+               --release-root '$RELEASE_ROOT' \
+               --origin-path '$ORIGIN_PATH' \
+               --bootstrap-path '$BOOTSTRAP_PATH'"
