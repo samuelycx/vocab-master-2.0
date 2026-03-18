@@ -1,3 +1,5 @@
+import { Actions } from './state.js';
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function getStoredToken() {
@@ -5,8 +7,9 @@ function getStoredToken() {
 }
 
 async function requestJSON(path, options = {}) {
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const headers = {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(options.headers || {})
     };
     const token = options.token ?? getStoredToken();
@@ -21,6 +24,11 @@ async function requestJSON(path, options = {}) {
 
     const data = await response.json();
     if (!response.ok) {
+        if (response.status === 401 && token) {
+            localStorage.removeItem('vocab_token');
+            Actions.clearAuth();
+            Actions.setView('auth');
+        }
         return {
             success: false,
             status: response.status,
@@ -144,6 +152,32 @@ export const API = {
         }
     },
 
+    async updateProfile(payload) {
+        try {
+            return await requestJSON('/auth/profile', {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            });
+        } catch (e) {
+            console.error('Update profile failed', e);
+            return { success: false, error: e.message };
+        }
+    },
+
+    async uploadAvatar(file) {
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+            return await requestJSON('/auth/avatar', {
+                method: 'POST',
+                body: formData,
+            });
+        } catch (e) {
+            console.error('Upload avatar failed', e);
+            return { success: false, error: e.message };
+        }
+    },
+
     async syncProgress(wordId, status, xp = 0, coins = 0, mode = 'learn') {
         try {
             const res = await requestJSON(`/progress/sync`, {
@@ -202,12 +236,11 @@ export const API = {
     // --- Admin API ---
     async createWord(wordData) {
         try {
-            const res = await fetch(`${API_URL}/admin/word`, {
+            const res = await requestJSON('/admin/word', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(wordData)
             });
-            return await res.json();
+            return res?.success === false ? null : res;
         } catch (e) {
             console.error('Failed to create word', e);
             return null;
@@ -216,10 +249,10 @@ export const API = {
 
     async deleteWord(wordId) {
         try {
-            const res = await fetch(`${API_URL}/admin/word/${wordId}`, {
+            const res = await requestJSON(`/admin/word/${wordId}`, {
                 method: 'DELETE'
             });
-            return await res.json();
+            return res?.success === false ? null : res;
         } catch (e) {
             console.error('Failed to delete word', e);
             return null;
@@ -228,12 +261,11 @@ export const API = {
 
     async toggleModule(key, enabled) {
         try {
-            const res = await fetch(`${API_URL}/admin/module/toggle`, {
+            const res = await requestJSON('/admin/module/toggle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, enabled })
             });
-            return await res.json();
+            return res?.success === false ? null : res;
         } catch (e) {
             console.error('Failed to toggle module', e);
             return null;
@@ -242,8 +274,8 @@ export const API = {
 
     async getUsers() {
         try {
-            const res = await fetch(`${API_URL}/admin/users`);
-            return await res.json();
+            const res = await requestJSON('/admin/users', { method: 'GET' });
+            return Array.isArray(res) ? res : [];
         } catch (e) {
             console.error('Failed to get users', e);
             return [];
@@ -265,10 +297,10 @@ export const API = {
 
     async banUser(userId) {
         try {
-            const res = await fetch(`${API_URL}/admin/user/${userId}/ban`, {
+            const res = await requestJSON(`/admin/user/${userId}/ban`, {
                 method: 'POST'
             });
-            return await res.json();
+            return res?.success === false ? null : res;
         } catch (e) {
             console.error('Failed to ban user', e);
             return null;
@@ -288,12 +320,11 @@ export const API = {
     },
     async importWords(words) {
         try {
-            const res = await fetch(`${API_URL}/admin/words/import`, {
+            const res = await requestJSON('/admin/words/import', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(words)
             });
-            return await res.json();
+            return res?.success === false ? null : res;
         } catch (e) {
             console.error('Failed to import words', e);
             return null;
@@ -302,9 +333,8 @@ export const API = {
 
     async exportWords() {
         try {
-            const res = await fetch(`${API_URL}/admin/words/export`);
-            if (!res.ok) throw new Error('Export failed');
-            return await res.json();
+            const res = await requestJSON('/admin/words/export', { method: 'GET' });
+            return Array.isArray(res) ? res : null;
         } catch (e) {
             console.error('Failed to export words', e);
             return null;

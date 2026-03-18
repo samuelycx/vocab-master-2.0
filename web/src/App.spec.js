@@ -42,6 +42,7 @@ vi.mock('./components/GameArena.vue', () => ({ default: { template: '<div>arena<
 vi.mock('./components/PKArena.vue', () => ({ default: { template: '<div>pk</div>' } }));
 vi.mock('./components/Result.vue', () => ({ default: { template: '<div>result</div>' } }));
 vi.mock('./components/Settings.vue', () => ({ default: { template: '<div>settings</div>' } }));
+vi.mock('./components/ProfileSetup.vue', () => ({ default: { template: '<div data-test="profile-setup-view">profile setup</div>' } }));
 vi.mock('./components/VocabularyList.vue', () => ({ default: { template: '<div>vocabulary</div>' } }));
 vi.mock('./components/AchievementWall.vue', () => ({ default: { template: '<div>achievement</div>' } }));
 vi.mock('./components/LevelUpModal.vue', () => ({ default: { template: '<div>levelup</div>' } }));
@@ -88,5 +89,17 @@ describe('App shell', () => {
 
     expect(mockGetStats).toHaveBeenCalledWith();
     expect(mockSetUser).toHaveBeenCalledWith({ id: 'user-1', username: 'alice' });
+  });
+
+  it('renders profile setup view when requested', async () => {
+    mockRestoreSession.mockResolvedValue(true);
+    const { GameState } = await import('./state.js');
+    GameState.game.view = 'profile-setup';
+
+    const { default: App } = await import('./App.vue');
+    const wrapper = mount(App);
+    await flush();
+
+    expect(wrapper.find('[data-test="profile-setup-view"]').exists()).toBe(true);
   });
 });

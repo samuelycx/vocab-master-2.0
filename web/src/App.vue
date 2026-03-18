@@ -7,6 +7,7 @@ import GameArena from './components/GameArena.vue';
 import PKArena from './components/PKArena.vue';
 import Result from './components/Result.vue';
 import Settings from './components/Settings.vue';
+import ProfileSetup from './components/ProfileSetup.vue';
 import VocabularyList from './components/VocabularyList.vue';
 import AchievementWall from './components/AchievementWall.vue';
 import LevelUpModal from './components/LevelUpModal.vue';
@@ -53,6 +54,7 @@ const views = {
     'welcome': Welcome,
     'dashboard': Dashboard,
     'settings': Settings,
+    'profile-setup': ProfileSetup,
     'vocabulary': VocabularyList,
     'arena': GameArena,
     'pk': PKArena,

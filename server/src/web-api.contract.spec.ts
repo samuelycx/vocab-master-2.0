@@ -11,6 +11,8 @@ describe('Web API contract', () => {
     register: jest.fn(async (body) => ({ success: true, token: 'token-register', user: { id: 'user-1', username: body.username } })),
     login: jest.fn(async (body) => ({ success: true, token: 'token-login', user: { id: 'user-1', username: body.username } })),
     getCurrentUser: jest.fn(async () => ({ success: true, user: { id: 'user-1', username: 'alice' } })),
+    updateProfile: jest.fn(async (_userId, body) => ({ success: true, user: { id: 'user-1', nickname: body.nickname } })),
+    updateAvatar: jest.fn(async (_userId, avatar) => ({ success: true, user: { id: 'user-1', avatar } })),
     requireUserFromAuthorization: jest.fn(async () => ({ id: 'user-1', username: 'alice' })),
   };
   const wordService = {
@@ -48,6 +50,25 @@ describe('Web API contract', () => {
     await expect(controller.me('Bearer token-login')).resolves.toEqual({
       success: true,
       user: { id: 'user-1', username: 'alice' },
+    });
+  });
+
+  it('exposes local profile editing routes for avatar and nickname updates', async () => {
+    const controller = new AuthController(authService as any);
+
+    expect(Reflect.getMetadata(PATH_METADATA, AuthController.prototype.updateProfile)).toBe('profile');
+    expect(Reflect.getMetadata(METHOD_METADATA, AuthController.prototype.updateProfile)).toBe(RequestMethod.PATCH);
+    expect(Reflect.getMetadata(PATH_METADATA, AuthController.prototype.uploadAvatar)).toBe('avatar');
+    expect(Reflect.getMetadata(METHOD_METADATA, AuthController.prototype.uploadAvatar)).toBe(RequestMethod.POST);
+
+    await expect(controller.updateProfile('Bearer token', { nickname: 'Sam' } as any)).resolves.toEqual({
+      success: true,
+      user: { id: 'user-1', nickname: 'Sam' },
+    });
+
+    await expect(controller.uploadAvatar('Bearer token', { filename: 'avatar.png' } as any)).resolves.toEqual({
+      success: true,
+      user: { id: 'user-1', avatar: '/uploads/avatars/avatar.png' },
     });
   });
 

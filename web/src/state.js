@@ -5,6 +5,7 @@ const initialState = {
     user: {
         id: null,
         username: 'Guest',
+        nickname: '',
         level: 1,
         xp: 0,
         streak: 1,
@@ -126,6 +127,12 @@ watch(() => state.settings.soundEnabled, (enabled) => {
 
 export const GameState = state;
 
+function processOverlayQueue() {
+    if (state.overlay.queue.length > 0) {
+        state.overlay.current = state.overlay.queue.shift();
+    }
+}
+
 export const Actions = {
     updateSettings(key, value) {
         state.settings[key] = value;
@@ -202,20 +209,16 @@ export const Actions = {
     showOverlay(type, data) {
         state.overlay.queue.push({ type, data });
         if (!state.overlay.current) {
-            this.processOverlayQueue();
+            processOverlayQueue();
         }
     },
     closeOverlay() {
         state.overlay.current = null;
         setTimeout(() => {
-            this.processOverlayQueue();
+            processOverlayQueue();
         }, 100);
     },
-    processOverlayQueue() {
-        if (state.overlay.queue.length > 0) {
-            state.overlay.current = state.overlay.queue.shift();
-        }
-    },
+    processOverlayQueue,
     reset() {
         // Restore user to initial state
         Object.assign(state.user, initialState.user);

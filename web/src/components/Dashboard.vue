@@ -4,19 +4,14 @@ import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { API } from '../api.js';
 import { getAchievementIconById } from '../utils/achievement-icons.js';
+import { resolveAvatarUrl } from '../avatar.js';
 
 const DAILY_GOAL = 30;
-const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
 const user = GameState.user;
 const state = GameState;
 const reviewCount = ref(0);
 const loading = ref(true);
-
-const getAvatarUrl = (avatar) => {
-  if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
-  return avatar.startsWith('http') ? avatar : DEFAULT_AVATAR;
-};
 
 const stats = computed(() => {
   const totalCorrect = Number(user.totalCorrect) || 0;
@@ -138,7 +133,7 @@ onMounted(loadDashboard);
         <div class="focus-orb"></div>
         <div class="focus-glow"></div>
         <button class="focus-avatar" @click="gotoSettings">
-          <img class="avatar-image" :src="getAvatarUrl(user.avatar)" alt="avatar" />
+          <img class="avatar-image" :src="resolveAvatarUrl(user.avatar)" alt="avatar" />
           <div class="avatar-core"></div>
         </button>
 

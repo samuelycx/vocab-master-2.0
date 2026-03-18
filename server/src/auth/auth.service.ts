@@ -1,11 +1,12 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto';
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
@@ -41,7 +42,7 @@ export class AuthService {
         return {
             success: true,
             token: session.token,
-            user: this.toSafeUser(user),
+            user: this.sanitizeUser(user),
         };
     }
 
@@ -77,7 +78,7 @@ export class AuthService {
         return {
             success: true,
             token: session.token,
-            user: this.toSafeUser(nextUser),
+            user: this.sanitizeUser(nextUser),
         };
     }
 
@@ -85,7 +86,7 @@ export class AuthService {
         const user = await this.requireUserFromAuthorization(authorization);
         return {
             success: true,
-            user: this.toSafeUser(user),
+            user: this.sanitizeUser(user),
         };
     }
 
@@ -99,6 +100,29 @@ export class AuthService {
             },
         });
         return { success: true };
+    }
+
+    async updateProfile(userId: string, body: UpdateProfileDto) {
+        const nickname = this.normalizeNickname(body?.nickname);
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: { nickname },
+        });
+        return {
+            success: true,
+            user: this.sanitizeUser(user),
+        };
+    }
+
+    async updateAvatar(userId: string, avatarUrl: string) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: { avatar: avatarUrl },
+        });
+        return {
+            success: true,
+            user: this.sanitizeUser(user),
+        };
     }
 
     async requireUserFromAuthorization(authorization?: string) {
@@ -115,6 +139,14 @@ export class AuthService {
         }
         if (user.role === 'BANNED') {
             throw new UnauthorizedException('Your account has been suspended.');
+        }
+        return user;
+    }
+
+    async requireAdminFromAuthorization(authorization?: string) {
+        const user = await this.requireUserFromAuthorization(authorization);
+        if (user.role !== 'ADMIN') {
+            throw new ForbiddenException('Admin access required');
         }
         return user;
     }
@@ -145,6 +177,14 @@ export class AuthService {
         return password;
     }
 
+    private normalizeNickname(value?: string) {
+        const nickname = String(value || '').trim();
+        if (nickname.length < 1 || nickname.length > 24) {
+            throw new BadRequestException('Nickname must be 1-24 characters');
+        }
+        return nickname;
+    }
+
     private hashPassword(password: string) {
         const salt = randomBytes(16).toString('hex');
         const hash = scryptSync(password, salt, 64).toString('hex');
@@ -167,7 +207,7 @@ export class AuthService {
         };
     }
 
-    private toSafeUser(user: any) {
+    sanitizeUser(user: any) {
         const { passwordHash, sessionToken, sessionExpiresAt, ...safeUser } = user;
         return safeUser;
     }

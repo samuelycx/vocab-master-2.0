@@ -3,6 +3,7 @@ import { computed, watch, ref, onUnmounted } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { GameEngine } from '../engine.js';
 import { SocketManager } from '../socket.js';
+import { hasAvatarImage, resolveAvatarUrl } from '../avatar.js';
 
 const session = GameEngine.session;
 const pk = computed(() => GameState.game.pk);
@@ -65,6 +66,7 @@ const startPK = (mode) => {
     return;
   }
   if (mode === 'online') {
+    GameEngine.primeAudioPlayback();
     isInLobby.value = false;
     isSearching.value = true;
     try {
@@ -154,7 +156,8 @@ onUnmounted(() => {
     <section v-else-if="pk.isActive" class="pk-battle">
       <div class="score-board">
         <div class="player me">
-          <div class="player-avatar">{{ user.username?.[0] || '我' }}</div>
+          <img v-if="hasAvatarImage(user.avatar)" class="player-avatar player-avatar-image" :src="resolveAvatarUrl(user.avatar)" alt="my avatar" />
+          <div v-else class="player-avatar">{{ user.username?.[0] || '我' }}</div>
           <div class="player-meta">
             <div class="player-name">{{ user.username || '我' }}</div>
             <div class="player-score">{{ pk.userScore }}</div>
@@ -166,7 +169,8 @@ onUnmounted(() => {
             <div class="player-name">{{ pk.opponent?.name || 'AI' }}</div>
             <div class="player-score">{{ pk.opponent?.score || 0 }}</div>
           </div>
-          <div class="player-avatar opponent-avatar">{{ pk.opponent?.name?.[0] || 'A' }}</div>
+          <img v-if="hasAvatarImage(pk.opponent?.avatar)" class="player-avatar opponent-avatar player-avatar-image" :src="resolveAvatarUrl(pk.opponent?.avatar)" alt="opponent avatar" />
+          <div v-else class="player-avatar opponent-avatar">{{ pk.opponent?.name?.[0] || 'A' }}</div>
         </div>
       </div>
 
@@ -289,6 +293,7 @@ onUnmounted(() => {
 .player-meta { display:flex; flex-direction:column; gap: 2px; }
 .align-right { text-align: right; }
 .player-avatar { width: 42px; height: 42px; border-radius: 999px; background:#dcd3ff; display:flex; align-items:center; justify-content:center; font-size: 18px; font-weight: 700; color:#111; }
+.player-avatar-image { object-fit: cover; overflow: hidden; }
 .opponent-avatar { background:#fcecc7; }
 .player-name { font-size: 15px; font-weight: 700; color:#111; }
 .player-score { font-size: 22px; font-weight: 800; color:#111; }

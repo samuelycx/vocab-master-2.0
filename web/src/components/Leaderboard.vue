@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { API } from '../api.js';
+import { hasAvatarImage, resolveAvatarUrl } from '../avatar.js';
 
 const props = defineProps({
     onClose: Function
@@ -82,8 +83,9 @@ onMounted(() => {
                     </div>
 
                     <!-- Avatar -->
-                    <div class="w-12 h-12 rounded-full bg-white dark:bg-slate-600 flex items-center justify-center text-xl shadow-sm border border-slate-100 dark:border-slate-500 relative">
-                        {{ user.avatar }}
+                    <div class="w-12 h-12 rounded-full bg-white dark:bg-slate-600 flex items-center justify-center text-xl shadow-sm border border-slate-100 dark:border-slate-500 relative overflow-hidden">
+                        <img v-if="hasAvatarImage(user.avatar)" :src="resolveAvatarUrl(user.avatar)" alt="avatar" class="w-full h-full object-cover" />
+                        <span v-else>{{ user.avatar || user.username?.[0] || 'U' }}</span>
                         <div v-if="index < 3" class="absolute -top-1 -right-1 text-sm bg-white dark:bg-slate-800 rounded-full shadow-sm w-5 h-5 flex items-center justify-center">
                             {{ index === 0 ? '👑' : (index === 1 ? '🥈' : '🥉') }}
                         </div>

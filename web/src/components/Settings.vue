@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { GameState, Actions } from '../state.js';
 import { API } from '../api.js';
 import { AuthSession } from '../auth-session.js';
+import { resolveAvatarUrl } from '../avatar.js';
 
 const props = defineProps({
   onBack: Function,
@@ -73,7 +74,7 @@ const copyOpenId = async () => {
 
     <button class="user-card" @click="Actions.setView('profile-setup')">
       <div class="user-avatar">
-        <img class="avatar-img" :src="GameState.user.avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" alt="avatar" />
+        <img class="avatar-img" :src="resolveAvatarUrl(GameState.user.avatar)" alt="avatar" />
       </div>
 
       <div class="user-info">

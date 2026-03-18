@@ -7,3 +7,7 @@ export class RegisterDto {
     username: string;
     password: string;
 }
+
+export class UpdateProfileDto {
+    nickname?: string;
+}

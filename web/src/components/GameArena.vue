@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { GameEngine } from '../engine.js';
 
 const session = GameEngine.session;
@@ -46,15 +46,6 @@ watch(() => session.isAnswered, (answered) => {
   if (answered) {
     isFlipped.value = true;
   }
-});
-
-onMounted(() => {
-  nextTick(() => {
-    if (!session.currentWord?.word) return;
-    if (session.currentIndex !== 0) return;
-    if (session.isAnswered) return;
-    GameEngine.playAudio(session.currentWord.word, { dedupeWindowMs: 800 });
-  });
 });
 
 onUnmounted(() => {

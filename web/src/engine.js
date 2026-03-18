@@ -4,6 +4,8 @@ import { reactive } from 'vue';
 import { GameState, Actions } from './state.js';
 import { API } from './api.js';
 
+const SILENT_AUDIO_PRIMER = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
+
 export const GameEngine = {
     session: reactive({
         queue: [],
@@ -26,8 +28,18 @@ export const GameEngine = {
     distractorPool: [],
     timerHandle: null,
     botInterval: null,
+    currentAudio: null,
+    audioCache: {},
+    audioPrimed: false,
+    audioPrimePromise: null,
+    botSettings: {
+        accuracy: 0.6,
+        minPoints: 6,
+        maxPoints: 10,
+    },
 
     async startSession(count = 10) {
+        this.primeAudioPlayback();
         const category = GameState.user.targetCategory || 'GENERAL';
         const rawWords = await API.getSessionWords(count, category);
         if (!rawWords || rawWords.length === 0) {
@@ -45,6 +57,7 @@ export const GameEngine = {
     },
 
     async startReview() {
+        this.primeAudioPlayback();
         const rawWords = await API.getReviews();
         if (!rawWords || rawWords.length === 0) {
             return false;
@@ -61,6 +74,7 @@ export const GameEngine = {
     },
 
     async startMistake() {
+        this.primeAudioPlayback();
         const rawWords = await API.getMistakes();
         if (!rawWords || rawWords.length === 0) {
             alert('Great! No mistakes to review.');
@@ -77,6 +91,7 @@ export const GameEngine = {
     },
 
     async startPKSession() {
+        this.primeAudioPlayback();
         // ... (keep bot logic or replace? Plan said keep bot as fallback or default for "Practice")
         // Let's keep startPKSession for "Practice" mode (Bot)
         const category = GameState.user.targetCategory || 'GENERAL';
@@ -100,6 +115,7 @@ export const GameEngine = {
     },
 
     startMatchmaking() {
+        this.primeAudioPlayback();
         if (this.botInterval) clearInterval(this.botInterval);
         // Set state to searching
         GameState.game.pk.isSearching = true;
@@ -114,6 +130,7 @@ export const GameEngine = {
     },
 
     async startOnlinePK(gameId, opponent) {
+        this.primeAudioPlayback();
         if (this.botInterval) clearInterval(this.botInterval);
         GameState.game.pk.isSearching = false;
 
@@ -185,7 +202,14 @@ export const GameEngine = {
         this.session.options = this.shuffleArray([correctMeaning, ...distractors]);
         this.session.isAnswered = false;
         this.session.isCorrect = false;
+        this._preloadWordAudio(wordData.text);
+        this._preloadWordAudio(this.session.queue[this.session.currentIndex + 1]);
         this.startTimer();
+
+        if (this.session.mode !== 'pk') {
+            this.stopAudio();
+            this.playAudio(this.session.currentWord.word);
+        }
     },
 
     startTimer() {
@@ -292,8 +316,7 @@ export const GameEngine = {
                     });
             }
 
-            // Audio Feedback
-            setTimeout(() => this.playAudio(this.session.currentWord.word), 300);
+            // Audio Feedback (word audio now plays on question load)
         } else {
             this.playAudio('wrong');
             Actions.resetCombo();
@@ -328,9 +351,12 @@ export const GameEngine = {
 
         // Simulating Bot answering
         // 80% chance to be correct
-        const isCorrect = Math.random() > 0.2;
+        const accuracy = this.botSettings?.accuracy ?? 0.6;
+        const isCorrect = Math.random() < accuracy;
         if (isCorrect) {
-            const points = 10 + Math.floor(Math.random() * 5); // 10-15 points
+            const minPoints = this.botSettings?.minPoints ?? 6;
+            const maxPoints = this.botSettings?.maxPoints ?? 10;
+            const points = minPoints + Math.floor(Math.random() * (maxPoints - minPoints + 1));
             Actions.updatePKScore(false, points);
         }
 
@@ -375,7 +401,76 @@ export const GameEngine = {
         this.session.sessionCorrect = 0;
     },
 
-    playAudio(text) {
+    _speakText(text) {
+        if (typeof window === 'undefined') return;
+        if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    },
+
+    _getWordAudioUrl(text) {
+        return `/uploads/word-audio/${encodeURIComponent(text)}.mp3`;
+    },
+
+    _getOrCreateWordAudio(text) {
+        if (!text || typeof Audio !== 'function') return null;
+        if (this.audioCache[text]) return this.audioCache[text];
+
+        const audio = new Audio(this._getWordAudioUrl(text));
+        audio.preload = 'auto';
+        this.audioCache[text] = audio;
+        return audio;
+    },
+
+    _preloadWordAudio(text) {
+        this._getOrCreateWordAudio(text);
+    },
+
+    primeAudioPlayback() {
+        if (this.audioPrimed || this.audioPrimePromise || typeof Audio !== 'function') {
+            return this.audioPrimePromise;
+        }
+
+        try {
+            const primer = new Audio(SILENT_AUDIO_PRIMER);
+            primer.muted = true;
+            primer.volume = 0;
+            primer.preload = 'auto';
+
+            const maybePromise = primer.play?.();
+            if (maybePromise && typeof maybePromise.then === 'function') {
+                this.audioPrimePromise = maybePromise
+                    .then(() => {
+                        if (typeof primer.pause === 'function') {
+                            primer.pause();
+                        }
+                        primer.currentTime = 0;
+                        this.audioPrimed = true;
+                    })
+                    .catch(() => {})
+                    .finally(() => {
+                        this.audioPrimePromise = null;
+                    });
+                return this.audioPrimePromise;
+            }
+
+            this.audioPrimed = true;
+            return Promise.resolve();
+        } catch {
+            return Promise.resolve();
+        }
+    },
+
+    _isAutoplayPermissionError(error) {
+        const name = String(error?.name || '');
+        const message = String(error?.message || '');
+        return name === 'NotAllowedError' || /notallowed|user did not interact|gesture/i.test(message);
+    },
+
+    async playAudio(text) {
         if (!GameState.settings.soundEnabled) return;
 
         // Special check for synthesized sound effects
@@ -385,11 +480,46 @@ export const GameEngine = {
         if (text === 'win') return this.sounds.playWin();
         if (text === 'loss') return this.sounds.playLoss();
 
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
+        this.stopAudio();
+
+        if (typeof Audio === 'function') {
+            if (this.audioPrimePromise) {
+                await this.audioPrimePromise;
+            }
+            const audio = this._getOrCreateWordAudio(text);
+            if (!audio) {
+                this._speakText(text);
+                return;
+            }
+
+            this.currentAudio = audio;
+            this.currentAudio.currentTime = 0;
+            try {
+                await audio.play();
+                return;
+            } catch (error) {
+                this.currentAudio = null;
+                if (this._isAutoplayPermissionError(error)) {
+                    return;
+                }
+            }
+        }
+
+        this._speakText(text);
+    },
+
+    stopAudio() {
+        if (this.currentAudio) {
+            if (typeof this.currentAudio.pause === 'function') {
+                this.currentAudio.pause();
+            }
+            this.currentAudio.currentTime = 0;
+            this.currentAudio = null;
+        }
+
+        if (typeof window === 'undefined') return;
+        if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') {
+            window.speechSynthesis.cancel();
         }
     },
 

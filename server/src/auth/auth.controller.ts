@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto';
+import { buildAvatarPublicUrl, createAvatarUploadOptions } from './avatar-upload';
 
 @Controller('auth')
 export class AuthController {
@@ -24,5 +26,28 @@ export class AuthController {
     @Post('logout')
     async logout(@Headers('authorization') authorization?: string) {
         return this.authService.logout(authorization);
+    }
+
+    @Patch('profile')
+    async updateProfile(
+        @Headers('authorization') authorization: string,
+        @Body() body: UpdateProfileDto,
+    ) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        return this.authService.updateProfile(user.id, body);
+    }
+
+    @Post('avatar')
+    @UseInterceptors(FileInterceptor('avatar', createAvatarUploadOptions()))
+    async uploadAvatar(
+        @Headers('authorization') authorization: string,
+        @UploadedFile() file: any,
+    ) {
+        const user = await this.authService.requireUserFromAuthorization(authorization);
+        if (!file?.filename) {
+            throw new BadRequestException('Avatar file is required');
+        }
+        const avatarUrl = buildAvatarPublicUrl(file.filename);
+        return this.authService.updateAvatar(user.id, avatarUrl);
     }
 }
