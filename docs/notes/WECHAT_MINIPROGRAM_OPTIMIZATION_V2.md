@@ -109,7 +109,7 @@ const views = {
 #### 问题分析
 ```javascript
 // miniprogram/src/socket.js:15
-const SOCKET_URL = 'ws://101.132.183.204:3000/pk';
+const SOCKET_URL = 'ws://101.34.65.203:3000/pk';
 // ❌ 硬编码外部服务器
 // ❌ 使用ws://而非wss://（不安全）
 ```

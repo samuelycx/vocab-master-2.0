@@ -12,7 +12,7 @@ class SocketManagerClass {
 
         // WeChat Mini Program requires absolute WS URL
         // WebSocket URL configuration
-        const SOCKET_URL = 'ws://101.132.183.204:3000/pk';
+        const SOCKET_URL = 'ws://101.34.65.203:3000/pk';
         const url = SOCKET_URL;
 
         this.socket = io(url, {
