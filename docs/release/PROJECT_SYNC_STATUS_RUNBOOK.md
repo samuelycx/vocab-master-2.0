@@ -63,7 +63,7 @@ gh run view <run-id>
 - `headSha` 是否等于目标 `origin/main` SHA
 
 > [!info]
-> 2026-03-19 已验证的 run id 为 `23253723406`，对应 SHA：
+> 2026-03-19 首次闭环验证的 run id 为 `23253723406`，对应 SHA：
 > `97afd3e5bed2ea02794bcec7c7566b55c9268b04`
 
 ## 3. 服务器当前 release 检查
@@ -142,7 +142,7 @@ CLI 侧只负责 Git 留证；云端仍需在微信开发者工具中完成：
 3. 按 `[[MINIPROGRAM_PHASE1_CLOUD_CHECKLIST]]` 逐项验收
 4. 记录最终发布的 `commit`、`scope` 与验收结论
 
-## 6. 当前已验证基线（2026-03-19）
+## 6. 2026-03-19 首次闭环基线（历史记录）
 
 - 本地 `main` 与 `origin/main` 已对齐到 `97afd3e5bed2ea02794bcec7c7566b55c9268b04`
 - GitHub Actions run `23253723406` 已成功把同一 SHA 发布到服务器

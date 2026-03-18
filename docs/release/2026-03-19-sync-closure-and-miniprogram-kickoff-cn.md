@@ -27,7 +27,7 @@ updated: 2026-03-19
 ### 1. GitHub Actions 服务器部署已打通
 
 - 工作流：`.github/workflows/deploy-server-from-main.yml`
-- 最近一次已验证运行：`23253723406`
+- 首次闭环验证运行：`23253723406`
 - 运行结论：`success`
 - 对应 SHA：`97afd3e5bed2ea02794bcec7c7566b55c9268b04`
 
@@ -49,7 +49,7 @@ updated: 2026-03-19
 - 上传：`/var/www/vocab-master/shared/uploads/avatars`
 - 日志：`/var/www/vocab-master/shared/logs`
 
-### 3. 当前一致性证据
+### 3. 首次闭环一致性证据
 
 - 本地 `main` = `origin/main` = `97afd3e5bed2ea02794bcec7c7566b55c9268b04`
 - 服务器 `current/REVISION` = `97afd3e5bed2ea02794bcec7c7566b55c9268b04`

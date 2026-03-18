@@ -26,7 +26,7 @@ updated: 2026-03-19
 
 > [!success]
 > 2026-03-19 回填：本设计的服务器侧 Phase 1 / 2 已落地完成。
-> 当前已验证：
+> 首次闭环已验证：
 > - 本地 `main`、`origin/main`、服务器 `current/REVISION` 已对齐到 `97afd3e5bed2ea02794bcec7c7566b55c9268b04`
 > - 服务器已切换到 `repo / releases / shared / current` 结构，运行态已外置
 > - GitHub Actions `Deploy Server From Main` 已成功把同一 SHA 部署到 `101.34.65.203`
