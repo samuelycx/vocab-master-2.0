@@ -33,26 +33,16 @@ const saveProfile = async () => {
   saving.value = true;
   errorMessage.value = '';
   try {
-    let nextAvatar = GameState.user.avatar;
-    if (avatarFile.value) {
-      const uploadRes = await API.uploadAvatar(avatarFile.value);
-      if (!uploadRes?.success || !uploadRes.user?.avatar) {
-        errorMessage.value = uploadRes?.error || uploadRes?.message || '头像上传失败';
-        return;
-      }
-      nextAvatar = uploadRes.user.avatar;
-    }
-
-    const profileRes = await API.updateProfile({ nickname: nickname.value });
+    const profileRes = await API.updateProfile({
+      nickname: nickname.value,
+      avatar: avatarFile.value || undefined,
+    });
     if (!profileRes?.success || !profileRes.user) {
       errorMessage.value = profileRes?.error || profileRes?.message || '资料保存失败';
       return;
     }
 
-    Actions.setUser({
-      ...profileRes.user,
-      avatar: nextAvatar || profileRes.user.avatar,
-    });
+    Actions.setUser(profileRes.user);
     Actions.setView('settings');
   } catch (error) {
     console.error('Save profile failed', error);

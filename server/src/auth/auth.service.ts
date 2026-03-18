@@ -7,8 +7,15 @@ import {
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto';
+import { removeAvatarFile } from './avatar-upload';
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+
+type AvatarUpdateInput = {
+    avatarUrl?: string;
+    previousAvatarUrl?: string;
+    uploadRootCwd?: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -102,23 +109,35 @@ export class AuthService {
         return { success: true };
     }
 
-    async updateProfile(userId: string, body: UpdateProfileDto) {
-        const nickname = this.normalizeNickname(body?.nickname);
-        const user = await this.prisma.user.update({
-            where: { id: userId },
-            data: { nickname },
-        });
-        return {
-            success: true,
-            user: this.sanitizeUser(user),
-        };
-    }
+    async updateProfile(userId: string, body: UpdateProfileDto, avatar?: AvatarUpdateInput) {
+        const data: Record<string, string> = {};
+        if (body?.nickname !== undefined) {
+            data.nickname = this.normalizeNickname(body.nickname);
+        }
+        if (avatar?.avatarUrl) {
+            data.avatar = avatar.avatarUrl;
+        }
+        if (!Object.keys(data).length) {
+            throw new BadRequestException('No profile changes provided');
+        }
 
-    async updateAvatar(userId: string, avatarUrl: string) {
-        const user = await this.prisma.user.update({
-            where: { id: userId },
-            data: { avatar: avatarUrl },
-        });
+        let user;
+        try {
+            user = await this.prisma.user.update({
+                where: { id: userId },
+                data,
+            });
+        } catch (error) {
+            if (avatar?.avatarUrl) {
+                removeAvatarFile(avatar.avatarUrl, avatar.uploadRootCwd);
+            }
+            throw error;
+        }
+
+        if (avatar?.avatarUrl && avatar.previousAvatarUrl && avatar.previousAvatarUrl !== avatar.avatarUrl) {
+            removeAvatarFile(avatar.previousAvatarUrl, avatar.uploadRootCwd);
+        }
+
         return {
             success: true,
             user: this.sanitizeUser(user),

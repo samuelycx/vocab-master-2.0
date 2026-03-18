@@ -154,26 +154,21 @@ export const API = {
 
     async updateProfile(payload) {
         try {
+            const formData = typeof FormData !== 'undefined' ? new FormData() : null;
+            if (formData) {
+                if (payload?.nickname !== undefined) {
+                    formData.append('nickname', payload.nickname);
+                }
+                if (payload?.avatar) {
+                    formData.append('avatar', payload.avatar);
+                }
+            }
             return await requestJSON('/auth/profile', {
                 method: 'PATCH',
-                body: JSON.stringify(payload),
+                body: formData || JSON.stringify(payload),
             });
         } catch (e) {
             console.error('Update profile failed', e);
-            return { success: false, error: e.message };
-        }
-    },
-
-    async uploadAvatar(file) {
-        try {
-            const formData = new FormData();
-            formData.append('avatar', file);
-            return await requestJSON('/auth/avatar', {
-                method: 'POST',
-                body: formData,
-            });
-        } catch (e) {
-            console.error('Upload avatar failed', e);
             return { success: false, error: e.message };
         }
     },

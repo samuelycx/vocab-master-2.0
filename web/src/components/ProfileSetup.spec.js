@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-const mockUploadAvatar = vi.fn();
 const mockUpdateProfile = vi.fn();
 const mockSetUser = vi.fn();
 const mockSetView = vi.fn();
 
 vi.mock('../api.js', () => ({
   API: {
-    uploadAvatar: mockUploadAvatar,
     updateProfile: mockUpdateProfile,
   },
 }));
@@ -51,14 +49,10 @@ describe('ProfileSetup', () => {
     expect(wrapper.find('[data-test="avatar-preview"]').attributes('src')).toContain('blob:');
   });
 
-  it('saves avatar and nickname, then returns to settings', async () => {
-    mockUploadAvatar.mockResolvedValue({
-      success: true,
-      user: { avatar: '/uploads/avatars/new.png' },
-    });
+  it('saves nickname and optional avatar in a single request, then returns to settings', async () => {
     mockUpdateProfile.mockResolvedValue({
       success: true,
-      user: { id: 'user-1', username: 'sam', nickname: 'Samuel', avatar: '/uploads/avatars/original.png' },
+      user: { id: 'user-1', username: 'sam', nickname: 'Samuel', avatar: '/uploads/avatars/new.png' },
     });
 
     const { default: ProfileSetup } = await import('./ProfileSetup.vue');
@@ -75,8 +69,11 @@ describe('ProfileSetup', () => {
     await wrapper.get('.field-input').setValue('Samuel');
     await wrapper.get('.save-btn').trigger('click');
 
-    expect(mockUploadAvatar).toHaveBeenCalledTimes(1);
-    expect(mockUpdateProfile).toHaveBeenCalledWith({ nickname: 'Samuel' });
+    expect(mockUpdateProfile).toHaveBeenCalledTimes(1);
+    expect(mockUpdateProfile).toHaveBeenCalledWith({
+      nickname: 'Samuel',
+      avatar: file,
+    });
     expect(mockSetUser).toHaveBeenCalledWith(expect.objectContaining({
       nickname: 'Samuel',
       avatar: '/uploads/avatars/new.png',
@@ -84,10 +81,10 @@ describe('ProfileSetup', () => {
     expect(mockSetView).toHaveBeenCalledWith('settings');
   });
 
-  it('shows an error and stays on profile setup when avatar upload fails', async () => {
-    mockUploadAvatar.mockResolvedValue({
+  it('shows an error and does not partially update state when atomic save fails', async () => {
+    mockUpdateProfile.mockResolvedValue({
       success: false,
-      error: 'Avatar file is required',
+      error: 'Avatar file extension does not match MIME type',
     });
 
     const { default: ProfileSetup } = await import('./ProfileSetup.vue');
@@ -102,16 +99,13 @@ describe('ProfileSetup', () => {
     await input.trigger('change');
     await wrapper.get('.save-btn').trigger('click');
 
-    expect(mockUpdateProfile).not.toHaveBeenCalled();
+    expect(mockUpdateProfile).toHaveBeenCalledTimes(1);
+    expect(mockSetUser).not.toHaveBeenCalled();
     expect(mockSetView).not.toHaveBeenCalledWith('settings');
-    expect(wrapper.text()).toContain('Avatar file is required');
+    expect(wrapper.text()).toContain('Avatar file extension does not match MIME type');
   });
 
   it('shows an error and stays on profile setup when profile save fails', async () => {
-    mockUploadAvatar.mockResolvedValue({
-      success: true,
-      user: { avatar: '/uploads/avatars/new.png' },
-    });
     mockUpdateProfile.mockResolvedValue({
       success: false,
       error: 'Nickname must be 1-24 characters',
@@ -130,6 +124,7 @@ describe('ProfileSetup', () => {
     await wrapper.get('.field-input').setValue('');
     await wrapper.get('.save-btn').trigger('click');
 
+    expect(mockUpdateProfile).toHaveBeenCalledTimes(1);
     expect(mockSetUser).not.toHaveBeenCalled();
     expect(mockSetView).not.toHaveBeenCalledWith('settings');
     expect(wrapper.text()).toContain('Nickname must be 1-24 characters');
