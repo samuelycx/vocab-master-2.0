@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const { buildLeaderboardView } = require('./leaderboard-view')
 
 const RANKS = [
     { level: 1, title: '流浪者 (Wanderer)', vocabRequired: 0, icon: '' },
@@ -696,14 +697,17 @@ async function getLeaderboard({ limit = 20 } = {}) {
         .limit(safeLimit)
         .get()
 
-    const users = (userRes.data || []).map((u, idx) => ({
+    const users = buildLeaderboardView((userRes.data || []).map((u, idx) => ({
         id: u._id || u.id,
+        openid: u.openid,
         username: u.username,
         avatar: u.avatar,
-        level: Number(u.level) || 1,
-        xp: Number(u.xp) || 0,
-        rank: idx + 1
-    }))
+        level: u.level,
+        xp: u.xp,
+        totalCorrect: u.totalCorrect,
+        rank: idx + 1,
+        isProfileSet: u.isProfileSet
+    })))
 
     return { success: true, data: users }
 }

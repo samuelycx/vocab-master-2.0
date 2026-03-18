@@ -1,6 +1,8 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const { normalizeUserSnapshot } = require('./user-snapshot')
+const { buildProfileUpdatePlan } = require('./profile-update')
 
 exports.main = async (event, context) => {
     try {
@@ -79,7 +81,7 @@ async function login(openid, data = {}) {
         }
 
         const savedUser = { ...newUser, id: addRes._id || addRes.id }
-        return { success: true, data: savedUser }
+        return { success: true, data: normalizeUserSnapshot(savedUser) }
     }
 
     const existingUser = userRes.data[0]
@@ -114,23 +116,49 @@ async function login(openid, data = {}) {
         existingUser.deviceBindTime = new Date()
     }
     
-    return { success: true, data: { ...existingUser, id: existingUser._id || existingUser.id } }
+    return { success: true, data: normalizeUserSnapshot({ ...existingUser, id: existingUser._id || existingUser.id }) }
 }
 
 async function updateProfile(openid, data) {
-    const payload = data || {}
-    const safeData = {
-        isProfileSet: true
-    }
-    if (typeof payload.username === 'string') {
-        const normalized = payload.username.trim().slice(0, 24)
-        if (normalized) {
-            safeData.username = normalized
+    const plan = buildProfileUpdatePlan(data || {})
+    if (!plan.validation.ok || !plan.write.allowed || !plan.write.payload) {
+        return {
+            success: false,
+            code: plan.validation.errors[0]?.code || 'INVALID_PROFILE',
+            msg: '请输入有效昵称'
         }
     }
-    if (typeof payload.avatar === 'string') {
-        safeData.avatar = payload.avatar.trim().slice(0, 512)
+
+    try {
+        await db.collection('users').where({ openid }).update({ data: plan.write.payload })
+    } catch (e) {
+        await applyCleanup(plan.cleanup.onWriteFailure)
+        return {
+            success: false,
+            code: 'PROFILE_UPDATE_FAILED',
+            msg: e.message
+        }
     }
-    await db.collection('users').where({ openid }).update({ data: safeData })
-    return { success: true }
+
+    await applyCleanup(plan.cleanup.onWriteSuccess)
+
+    const userRes = await db.collection('users').where({ openid }).limit(1).get()
+    const updatedUser = (userRes.data || [])[0]
+
+    return {
+        success: true,
+        data: normalizeUserSnapshot(updatedUser || { openid, ...plan.write.payload })
+    }
+}
+
+async function applyCleanup(actions = []) {
+    const cleanupActions = Array.isArray(actions) ? actions : []
+    for (const action of cleanupActions) {
+        if (!action || action.type !== 'delete-file' || !action.fileID) continue
+        try {
+            await cloud.deleteFile({ fileList: [action.fileID] })
+        } catch (e) {
+            console.warn('cleanup file failed:', action.fileID, e)
+        }
+    }
 }

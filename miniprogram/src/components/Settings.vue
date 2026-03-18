@@ -29,7 +29,7 @@ const openid = ref(GameState.user?.openid || '');
 
 const getAvatarUrl = (avatar) => {
     if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
-    return avatar.startsWith('http') ? avatar : DEFAULT_AVATAR;
+    return avatar.startsWith('http') || avatar.startsWith('cloud://') ? avatar : DEFAULT_AVATAR;
 };
 
 const isDefaultProfile = () => {
@@ -49,18 +49,18 @@ const syncProfileToServer = async ({ username, avatar }, successToast = false) =
     const safeAvatar = String(avatar || '').trim();
     if (!safeUsername && !safeAvatar) return false;
 
-    const res = await API.updateProfile({ username: safeUsername, avatar: safeAvatar });
+    const res = await API.updateProfile({
+        username: safeUsername,
+        avatar: safeAvatar,
+        currentProfile: GameState.user
+    });
     if (typeof console !== 'undefined') {
         console.log('[ProfileDebug] updateProfile response', res);
     }
-    if (!res || !res.success) return false;
+    if (!res || !res.success || !res.data) return false;
 
-    Actions.setUser({
-        username: safeUsername || GameState.user.username,
-        nickname: safeUsername || GameState.user.nickname,
-        avatar: safeAvatar || GameState.user.avatar,
-        isProfileSet: true
-    });
+    Actions.setUser(res.data);
+    uni.setStorageSync('vocab_user', JSON.stringify(res.data));
 
     if (successToast) {
         uni.showToast({ title: t('settings_sync_success'), icon: 'success' });
@@ -200,15 +200,6 @@ const goToProfile = async () => {
             }
 
             if (await syncProfileToServer({ username, avatar }, true)) {
-                try {
-                    const refreshed = await API.login();
-                    if (refreshed && refreshed.success && refreshed.data) {
-                        Actions.setUser(refreshed.data);
-                        uni.setStorageSync('vocab_user', JSON.stringify(refreshed.data));
-                    }
-                } catch (e) {
-                    console.warn('Failed to refresh user after profile sync', e);
-                }
                 return;
             }
             uni.showToast({ title: t('settings_sync_failed'), icon: 'none' });

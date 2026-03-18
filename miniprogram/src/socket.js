@@ -1,17 +1,19 @@
-// 使用云开发实时数据库替代WebSocket
-// 安全优化：移除外部WebSocket服务器依赖
+// 当前小程序 PK 链路使用云开发数据库 watch 能力同步房间状态。
+// 一期只做旧服务端假设清理与注释收口，不调整匹配、结算、退出等核心行为。
+// 历史上的 PK 鉴权与服务端重构不在本期范围内，仍按现有 `userId/openid` 兼容逻辑运行。
 
 import { GameEngine } from "./engine.js";
 import { GameState, Actions } from "./state.js";
 
 class SocketManagerClass {
     constructor() {
+        // watcher 对应 `pk_rooms/{roomId}` 的云数据库实时监听，不再依赖 WebSocket client。
         this.watcher = null;
         this.roomId = null;
         this.db = null;
     }
 
-    // 初始化数据库
+    // 初始化云数据库实例；一期不引入新的服务端连接层。
     initDB() {
         if (!this.db) {
             this.db = wx.cloud.database();
@@ -65,10 +67,10 @@ class SocketManagerClass {
         }
     }
 
-    // 加入匹配队列
+    // 加入匹配队列：沿用现有房间复用/建房策略，仅通过云数据库读写驱动。
     async joinQueue(id, username, avatar) {
         this.initDB();
-        
+
         try {
             await this.cleanupStaleRooms();
 
@@ -115,20 +117,20 @@ class SocketManagerClass {
                     createdAt: this.db.serverDate()
                 }
             });
-            
+
             this.roomId = result._id;
-            
-            // 监听房间变化
+
+            // 建房后立即 watch 房间文档，等待第二名玩家写入。
             this.watchRoom(result._id);
-            
+
             // 提示用户正在等待匹配
             wx.showToast({
                 title: '正在匹配对手...',
                 icon: 'loading',
                 duration: 10000
             });
-            
-            // 30秒后如果还没匹配到，自动取消
+
+            // 30 秒仍未匹配成功则退出等待；保持现有超时与提示行为不变。
             setTimeout(() => {
                 if (this.roomId && this.db) {
                     this.db.collection('pk_rooms').doc(this.roomId).get().then(res => {
@@ -144,7 +146,7 @@ class SocketManagerClass {
                     });
                 }
             }, 30000);
-            
+
         } catch (e) {
             console.error('创建房间失败', e);
         }
@@ -171,7 +173,7 @@ class SocketManagerClass {
             });
 
             if (!joinRes.stats || joinRes.stats.updated === 0) {
-                // 房间已被抢占或已失效，重新入队匹配
+                // 房间已被抢占或已失效，重新入队匹配。
                 await this.joinQueue(userId, username, avatar);
                 return;
             }
@@ -182,32 +184,32 @@ class SocketManagerClass {
             }
 
             this.roomId = roomId;
-            
+
             // 监听房间变化
             this.watchRoom(roomId);
-            
+
             // 通知游戏开始
             const opponent = room.data.players.find(p => p.userId !== userId) || room.data.players[0];
             GameEngine.startOnlinePK(roomId, {
                 username: opponent.username,
                 avatar: opponent.avatar
             });
-            
+
         } catch (e) {
             console.error('加入房间失败', e);
             await this.joinQueue(userId, username, avatar);
         }
     }
 
-    // 监听房间变化
+    // 监听房间变化：watch 事件即当前的“实时通道”，不是旧版 WebSocket 推送。
     watchRoom(roomId) {
         this.initDB();
-        
+
         // 关闭之前的监听
         if (this.watcher) {
             this.watcher.close();
         }
-        
+
         // 监听房间变化
         this.watcher = this.db.collection('pk_rooms')
             .doc(roomId)
@@ -229,6 +231,7 @@ class SocketManagerClass {
                         return;
                     }
                     if (room && room.players) {
+                        // 维持现有多 ID 字段兼容，PK 鉴权口径统一留给后续服务端重构处理。
                         const myId = GameState.user.id || GameState.user._id || GameState.user.openid;
                         // 更新对手分数
                         const opponent = room.players.find(p => p.userId !== myId);
@@ -243,7 +246,7 @@ class SocketManagerClass {
                             GameState.game.pk.opponent.score = opponent.score;
                             GameEngine.checkPKWinner();
                         }
-                        
+
                         // 检查游戏是否结束
                         if (room.status === 'ended') {
                             // Avoid repeated settlement on duplicated watch events.
@@ -251,7 +254,7 @@ class SocketManagerClass {
 
                             const myPlayer = room.players.find(p => p.userId === myId);
                             const otherPlayer = room.players.find(p => p.userId !== myId);
-                            
+
                             if (myPlayer && otherPlayer) {
                                 const isWin = myPlayer.score > otherPlayer.score;
                                 if (isWin) {
@@ -274,7 +277,7 @@ class SocketManagerClass {
     // 更新分数
     async updateScore(score) {
         if (!this.roomId || !this.db) return;
-        
+
         try {
             const myId = GameState.user.id || GameState.user._id || GameState.user.openid;
             if (!myId) return;
@@ -282,7 +285,7 @@ class SocketManagerClass {
             // 获取当前房间信息
             const room = await this.db.collection('pk_rooms').doc(this.roomId).get();
             if (!room.data) return;
-            
+
             // 更新自己的分数
             const players = room.data.players.map(p => {
                 if (p.userId === myId) {
@@ -290,18 +293,18 @@ class SocketManagerClass {
                 }
                 return p;
             });
-            
+
             await this.db.collection('pk_rooms').doc(this.roomId).update({
                 data: {
                     players
                 }
             });
-            
+
             // 检查是否达到胜利条件（200分）
             if (score >= 200) {
                 await this.endGame(this.roomId, myId, 'score_limit');
             }
-            
+
         } catch (e) {
             console.error('更新分数失败', e);
         }
@@ -330,8 +333,8 @@ class SocketManagerClass {
             this.watcher.close();
             this.watcher = null;
         }
-        
-        // 安全退出：等待房间可删除；对战中仅标记结束，避免删掉对手房间
+
+        // 安全退出：等待房间可删除；对战中仅标记结束，避免删掉对手房间。
         if (this.roomId && this.db) {
             try {
                 const res = await this.db.collection('pk_rooms').doc(this.roomId).get();
@@ -354,7 +357,7 @@ class SocketManagerClass {
             }
             this.roomId = null;
         }
-        
+
         // 隐藏提示
         wx.hideToast();
     }

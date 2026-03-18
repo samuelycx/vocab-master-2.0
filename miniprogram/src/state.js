@@ -1,4 +1,5 @@
 import { reactive, watch } from 'vue';
+import { mergeUserState } from './utils/user-snapshot.js';
 
 // Initial State
 const initialState = {
@@ -97,6 +98,12 @@ parsed.systemLayout = { ...initialState.systemLayout }; // Always fresh from har
 
 parsed.settings = { ...initialState.settings, ...parsed.settings };
 parsed.user = { ...initialState.user, ...parsed.user };
+if (shouldNormalizeUser(parsed.user)) {
+    parsed.user = {
+        ...mergeUserState({}, parsed.user),
+        isLoggedIn: Boolean(parsed.user.isLoggedIn)
+    };
+}
 
 if (!parsed.game.social) {
     parsed.game.social = { ...initialState.game.social };
@@ -115,6 +122,17 @@ function debounce(func, delay) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), delay);
     };
+}
+
+function shouldNormalizeUser(userData) {
+    if (!userData || typeof userData !== 'object') return false;
+    return Boolean(
+        userData.id
+        || userData._id
+        || userData.openid
+        || Object.prototype.hasOwnProperty.call(userData, 'isProfileSet')
+        || Object.prototype.hasOwnProperty.call(userData, 'role')
+    );
 }
 
 watch(() => state.user, debounce((newVal) => {
@@ -170,7 +188,10 @@ export const Actions = {
         state.system.modules = modules;
     },
     setUser(userData) {
-        Object.assign(state.user, userData);
+        const nextUser = shouldNormalizeUser(userData)
+            ? mergeUserState(state.user, userData)
+            : userData;
+        Object.assign(state.user, nextUser);
         if (userData && Object.prototype.hasOwnProperty.call(userData, 'isLoggedIn')) {
             state.user.isLoggedIn = Boolean(userData.isLoggedIn);
         }

@@ -17,6 +17,8 @@ const start = async () => {
             Actions.setLogin(true);
             uni.removeStorageSync('vocab_skip_auto_login');
             uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+            Actions.setView(res.data.isProfileSet === false ? 'profile-setup' : 'dashboard');
+            return;
         }
         
         Actions.setView('dashboard');

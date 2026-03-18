@@ -1,7 +1,10 @@
 // WeChat Cloud Development API Client
-// This replaces the REST-based api.js to use Cloud Functions
+// All mini program requests go through cloud functions or cloud storage.
 
 import { DEFAULT_LEARN_COUNT } from './constants.js';
+import { mergeUserState } from './utils/user-snapshot.js';
+import { normalizeLeaderboardEntries } from './utils/leaderboard.js';
+import { buildProfileSavePlan } from './utils/profile-save.js';
 
 const callCloud = async (name, type, data = {}) => {
     try {
@@ -25,6 +28,32 @@ const callCloud = async (name, type, data = {}) => {
         console.error(`Cloud Function [${name}.${type}] Error:`, e);
         return { success: false, code: 'REQUEST_ERROR', msg: e.message, error: e.message };
     }
+};
+
+const normalizeAuthResponse = (res) => {
+    if (!res?.success || !res.data) {
+        return res;
+    }
+    return {
+        ...res,
+        data: mergeUserState({}, res.data)
+    };
+};
+
+const uploadAvatarToCloud = async (filePath) => {
+    if (!filePath) return '';
+    if (typeof wx === 'undefined' || !wx.cloud || typeof wx.cloud.uploadFile !== 'function') {
+        throw new Error('Cloud upload not available');
+    }
+
+    const ext = filePath.includes('.') ? filePath.slice(filePath.lastIndexOf('.')) : '.png';
+    const cloudPath = `avatars/${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
+    const res = await wx.cloud.uploadFile({
+        cloudPath,
+        filePath
+    });
+
+    return res?.fileID || '';
 };
 
 export const API = {
@@ -87,11 +116,55 @@ export const API = {
             windowHeight: windowInfo.windowHeight
         }
         
-        return await callCloud('auth', 'login', { deviceInfo: combinedInfo });
+        return normalizeAuthResponse(await callCloud('auth', 'login', { deviceInfo: combinedInfo }));
     },
 
-    async updateProfile({ username, avatar }) {
-        return await callCloud('auth', 'updateProfile', { username, avatar });
+    async updateProfile({ username, avatar, currentProfile = {} } = {}) {
+        const nextAvatar = avatar || currentProfile.avatar || '';
+        const nextUsername = username || currentProfile.username || currentProfile.nickname || '';
+        const nextProfile = { username: nextUsername, avatar: nextAvatar };
+        let savePlan = buildProfileSavePlan({ currentProfile, nextProfile });
+        if (!savePlan.validation.ok) {
+            return {
+                success: false,
+                code: savePlan.validation.errors[0]?.code || 'INVALID_PROFILE',
+                msg: '请输入有效昵称'
+            };
+        }
+
+        let uploadedAvatar = '';
+        if (savePlan.upload.required) {
+            try {
+                uploadedAvatar = await uploadAvatarToCloud(savePlan.upload.filePath);
+            } catch (e) {
+                console.error('avatar upload failed', e);
+                return {
+                    success: false,
+                    code: 'AVATAR_UPLOAD_FAILED',
+                    msg: '头像上传失败',
+                    error: e.message
+                };
+            }
+
+            savePlan = buildProfileSavePlan({
+                currentProfile,
+                nextProfile,
+                uploadedAvatar
+            });
+        }
+
+        if (!savePlan.write.allowed || !savePlan.write.payload) {
+            return {
+                success: false,
+                code: savePlan.write.blockedBy === 'upload' ? 'AVATAR_UPLOAD_FAILED' : 'INVALID_PROFILE',
+                msg: savePlan.write.blockedBy === 'upload' ? '头像上传失败' : '请输入有效昵称'
+            };
+        }
+
+        return normalizeAuthResponse(await callCloud('auth', 'updateProfile', {
+            ...savePlan.write.payload,
+            uploadedAvatar
+        }));
     },
 
     // --- Admin API ---
@@ -114,8 +187,13 @@ export const API = {
         const res = await callCloud('progress', 'getStats');
         if (!res.success) return null;
         // Normalize shape for existing UI callers.
-        if (res.data && res.data.user) return res.data;
-        return { user: res.data };
+        if (res.data && res.data.user) {
+            return {
+                ...res.data,
+                user: mergeUserState({}, res.data.user)
+            };
+        }
+        return { user: mergeUserState({}, res.data) };
     },
 
     async getAchievements() {
@@ -131,9 +209,9 @@ export const API = {
     },
 
     // --- Social API ---
-    async getLeaderboard() {
-        const res = await callCloud('progress', 'getLeaderboard', { limit: 20 });
-        return res.success && Array.isArray(res.data) ? res.data : [];
+    async getLeaderboard(limit = 20) {
+        const res = await callCloud('progress', 'getLeaderboard', { limit });
+        return res.success && Array.isArray(res.data) ? normalizeLeaderboardEntries(res.data) : [];
     },
 
     async searchUsers(query) {

@@ -17,29 +17,13 @@ const isEmoji = (str) => {
 
 const getAvatarUrl = (avatar) => {
     if (!avatar || isEmoji(avatar)) return DEFAULT_AVATAR;
-    if (avatar.startsWith('http')) return avatar;
+    if (avatar.startsWith('http') || avatar.startsWith('cloud://') || avatar.startsWith('wxfile://')) return avatar;
     return DEFAULT_AVATAR;
 };
 
 const onChooseAvatar = (e) => {
     const { avatarUrl: newAvatar } = e.detail;
     avatarUrl.value = newAvatar;
-};
-
-const uploadAvatarIfNeeded = async (url) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    if (typeof wx === 'undefined' || !wx.cloud || typeof wx.cloud.uploadFile !== 'function') {
-        return url;
-    }
-
-    const ext = url.includes('.') ? url.slice(url.lastIndexOf('.')) : '.png';
-    const cloudPath = `avatars/${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
-    const res = await wx.cloud.uploadFile({
-        cloudPath,
-        filePath: url
-    });
-    return res?.fileID || url;
 };
 
 const saveProfile = async () => {
@@ -49,31 +33,25 @@ const saveProfile = async () => {
     }
 
     uni.showLoading({ title: '保存中...' });
-    
-    let finalAvatar = avatarUrl.value;
+
     try {
-        finalAvatar = await uploadAvatarIfNeeded(avatarUrl.value);
-    } catch (e) {
-        console.warn('avatar upload failed', e);
-    }
-
-    const res = await API.updateProfile({
-        username: nickname.value,
-        avatar: finalAvatar
-    });
-
-    uni.hideLoading();
-
-    if (res && res.success) {
-        Actions.setUser({
+        const res = await API.updateProfile({
             username: nickname.value,
-            avatar: finalAvatar,
-            isProfileSet: true
+            avatar: avatarUrl.value,
+            currentProfile: user
         });
-        uni.showToast({ title: '设置成功', icon: 'success' });
-        Actions.setView('settings');
-    } else {
-        uni.showToast({ title: '保存失败', icon: 'none' });
+
+        if (res && res.success && res.data) {
+            Actions.setUser(res.data);
+            uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+            uni.showToast({ title: '设置成功', icon: 'success' });
+            Actions.setView('settings');
+            return;
+        }
+
+        uni.showToast({ title: res?.msg || '保存失败', icon: 'none' });
+    } finally {
+        uni.hideLoading();
     }
 };
 </script>

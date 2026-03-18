@@ -6,19 +6,15 @@ import { API } from '../api.js';
 import { useI18n } from '../i18n.js';
 import { DEFAULT_LEARN_COUNT } from '../constants.js';
 import { getAchievementIconById } from '../utils/achievement-icons.js';
+import { getDisplayAvatarUrl } from '../utils/avatar-url.js';
 
 const DAILY_GOAL = DEFAULT_LEARN_COUNT;
-const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
-
 const user = GameState.user;
 const state = GameState;
 const reviewCount = ref(0);
 const { t } = useI18n();
 
-const getAvatarUrl = (avatar) => {
-  if (!avatar || typeof avatar !== 'string') return DEFAULT_AVATAR;
-  return avatar.startsWith('http') ? avatar : DEFAULT_AVATAR;
-};
+const getAvatarUrl = (avatar) => getDisplayAvatarUrl(avatar);
 
 const stats = computed(() => {
   const totalCorrect = Number(user.totalCorrect) || 0;

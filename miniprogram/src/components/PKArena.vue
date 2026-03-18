@@ -5,6 +5,7 @@ import { GameEngine } from '../engine.js';
 import { SocketManager } from '../socket.js';
 import { useI18n } from '../i18n.js';
 import { UI_ICONS } from '../utils/ui-icons.js';
+import { getDisplayAvatarUrl } from '../utils/avatar-url.js';
 
 const session = GameEngine.session;
 const pk = computed(() => GameState.game.pk);
@@ -26,8 +27,6 @@ const footerRewardText = computed(() => {
     return t('pk_reward_xp', { xp: session.lastAwardXP || 0 });
 });
 
-const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
-
 const isEmoji = (str) => {
     if (!str || typeof str !== 'string') return false;
     const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
@@ -35,9 +34,8 @@ const isEmoji = (str) => {
 };
 
 const getAvatarUrl = (avatar) => {
-    if (!avatar || isEmoji(avatar)) return DEFAULT_AVATAR;
-    if (avatar.startsWith('http')) return avatar;
-    return DEFAULT_AVATAR;
+    if (!avatar || isEmoji(avatar)) return getDisplayAvatarUrl('');
+    return getDisplayAvatarUrl(avatar);
 };
 
 watch(() => session.currentWord, (newWord) => {

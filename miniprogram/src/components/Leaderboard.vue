@@ -87,7 +87,7 @@ onMounted(() => {
                             'text-slate-300 dark_text-slate-500': index > 2
                         }"
                     >
-                        <text>{{ index + 1 }}</text>
+                        <text>{{ user.rank || (index + 1) }}</text>
                     </view>
 
                     <!-- Avatar -->
@@ -100,7 +100,7 @@ onMounted(() => {
 
                     <!-- Info -->
                     <view class="flex-1 min-w-0">
-                        <text class="font-bold text-slate-800 dark_text-white truncate block">{{ user.username }}</text>
+                        <text class="font-bold text-slate-800 dark_text-white truncate block">{{ user.displayName || user.username }}</text>
                         <text class="text-xs text-slate-500 dark_text-slate-400 font-medium block">{{ t('leaderboard_level', { level: user.level }) }}</text>
                     </view>
 

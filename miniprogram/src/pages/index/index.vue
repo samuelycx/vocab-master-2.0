@@ -20,6 +20,15 @@ import { GameEngine } from '../../engine.js';
 
 const LOGIN_DEBUG = true;
 
+const applyAuthenticatedUser = (userSnapshot) => {
+  Actions.setUser(userSnapshot);
+  Actions.setLogin(true);
+  uni.setStorageSync('vocab_user', JSON.stringify(userSnapshot));
+  if (userSnapshot?.isProfileSet === false) {
+    Actions.setView('profile-setup');
+  }
+};
+
 onMounted(async () => {
   try {
     // Auto-login (Moved from Welcome.vue)
@@ -41,9 +50,7 @@ onMounted(async () => {
           console.log('[LoginDebug] login response', res);
         }
         if (res && res.success && res.data) {
-          Actions.setUser(res.data);
-          Actions.setLogin(true);
-          uni.setStorageSync('vocab_user', JSON.stringify(res.data));
+          applyAuthenticatedUser(res.data);
           if (LOGIN_DEBUG) {
             console.log('[LoginDebug] login data openid', {
               openid: res.data.openid,
@@ -92,7 +99,7 @@ onMounted(async () => {
       try {
         const stats = await API.getStats(GameState.user.id);
         if (stats && stats.user) {
-          Actions.setUser(stats.user);
+          applyAuthenticatedUser(stats.user);
         }
       } catch (e) {
         console.warn('Failed to refresh stats', e);

@@ -146,12 +146,12 @@ const formatTime = (timestamp) => {
                     </view>
                     
                     <view class="rank-avatar-small">
-                        <text>{{ u.username?.[0] || 'U' }}</text>
+                        <text>{{ u.displayName?.[0] || u.username?.[0] || 'U' }}</text>
                     </view>
                     
                     <view class="rank-user-info">
                         <text class="rank-username">
-                            {{ u.username }}
+                            {{ u.displayName || u.username }}
                             <text v-if="u.id === myId" class="me-tag">{{ t('social_me') }}</text>
                         </text>
                         <text class="rank-level">Lv.{{ u.level || 1 }}</text>
