@@ -25,7 +25,21 @@ export class AdminService {
 
     async getUsers() {
         return this.prisma.user.findMany({
-            orderBy: { xp: 'desc' }
+            orderBy: { xp: 'desc' },
+            select: {
+                id: true,
+                username: true,
+                nickname: true,
+                role: true,
+                avatar: true,
+                level: true,
+                xp: true,
+                coins: true,
+                streak: true,
+                totalCorrect: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
     }
 

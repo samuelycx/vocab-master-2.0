@@ -7,16 +7,20 @@ export class WordService {
     constructor(private prisma: PrismaService) { }
 
     async getWordsForSession(count: number = 10, category?: string): Promise<Word[]> {
-        let words: Word[] = [];
         if (category && category !== 'GENERAL') {
-            words = await this.prisma.$queryRawUnsafe<Word[]>(`SELECT * FROM Word WHERE category = '${category}' ORDER BY RANDOM() LIMIT ${count}`);
+            const scopedWords = await this.prisma.word.findMany({
+                where: { category },
+                take: count,
+            });
+            if (scopedWords.length > 0) {
+                return this.shuffle(scopedWords).slice(0, count);
+            }
         }
 
-        // Fallback if no words found in category or category is GENERAL
-        if (words.length === 0) {
-            words = await this.prisma.$queryRaw<Word[]>`SELECT * FROM Word ORDER BY RANDOM() LIMIT ${count}`;
-        }
-        return words;
+        const words = await this.prisma.word.findMany({
+            take: Math.max(count, 50),
+        });
+        return this.shuffle(words).slice(0, count);
     }
 
     async createWord(data: any): Promise<Word> {
@@ -32,5 +36,9 @@ export class WordService {
             return this.prisma.word.findMany({ where: { category } });
         }
         return this.prisma.word.findMany();
+    }
+
+    private shuffle(words: Word[]) {
+        return [...words].sort(() => Math.random() - 0.5);
     }
 }

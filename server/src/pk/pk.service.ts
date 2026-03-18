@@ -38,7 +38,10 @@ export class PkService {
 
     async joinQueue(client: Socket, user: { id?: string, username?: string, avatar?: string, token?: string }) {
         const resolvedUser = await this.resolvePlayerIdentity(client, user);
-        if (!resolvedUser) return;
+        if (!resolvedUser) {
+            client.emit('error', { message: 'Unauthorized player' });
+            return;
+        }
         // Prevent double join
         if (this.queue.find(p => p.userId === resolvedUser.id)) return;
         if (this.playerGameMap.has(client.id)) return;
@@ -62,7 +65,11 @@ export class PkService {
         const authToken = explicitToken || String(client.handshake?.auth?.token || '').trim();
         const authHeader = String(client.handshake?.headers?.authorization || '').trim();
 
-        if (authToken || authHeader) {
+        if (!authToken && !authHeader) {
+            return null;
+        }
+
+        try {
             const authorization = authHeader || `Bearer ${authToken}`;
             const currentUser = await this.authService.requireUserFromAuthorization(authorization);
             return {
@@ -70,14 +77,9 @@ export class PkService {
                 username: currentUser.username,
                 avatar: currentUser.avatar,
             };
+        } catch {
+            return null;
         }
-
-        if (!user?.id || !user?.username) return null;
-        return {
-            id: user.id,
-            username: user.username,
-            avatar: user.avatar || '🎓',
-        };
     }
 
     async createPrivateMatch(
@@ -85,7 +87,10 @@ export class PkService {
         user: { id?: string, username?: string, avatar?: string, token?: string },
     ) {
         const resolvedUser = await this.resolvePlayerIdentity(client, user);
-        if (!resolvedUser) return null;
+        if (!resolvedUser) {
+            client.emit('error', { message: 'Unauthorized player' });
+            return null;
+        }
 
         const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const player: Player = {

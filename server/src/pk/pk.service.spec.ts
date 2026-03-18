@@ -40,6 +40,39 @@ describe('PkService', () => {
         expect(client.emit).toHaveBeenCalledWith('queue_joined', { position: 1 });
     });
 
+    it('rejects payload-only queue joins without a token', async () => {
+        const client = {
+            id: 'socket-1',
+            emit: jest.fn(),
+            handshake: { auth: {}, headers: {} },
+        };
+
+        await service.joinQueue(client as any, { id: 'spoof', username: 'fake' } as any);
+
+        expect(client.emit).toHaveBeenCalledWith(
+            'error',
+            expect.objectContaining({ message: expect.stringMatching(/unauthorized/i) }),
+        );
+        expect(client.emit).not.toHaveBeenCalledWith('queue_joined', expect.anything());
+    });
+
+    it('rejects invalid queue join tokens instead of throwing', async () => {
+        authService.requireUserFromAuthorization.mockRejectedValue(new Error('invalid token'));
+
+        const client = {
+            id: 'socket-invalid',
+            emit: jest.fn(),
+            handshake: { auth: { token: 'bad-token' }, headers: {} },
+        };
+
+        await expect(service.joinQueue(client as any, { token: 'bad-token' } as any)).resolves.toBeUndefined();
+
+        expect(client.emit).toHaveBeenCalledWith(
+            'error',
+            expect.objectContaining({ message: expect.stringMatching(/unauthorized/i) }),
+        );
+    });
+
     it('resolves player from auth token when creating a private match', async () => {
         authService.requireUserFromAuthorization.mockResolvedValue({
             id: 'user-2',
@@ -60,6 +93,24 @@ describe('PkService', () => {
             'private_created',
             expect.objectContaining({ inviteCode: expect.any(String) }),
         );
+    });
+
+    it('rejects payload-only private match creation without a token', async () => {
+        const client = {
+            id: 'socket-2',
+            emit: jest.fn(),
+            handshake: { auth: {}, headers: {} },
+        };
+
+        await expect(
+            service.createPrivateMatch(client as any, { id: 'spoof', username: 'fake' } as any),
+        ).resolves.toBeNull();
+
+        expect(client.emit).toHaveBeenCalledWith(
+            'error',
+            expect.objectContaining({ message: expect.stringMatching(/unauthorized/i) }),
+        );
+        expect(client.emit).not.toHaveBeenCalledWith('private_created', expect.anything());
     });
 
     it('resolves player from auth token when joining a private match', async () => {
@@ -89,5 +140,33 @@ describe('PkService', () => {
             'match_found',
             expect.objectContaining({ gameId: `private_${inviteCode}` }),
         );
+    });
+
+    it('rejects payload-only private match joins without a token', async () => {
+        authService.requireUserFromAuthorization.mockResolvedValue({
+            id: 'host-1',
+            username: 'host',
+            avatar: 'host.png',
+        });
+
+        const hostClient = {
+            id: 'socket-host',
+            emit: jest.fn(),
+            handshake: { auth: { token: 'host-token' }, headers: {} },
+        };
+        const guestClient = {
+            id: 'socket-guest',
+            emit: jest.fn(),
+            handshake: { auth: {}, headers: {} },
+        };
+
+        const inviteCode = await service.createPrivateMatch(hostClient as any, { token: 'host-token' } as any);
+        await service.joinPrivateMatch(guestClient as any, { id: 'spoof', username: 'fake' } as any, inviteCode!);
+
+        expect(guestClient.emit).toHaveBeenCalledWith(
+            'error',
+            expect.objectContaining({ message: expect.stringMatching(/unauthorized/i) }),
+        );
+        expect(server.to).not.toHaveBeenCalledWith('socket-guest');
     });
 });
