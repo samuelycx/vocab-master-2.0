@@ -50,6 +50,21 @@ describe('SocketManager', () => {
     );
   });
 
+  it('uses the same local backend base for pk sockets as the http proxy', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, hostname: 'localhost', port: '5173' },
+    });
+    const { SocketManager } = await import('./socket.js');
+
+    SocketManager.connect();
+
+    expect(ioMock).toHaveBeenCalledWith(
+      'http://localhost:3002/pk',
+      expect.any(Object),
+    );
+  });
+
   it('joins queue and private rooms with token payloads', async () => {
     localStorage.setItem('vocab_token', 'socket-token');
     const { SocketManager } = await import('./socket.js');

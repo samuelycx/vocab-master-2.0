@@ -11,5 +11,9 @@ client/dist/
 server/dist/
 server/prisma/*.db
 server/prisma/*.db-journal
+server/test/*.db
+server/test/*.db-journal
+server/uploads/
+tts/*.json
 
 .worktrees/

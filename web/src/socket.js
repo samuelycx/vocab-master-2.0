@@ -10,11 +10,9 @@ class SocketManagerClass {
     connect() {
         if (this.socket && this.socket.connected) return;
 
-        // Connect to the PK namespace using relative path
-        // This works for both development (if proxy is set) and production (single server)
-        // Connect to the PK namespace using dynamic URL for production
+        const localBackend = import.meta.env.VITE_LOCAL_BACKEND_URL || 'http://localhost:3002';
         const url = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' && window.location.port === '5173'
-            ? 'http://localhost:3000/pk'
+            ? `${localBackend}/pk`
             : '/pk');
 
         const token = localStorage.getItem('vocab_token');

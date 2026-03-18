@@ -1,10 +1,11 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { AuthController } from './../src/auth/auth.controller';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication;
+  let authController: AuthController;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -13,6 +14,7 @@ describe('Auth (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    authController = app.get(AuthController);
   });
 
   afterEach(async () => {
@@ -23,43 +25,28 @@ describe('Auth (e2e)', () => {
     const username = `webuser_${Date.now()}`;
     const password = 'secret123';
 
-    const registerRes = await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({ username, password })
-      .expect(201);
+    const registerRes = await authController.register({ username, password });
 
-    expect(registerRes.body.success).toBe(true);
-    expect(registerRes.body.token).toBeTruthy();
-    expect(registerRes.body.user.username).toBe(username);
-    expect(registerRes.body.user.passwordHash).toBeUndefined();
+    expect(registerRes.success).toBe(true);
+    expect(registerRes.token).toBeTruthy();
+    expect(registerRes.user.username).toBe(username);
+    expect(registerRes.user.passwordHash).toBeUndefined();
 
-    const loginRes = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ username, password })
-      .expect(201);
+    const loginRes = await authController.login({ username, password });
 
-    expect(loginRes.body.success).toBe(true);
-    expect(loginRes.body.token).toBeTruthy();
-    expect(loginRes.body.user.username).toBe(username);
+    expect(loginRes.success).toBe(true);
+    expect(loginRes.token).toBeTruthy();
+    expect(loginRes.user.username).toBe(username);
 
-    const token = loginRes.body.token;
+    const token = loginRes.token;
 
-    const meRes = await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const meRes = await authController.me(`Bearer ${token}`);
 
-    expect(meRes.body.success).toBe(true);
-    expect(meRes.body.user.username).toBe(username);
+    expect(meRes.success).toBe(true);
+    expect(meRes.user.username).toBe(username);
 
-    await request(app.getHttpServer())
-      .post('/auth/logout')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(201);
+    await authController.logout(`Bearer ${token}`);
 
-    await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(401);
+    await expect(authController.me(`Bearer ${token}`)).rejects.toThrow(UnauthorizedException);
   });
 });

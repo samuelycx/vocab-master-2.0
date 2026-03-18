@@ -60,9 +60,9 @@ A modern, gamified vocabulary learning application built with **NestJS**, **Vue 
 1.  **Start the Backend**:
     ```bash
     cd server
-    npm run start:dev
+    PORT=3002 npm run start:dev
     ```
-    Backend will run on `http://localhost:3000`.
+    Backend will run on `http://localhost:3002` for local web development.
 
 2.  **Start the Frontend**:
     ```bash
@@ -70,6 +70,10 @@ A modern, gamified vocabulary learning application built with **NestJS**, **Vue 
     npm run dev
     ```
     Frontend will typically run on `http://localhost:5173`.
+
+    If you need a different local backend port, set the same base in both places:
+    - backend: `PORT=<your-port> npm run start:dev`
+    - frontend: `VITE_LOCAL_BACKEND_URL=http://localhost:<your-port> npm run dev`
 
 ## 🧪 Development Scripts
 
