@@ -80,6 +80,13 @@ A modern, gamified vocabulary learning application built with **NestJS**, **Vue 
 - **Verify Reset**: `npx ts-node server/scripts/verify-reset.ts`
 - **Seed Reviews**: `npx ts-node server/scripts/seed-reviews.ts`
 - **Clean Vocab**: `node scripts/clean-vocab-safe.js`
+- **Project Sync Audit**: `bash scripts/sync/collect-project-sync-status.sh`
+
+## 🔄 Sync Governance
+
+- Project-wide sync governance design: `docs/plans/2026-03-18-project-sync-governance-design.md`
+- Project-wide sync implementation plan: `docs/plans/2026-03-18-project-sync-governance-implementation.md`
+- Current local sync status runbook: `docs/release/PROJECT_SYNC_STATUS_RUNBOOK.md`
 
 ## 🤝 Contributing
 
