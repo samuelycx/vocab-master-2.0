@@ -23,8 +23,25 @@ function resolveServerRoot(cwd = process.cwd()) {
   return cwd.endsWith('/server') ? cwd : join(cwd, 'server');
 }
 
+function resolveSharedUploadsRoot() {
+  const explicitUploadsRoot = String(process.env.SERVER_SHARED_UPLOADS_ROOT || '').trim();
+  if (explicitUploadsRoot) {
+    return explicitUploadsRoot;
+  }
+
+  const sharedRoot = String(process.env.SERVER_SHARED_ROOT || '').trim();
+  if (sharedRoot) {
+    return join(sharedRoot, 'uploads');
+  }
+
+  return null;
+}
+
 export function resolveAvatarUploadDir(cwd = process.cwd()) {
-  const dir = join(resolveServerRoot(cwd), 'uploads', 'avatars');
+  const sharedUploadsRoot = resolveSharedUploadsRoot();
+  const dir = sharedUploadsRoot
+    ? join(sharedUploadsRoot, 'avatars')
+    : join(resolveServerRoot(cwd), 'uploads', 'avatars');
   mkdirSync(dir, { recursive: true });
   return dir;
 }

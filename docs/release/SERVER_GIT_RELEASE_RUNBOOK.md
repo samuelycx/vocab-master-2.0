@@ -15,6 +15,14 @@ Deploy server releases from a Git SHA instead of syncing a local working directo
   backups/
 ```
 
+Shared runtime defaults:
+
+- `SERVER_SHARED_ROOT=/var/www/vocab-master/shared`
+- `SERVER_ENV_FILE=/var/www/vocab-master/shared/env/server.env`
+- `DATABASE_URL="file:/var/www/vocab-master/shared/prisma/dev.db"`
+- uploads live in `/var/www/vocab-master/shared/uploads`
+- logs live in `/var/www/vocab-master/shared/logs`
+
 ## Dry-run checks
 
 Bootstrap layout:
@@ -27,6 +35,12 @@ Deploy from Git:
 
 ```bash
 bash scripts/server/deploy-from-git.sh --dry-run /tmp/vocab-master-release-root --sha HEAD
+```
+
+Git-driven deploy entrypoint:
+
+```bash
+bash scripts/deploy-aliyun.sh --dry-run --sha HEAD --release-root /tmp/vocab-master-release-root
 ```
 
 ## Expected dry-run output
@@ -48,4 +62,6 @@ bash scripts/server/deploy-from-git.sh --dry-run /tmp/vocab-master-release-root 
 2. Clone/fetch Git repository into `repo/`.
 3. Expand target SHA into `releases/<sha>/`.
 4. Link `current/` to the new release.
-5. In later tasks, connect shared runtime state and PM2 restart.
+5. Load shared runtime config from `shared/env/server.env`.
+6. Build web/server from `current/` and restart PM2 from `current/server/ecosystem.config.cjs`.
+7. Keep SQLite, uploads and logs under `shared/prisma`, `shared/uploads`, `shared/logs`.

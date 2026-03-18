@@ -5,6 +5,16 @@ function resolveServerBase(cwd = process.cwd()) {
   return join(cwd, 'server');
 }
 
+function resolveSharedUploadsRoot() {
+  const explicitUploadsRoot = String(process.env.SERVER_SHARED_UPLOADS_ROOT || '').trim();
+  if (explicitUploadsRoot) return explicitUploadsRoot;
+
+  const sharedRoot = String(process.env.SERVER_SHARED_ROOT || '').trim();
+  if (sharedRoot) return join(sharedRoot, 'uploads');
+
+  return null;
+}
+
 export function resolveWebRootPath(cwd = process.cwd()) {
   const paths = [
     join(cwd, 'web', 'dist'),
@@ -20,7 +30,7 @@ export function resolveWebRootPath(cwd = process.cwd()) {
 
 export function resolveUploadsRootPath(cwd = process.cwd()) {
   const { mkdirSync } = require('fs');
-  const resolved = join(resolveServerBase(cwd), 'uploads');
+  const resolved = resolveSharedUploadsRoot() ?? join(resolveServerBase(cwd), 'uploads');
   mkdirSync(resolved, { recursive: true });
   return resolved;
 }
