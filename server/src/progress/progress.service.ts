@@ -38,8 +38,15 @@ export class ProgressService {
         const now = new Date();
         const fixedReviewData = this.calculateNextReviewFixed(existingRecord, isCorrect, isReview, now);
 
-        // Update Mistake Count
-        const newMistakeCount = (existingRecord.mistakeCount || 0) + (quality === 0 ? 1 : 0);
+        // Keep mistake count from permanently pinning words in review pool:
+        // wrong answers increment, correct review answers clear the active mistake flag.
+        const currentMistakeCount = Math.max(0, Number(existingRecord.mistakeCount) || 0);
+        let newMistakeCount = currentMistakeCount;
+        if (!isCorrect) {
+            newMistakeCount = currentMistakeCount + 1;
+        } else if (isReview) {
+            newMistakeCount = 0;
+        }
 
         // 1. Update/Create Study Record
         const record = await this.prisma.studyRecord.upsert({

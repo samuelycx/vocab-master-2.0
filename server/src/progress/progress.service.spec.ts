@@ -227,4 +227,104 @@ describe('ProgressService review schedule', () => {
             })
         );
     });
+
+    it('adds learn mistakes into review pool with first-step schedule', async () => {
+        const prisma = {
+            studyRecord: {
+                findUnique: jest.fn().mockResolvedValue({
+                    interval: 0,
+                    repetition: 0,
+                    easeFactor: 2.5,
+                    mistakeCount: 0,
+                    reviewStage: 3,
+                }),
+                upsert: jest.fn().mockResolvedValue({ id: 1 }),
+            },
+            user: {
+                findUnique: jest.fn().mockResolvedValue(null),
+            },
+        } as any;
+        const service = new ProgressService(prisma, {} as any);
+
+        await service.syncProgress({
+            userId: 'user-1',
+            wordId: 'word-1',
+            status: 'LEARNING',
+            xpGained: 0,
+            coinsGained: 0,
+            mode: 'learn',
+        } as any);
+
+        expect(prisma.studyRecord.upsert).toHaveBeenCalled();
+        const upsertArg = prisma.studyRecord.upsert.mock.calls[0][0];
+        expect(upsertArg.update.mistakeCount).toBe(1);
+        expect(upsertArg.update.reviewStage).toBe(0);
+        expect(upsertArg.update.nextReview).toEqual(expect.any(Date));
+
+        const deltaMs = upsertArg.update.nextReview.getTime() - Date.now();
+        expect(deltaMs).toBeGreaterThan(8 * 60 * 1000);
+        expect(deltaMs).toBeLessThanOrEqual(11 * 60 * 1000);
+    });
+
+    it('clears mistake count on correct review answers to prevent sticky pool entries', async () => {
+        const prisma = {
+            studyRecord: {
+                findUnique: jest.fn().mockResolvedValue({
+                    interval: 6,
+                    repetition: 2,
+                    easeFactor: 2.5,
+                    mistakeCount: 2,
+                    reviewStage: 0,
+                }),
+                upsert: jest.fn().mockResolvedValue({ id: 1 }),
+            },
+            user: {
+                findUnique: jest.fn().mockResolvedValue(null),
+            },
+        } as any;
+        const service = new ProgressService(prisma, {} as any);
+
+        await service.syncProgress({
+            userId: 'user-1',
+            wordId: 'word-1',
+            status: 'MASTERED',
+            xpGained: 10,
+            coinsGained: 1,
+            mode: 'review',
+        } as any);
+
+        expect(prisma.studyRecord.upsert).toHaveBeenCalled();
+        const upsertArg = prisma.studyRecord.upsert.mock.calls[0][0];
+        expect(upsertArg.update.mistakeCount).toBe(0);
+        expect(upsertArg.update.reviewStage).toBe(1);
+    });
+
+    it('caps review session words to 30 by default', async () => {
+        const prisma = {
+            studyRecord: {
+                findMany: jest.fn().mockResolvedValue(
+                    Array.from({ length: 50 }, (_, index) => ({
+                        id: index + 1,
+                        wordId: `word-${index + 1}`,
+                    }))
+                ),
+            },
+        } as any;
+        const service = new ProgressService(prisma, {} as any);
+
+        const result = await service.getReviewSessionWords('user-1');
+
+        expect(result).toHaveLength(30);
+        expect(prisma.studyRecord.findMany).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: expect.objectContaining({
+                    userId: 'user-1',
+                    OR: [
+                        { mistakeCount: { gt: 0 } },
+                        { nextReview: { lte: expect.any(Date) } },
+                    ],
+                }),
+            })
+        );
+    });
 });
