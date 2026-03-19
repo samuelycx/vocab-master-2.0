@@ -76,7 +76,7 @@ export const GameEngine = {
     },
 
     async startReview(userId) {
-        const rawWords = await API.getReviews(userId);
+        const rawWords = await API.getReviewSession(userId);
         if (!rawWords || rawWords.length === 0) {
             uni.showModal({
                 title: tr('dashboard_review'),
@@ -367,7 +367,8 @@ export const GameEngine = {
                     'MASTERED',
                     xp,
                     coins,
-                    GameState.game.combo
+                    GameState.game.combo,
+                    this.session.mode
                 )
                     .then(res => {
                         const data = res?.data || res; // Handle both {data: user} and {user} formats
@@ -401,7 +402,7 @@ export const GameEngine = {
 
             const uid = GameState.user.id || GameState.user._id || GameState.user.openid;
             if (uid) {
-                API.syncProgress(uid, this.session.currentWord.id, 'LEARNING', 0, 0, 0)
+                API.syncProgress(uid, this.session.currentWord.id, 'LEARNING', 0, 0, 0, this.session.mode)
                     .then(res => {
                         const data = res?.data || res;
                         if (data && data.user) {

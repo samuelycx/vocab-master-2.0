@@ -122,8 +122,7 @@ const loadDashboard = async () => {
       state.system.achievements = allAchievements;
     }
 
-    const reviews = await API.getReviews(uid);
-    reviewCount.value = Array.isArray(reviews) ? reviews.length : 0;
+    reviewCount.value = await API.getReviewCount(uid);
   } catch (e) {
     console.error('Dashboard load failed', e);
   }

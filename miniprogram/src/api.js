@@ -80,9 +80,35 @@ export const API = {
         return res.success ? res.data : [];
     },
 
+    async getReviewCount(userId) {
+        const res = await callCloud('progress', 'getReviewCount');
+        if (!res.success) return 0;
+
+        if (typeof res.data === 'number') {
+            return Math.max(0, Number(res.data) || 0);
+        }
+
+        const total = Number(res.data?.total ?? res.total);
+        return Number.isFinite(total) && total >= 0 ? Math.floor(total) : 0;
+    },
+
+    async getReviewSession(userId, limit = 30) {
+        const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 30));
+        const res = await callCloud('progress', 'getReviewSession', { limit: safeLimit });
+        if (res.success && Array.isArray(res.data)) {
+            return res.data;
+        }
+
+        if (res.success && Array.isArray(res.data?.items)) {
+            return res.data.items;
+        }
+
+        return [];
+    },
+
     async getReviews(userId) {
-        const res = await callCloud('progress', 'getReviews', { limit: 20 });
-        return res.success && Array.isArray(res.data) ? res.data : [];
+        // Backward-compatible alias while callers migrate to getReviewSession.
+        return this.getReviewSession(userId, 20);
     },
 
     async getMistakes(userId) {
@@ -173,13 +199,14 @@ export const API = {
     },
 
     // --- Progress API ---
-    async syncProgress(userId, wordId, status, xp = 0, coins = 0, maxCombo = 0) {
+    async syncProgress(userId, wordId, status, xp = 0, coins = 0, maxCombo = 0, mode = 'learn') {
         return await callCloud('progress', 'syncProgress', {
             wordId,
             status,
             xp,
             coins,
-            maxCombo
+            maxCombo,
+            mode
         });
     },
 
