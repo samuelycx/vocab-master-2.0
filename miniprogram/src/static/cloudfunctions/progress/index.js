@@ -3,6 +3,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
 const { buildLeaderboardView } = require('./leaderboard-view')
+const { advanceReviewState, isReviewCandidate, limitReviewSession } = require('./review-policy')
 
 const RANKS = [
     { level: 1, title: '流浪者 (Wanderer)', vocabRequired: 0, icon: '' },
@@ -99,6 +100,12 @@ exports.main = async (event, context) => {
                 break
             case 'getReviews':
                 result = await getReviews(openid, event.data)
+                break
+            case 'getReviewCount':
+                result = await getReviewCount(openid)
+                break
+            case 'getReviewSession':
+                result = await getReviewSession(openid, event.data)
                 break
             case 'getMistakes':
                 result = await getMistakes(openid, event.data)
@@ -328,7 +335,7 @@ function dayDiff(lastActive) {
     return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-async function syncProgress(openid, { wordId, status, xp, coins, maxCombo = 0 } = {}) {
+async function syncProgress(openid, { wordId, status, xp, coins, maxCombo = 0, mode = 'learn' } = {}) {
     if (!wordId || typeof wordId !== 'string') {
         return { success: false, code: 'INVALID_WORD_ID', msg: 'Invalid wordId' }
     }
@@ -336,12 +343,19 @@ async function syncProgress(openid, { wordId, status, xp, coins, maxCombo = 0 } 
     const safeXp = Math.max(0, Math.min(Number(xp) || 0, 80))
     const safeCoins = Math.max(0, Math.min(Number(coins) || 0, 20))
     const safeMaxCombo = Number(maxCombo) || 0
+    const isCorrect = safeStatus === 'MASTERED'
+    const isReview = mode === 'review'
+    const now = new Date()
 
     const recordRes = await db.collection('progress').where({ openid, wordId }).get()
 
-    const existingRecord = recordRes.data[0]
-    const currentMistakeCount = Number(existingRecord?.mistakeCount) || 0
-    const nextMistakeCount = safeStatus === 'MASTERED' ? currentMistakeCount : currentMistakeCount + 1
+    const existingRecord = recordRes.data[0] || null
+    const currentMistakeCount = Number(existingRecord && existingRecord.mistakeCount) || 0
+    const nextMistakeCount = isCorrect ? 0 : currentMistakeCount + 1
+    const nextReviewData = advanceReviewState(existingRecord || {}, { isCorrect, isReview, now })
+    const hasPersistedNextReview = Boolean(existingRecord && existingRecord.nextReview)
+    const nextReview = nextReviewData.nextReview || (hasPersistedNextReview ? existingRecord.nextReview : null)
+    const nextReviewPayload = nextReview || _.remove()
 
     if (recordRes.data.length === 0) {
         await db.collection('progress').add({
@@ -350,7 +364,9 @@ async function syncProgress(openid, { wordId, status, xp, coins, maxCombo = 0 } 
                 wordId,
                 status: safeStatus,
                 repetition: 1,
-                mistakeCount: safeStatus === 'MASTERED' ? 0 : 1,
+                mistakeCount: nextMistakeCount,
+                reviewStage: nextReviewData.reviewStage,
+                ...(nextReview ? { nextReview } : {}),
                 learnedAt: db.serverDate(),
                 lastReviewedAt: db.serverDate()
             }
@@ -361,6 +377,8 @@ async function syncProgress(openid, { wordId, status, xp, coins, maxCombo = 0 } 
                 status: safeStatus,
                 repetition: _.inc(1),
                 mistakeCount: nextMistakeCount,
+                reviewStage: nextReviewData.reviewStage,
+                nextReview: nextReviewPayload,
                 lastReviewedAt: db.serverDate()
             }
         })
@@ -536,41 +554,124 @@ async function getAchievements() {
     }
 }
 
-async function getReviews(openid, { limit = 20 } = {}) {
-    const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 50))
+function toDate(value, fallback = null) {
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? fallback : value
+    if (value && typeof value.toDate === 'function') {
+        const next = value.toDate()
+        return toDate(next, fallback)
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+        const parsed = new Date(value)
+        return Number.isNaN(parsed.getTime()) ? fallback : parsed
+    }
+    return fallback
+}
 
-    const progressRes = await db.collection('progress')
-        .where({
-            openid
-        })
-        .orderBy('lastReviewedAt', 'asc')
-        .limit(safeLimit)
-        .get()
+function sortReviewCandidates(records = []) {
+    return [...records].sort((a, b) => {
+        const aDate = toDate(a.nextReview, null)
+        const bDate = toDate(b.nextReview, null)
+        if (!aDate && !bDate) return 0
+        if (!aDate) return 1
+        if (!bDate) return -1
+        return aDate.getTime() - bDate.getTime()
+    })
+}
 
-    const progressList = progressRes.data || []
-    if (progressList.length === 0) {
-        return { success: true, data: [] }
+function getCandidateKey(record = {}) {
+    return String(record.wordId || record._id || '')
+}
+
+async function getProgressRowsByFilter(filter = {}, batchLimit = 200) {
+    const safeLimit = Math.max(1, Math.min(Number(batchLimit) || 200, 200))
+    const allRows = []
+    let skip = 0
+
+    while (true) {
+        const res = await db.collection('progress')
+            .where(filter)
+            .skip(skip)
+            .limit(safeLimit)
+            .get()
+
+        const rows = res.data || []
+        if (rows.length === 0) break
+        allRows.push(...rows)
+
+        if (rows.length < safeLimit) break
+        skip += rows.length
+    }
+
+    return allRows
+}
+
+async function collectReviewCandidates(openid, now = new Date()) {
+    const baseRows = await getProgressRowsByFilter({ openid })
+    const deduped = new Map()
+
+    for (const row of baseRows) {
+        if (!isReviewCandidate(row, now)) continue
+        const key = getCandidateKey(row)
+        if (!key) continue
+        deduped.set(key, row)
+    }
+
+    return sortReviewCandidates(Array.from(deduped.values()))
+}
+
+async function hydrateReviewWords(progressList = []) {
+    if (!Array.isArray(progressList) || progressList.length === 0) {
+        return []
     }
 
     const wordIds = [...new Set(progressList.map(item => item.wordId).filter(Boolean))]
-    if (wordIds.length === 0) {
-        return { success: true, data: [] }
-    }
+    if (wordIds.length === 0) return []
 
-    const wordsRes = await db.collection('words').where({
-        _id: _.in(wordIds)
-    }).get()
-
-    const wordMap = wordsRes.data.reduce((acc, word) => {
+    const wordsRes = await db.collection('words').where({ _id: _.in(wordIds) }).get()
+    const wordMap = (wordsRes.data || []).reduce((acc, word) => {
         acc[word._id] = word
         return acc
     }, {})
 
-    const result = progressList
-        .map(item => normalizeWordForRead(wordMap[item.wordId]))
+    return progressList
+        .map(item => {
+            const normalized = normalizeWordForRead(wordMap[item.wordId])
+            if (!normalized) return null
+            return {
+                ...normalized,
+                _reviewData: {
+                    wordId: item.wordId,
+                    reviewStage: Number(item.reviewStage) || 0,
+                    mistakeCount: Number(item.mistakeCount) || 0,
+                    nextReview: item.nextReview || null
+                }
+            }
+        })
         .filter(Boolean)
+}
 
-    return { success: true, data: result }
+async function getReviewCount(openid) {
+    const now = new Date()
+    const candidates = await collectReviewCandidates(openid, now)
+    return {
+        success: true,
+        data: {
+            total: candidates.length
+        }
+    }
+}
+
+async function getReviewSession(openid, { limit = 30 } = {}) {
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 30))
+    const now = new Date()
+    const candidates = await collectReviewCandidates(openid, now)
+    const sessionRows = limitReviewSession(candidates, safeLimit)
+    const words = await hydrateReviewWords(sessionRows)
+    return { success: true, data: words }
+}
+
+async function getReviews(openid, { limit = 20 } = {}) {
+    return getReviewSession(openid, { limit })
 }
 
 async function getMistakes(openid, { limit = 20 } = {}) {
